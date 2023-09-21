@@ -7,7 +7,7 @@ from _thread import *
 import logger as lg
 import Events as Ev
 import Utils
-import Button as Btn
+#import Button as Btn
 import MainModule
 
 EDITOR_ENABLED = True
