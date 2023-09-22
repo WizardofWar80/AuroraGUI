@@ -24,7 +24,8 @@ class Game():
     self.currentSystem = -1
     self.cameraCenter = (0,0)
     self.screenCenter = (self.width/2,self.height/2)
-    self.systemScale = 10
+    self.systemScale = 50
+    self.mousePos = (0,0)
 
     # Options
     self.showEmptyFleets = False
@@ -62,6 +63,12 @@ class Game():
       self.currentSystem = self.homeSystemID
 
   def Draw(self):
+    # clear screen
+    self.surface.fill(self.bg_color)
+
+    # draw mouse position and scale
+    Utils.DrawTextAtPos(self.surface,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE)
+
     self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
     self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
 

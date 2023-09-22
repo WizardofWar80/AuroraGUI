@@ -34,7 +34,7 @@ def main():
     # event handling, gets all event from the event queue
     for event in pygame.event.get():
       myEvents.Update()
-      myEvents.HandleMouseEvents(event)
+      myEvents.HandleMouseEvents(event, game)
       # only do something if the event is of type QUIT
       if event.type == pygame.QUIT:
         # change the value to False, to exit the main loop

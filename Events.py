@@ -42,17 +42,24 @@ class Events:
   def GetTimeinSeconds(self):
     return pygame.time.get_ticks()/1000
 
-  def HandleMouseEvents(self, event):
+  def HandleMouseEvents(self, event, game):
+    # The mouse wheel will generate pygame.MOUSEBUTTONDOWN and pygame.MOUSEBUTTONUP events when rolled. 
+    # The button will be set to 4 when the wheel is rolled up, and to button 5 when the wheel is rolled down
+
     if event.type == pygame.MOUSEBUTTONDOWN:
-      self.HandleMouseDownEvents(event)
+      if (event.button == 4 or event.button == 5):
+        self.HandleMouseWheelEvents(event, game)
+      else:
+        self.HandleMouseDownEvents(event)
     if event.type == pygame.MOUSEBUTTONUP:
       self.HandleMouseUpEvents(event)
     if event.type == pygame.MOUSEMOTION:
-      self.HandleMouseMotionEvents(event)
+      self.HandleMouseMotionEvents(event, game)
     if (self.LeftMouseButtonClicked):
       self.HandleSingleClickEvents()
     if (self.LeftMouseButtonDoubleClicked):
       self.HandleDoubleClickEvents()
+
 
 
   def HandleMouseDownEvents(self, event):
@@ -118,11 +125,12 @@ class Events:
     #print(event.touch)
     pass
 
-  def HandleMouseMotionEvents(self, event):
+  def HandleMouseMotionEvents(self, event, game):
     #print(event.pos)
     #print(event.buttons)
     #print(event.touch)
-    pass
+    game.mousePos = event.pos
+
 
   def HandleSingleClickEvents(self):
     clicked_clickable = -1
@@ -159,3 +167,13 @@ class Events:
              and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
              and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
           clickable.DoubleClick()
+
+  def HandleMouseWheelEvents(self, event, game):
+    # The button will be set to 4 when the wheel is rolled up, and to button 5 when the wheel is rolled down
+    current_time = self.GetTimeinSeconds()
+    if (event.button == 4):
+      if (game.systemScale < 10000):
+        game.systemScale *= 2
+    else:
+      if (game.systemScale > 0.1):
+        game.systemScale /= 2
