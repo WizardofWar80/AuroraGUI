@@ -89,11 +89,17 @@ class Game():
     pygame.display.update()
     return
 
-
   def DrawSystem(self):
-    systems = self.GetSystems()
     #self.currentSystem = 8497 # Alpha Centauri
     #self.currentSystem = 8499
+
+    self.DrawSystemBodies()
+    self.DrawSystemJumpPoints()
+    self.DrawSurveyLocations()
+    self.DrawSystemFleets()
+
+  def DrawSystemBodies(self):
+    systems = self.GetSystems()
     if self.currentSystem not in systems:
       return
     system = systems[self.currentSystem]
@@ -103,7 +109,6 @@ class Game():
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
       # draw star
-      
       r = 1
       radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
       if (radius < self.minPixelSize_Star):
@@ -149,9 +154,8 @@ class Game():
       # draw planet
       pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,radius,Utils.FILLED)
       Utils.DrawTextAtPos(self.surface,name,screen_body_pos,14,self.color_PlanetLabel)
-    ##############################
 
-    # draw Jump Points
+  def DrawSystemJumpPoints(self):
     JumpPoints = self.GetSystemJumpPoints(self.currentSystem)
     for JP_ID in JumpPoints:
       JP = JumpPoints[JP_ID]
@@ -162,9 +166,8 @@ class Game():
       if (JP['Gate']):
         gate_pos = Utils.SubTuples(screen_pos,7)
         pygame.draw.rect(self.surface, self.color_Jumpgate, (gate_pos,(14,14)),1)
-    ##############################
 
-    # Draw Survey locations
+  def DrawSurveyLocations(self):
     surveyLocations = self.GetSurveyLocations(self.currentSystem)
     for id in surveyLocations:
       SL = surveyLocations[id]
@@ -178,8 +181,8 @@ class Game():
         if (self.showUnsurveyedLocations):
           pygame.draw.circle(self.surface,self.color_UnsurveyedLoc,screen_pos,5,1)
           Utils.DrawTextAtPos(self.surface,str(SL['Number']),screen_pos_label,14,self.color_UnsurveyedLoc)
-
-    # Draw fleets
+ 
+  def DrawSystemFleets(self):
     fleets = self.GetFleets()
     if (self.currentSystem in fleets):
       for fleetID in fleets[self.currentSystem]:
@@ -194,7 +197,6 @@ class Game():
           
             #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
             Utils.DrawTextAt2(self.surface,fleet['Name'],pos_x+10,pos_y-6,12,self.color_Fleet)
-    ##############################
 
   def DrawMiniMap(self):
     pass
