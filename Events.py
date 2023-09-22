@@ -97,9 +97,6 @@ class Events:
       print('unhandled event for mouse button 2')
       print(event)
       logger.write('Unhandled Button %d down'%event.button)
-    #print(event.pos)
-    #print(event.button)
-    #print(event.touch)
 
   def HandleMouseUpEvents(self, event):
     current_time = self.GetTimeinSeconds()

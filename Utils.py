@@ -43,15 +43,17 @@ def DrawTextAt2(window, text, x, y, textsize, textcolor):
   DrawTextAtPos(window, text, (x,y), textsize, textcolor)
 
 def DrawTextAtPos(window, text, pos, textsize, textcolor):
-  font = pygame.font.SysFont("Times New Roman", textsize)
-  label = font.render(text, 0, textcolor)
-  label.set_alpha(255)
-  window.blit(label, pos)
+  if (pos[0] > 0 and pos[1] > 0 and pos[0] < window.get_rect()[2] and pos[1] < window.get_rect()[3]):
+    font = pygame.font.SysFont("Times New Roman", textsize)
+    label = font.render(text, 0, textcolor)
+    label.set_alpha(255)
+    window.blit(label, pos)
 
 def DrawTextCenteredAt(window, text, x, y, fonttype, fg):
-  sf = pygame.Surface((200,200))
-  ft_render_to_rect = fonttype.render_to(sf, (x, y), text, (fg[0], fg[1], fg[2], 128))
-  fonttype.render_to(window, (x-ft_render_to_rect[2]/2, y-ft_render_to_rect[3]/2), text, (fg[0], fg[1], fg[2], 128))
+  if (x > 0 and y > 0 and x < window.get_rect()[2] and y < window.get_rect()[3]):
+    sf = pygame.Surface((200,200))
+    ft_render_to_rect = fonttype.render_to(sf, (x, y), text, (fg[0], fg[1], fg[2], 128))
+    fonttype.render_to(window, (x-ft_render_to_rect[2]*.5, y-ft_render_to_rect[3]*.5), text, (fg[0], fg[1], fg[2], 128))
 
 
 def draw_ellipse_angle(surface, color, rect, angle, width=0):

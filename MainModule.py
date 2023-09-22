@@ -35,12 +35,19 @@ class Game():
     self.mouseDragged = (0,0)
     self.refreshData = True
     self.screenCenterBeforeDrag = self.screenCenter
+    self.counter_FPS = 0
+    self.timestampLastSecond = pygame.time.get_ticks()
+    self.timestampLast = pygame.time.get_ticks()
+    self.FPS = 0
+
     # Options
     self.showEmptyFleets = False
     self.showStationaryFleets = False
     self.showUnsurveyedLocations = True
-    self.showSurveyedLocations = True
+    self.showSurveyedLocations = False
     self.showFleetTraces = True
+    self.showOrbits_Planets = True
+    self.showOrbits_Stars = True
     
     # Colorscheme
     self.color_JP = Utils.ORANGE
@@ -67,8 +74,17 @@ class Game():
       print(game_table[5],': ID', game_table[0])
       self.gameID = game_table[0]
       self.myRaceID = self.db.execute('''SELECT RaceID from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
+      self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
+      self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
+
+      self.starSystems = self.GetSystems()
+      self.currentSystemJumpPoints = self.GetSystemJumpPoints()
+      self.surveyLocations = self.GetSurveyLocations(self.currentSystem)
+      self.fleets = self.GetFleets()
+      self.systemBodies = self.GetSystemBodies()
+
 
   def Draw(self):
     # clear screen
@@ -78,9 +94,6 @@ class Game():
     Utils.DrawTextAtPos(self.surface,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE)
     Utils.DrawTextAtPos(self.surface,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE)
     
-    self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
-    self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
-
     self.DrawSystem()
 
     self.DrawMiniMap()
@@ -88,24 +101,51 @@ class Game():
     self.DrawInfoWindow()
 
     self.DrawGUI()
+    
+    self.counter_FPS += 1
+
+    currentTimestamp = pygame.time.get_ticks()
+    deltaTime = currentTimestamp - self.timestampLastSecond
+    if (deltaTime >= 1000):
+      #self.FPS = 1000*self.counter_FPS / deltaTime
+      self.FPS = self.counter_FPS 
+      self.counter_FPS = 0
+      self.timestampLastSecond = currentTimestamp
+      print(self.FPS)
+    
+    Utils.DrawTextAtPos(self.surface,'%d FPS'%(self.FPS),(5,50),18,Utils.WHITE)
+    
     self.screen.blit(self.surface,(0,0))
     pygame.display.update()
+    
     return
 
   def DrawSystem(self):
     #self.currentSystem = 8497 # Alpha Centauri
     #self.currentSystem = 8499
-
+    t1 = pygame.time.get_ticks()
     self.DrawSystemBodies()
+    t2 = pygame.time.get_ticks()
+    dt1 = t2-t1
+    t1=t2
     self.DrawSystemJumpPoints()
+    t2 = pygame.time.get_ticks()
+    dt2 = t2-t1
+    t1=t2
     self.DrawSurveyLocations()
+    t2 = pygame.time.get_ticks()
+    dt3 = t2-t1
+    t1=t2
     self.DrawSystemFleets()
+    t2 = pygame.time.get_ticks()
+    dt4 = t2-t1
+    print(dt1, dt2, dt3, dt4)
+
 
   def DrawSystemBodies(self):
-    systems = self.GetSystems()
-    if self.currentSystem not in systems:
+    if self.currentSystem not in self.starSystems:
       return
-    system = systems[self.currentSystem]
+    system = self.starSystems[self.currentSystem]
 
     #Draw system bodies
     for starID in system['Stars']:
@@ -120,48 +160,41 @@ class Game():
       Utils.DrawTextAtPos(self.surface,system['Name'],screen_star_pos,14,self.color_Star_Label)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       # draw orbit
-      pygame.draw.circle(self.surface,self.color_Orbit,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
+      if (self.showOrbits_Stars):
+        pygame.draw.circle(self.surface,self.color_Orbit,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
     
-
-    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection from FCT_SystemBody WHERE GameID = %d AND SystemID = %d AND BodyClass = 1;'''%(self.gameID,self.currentSystem))]
-    for body in body_table:
-      name = body[1]
-      a = body[2]
-      r = body[4]
-      d = body[2]
-      angle = body[5]
-      parentID = body[3]
-      body_pos = (body[6], body[7])
-      angle2 = body[9]
-      E = body[8]
-      radius = (Utils.AU_INV*self.systemScale)*r
-      if (radius < self.minPixelSize_Planet):
-        radius = self.minPixelSize_Planet
+    for bodyID in self.systemBodies:
+      body = self.systemBodies[bodyID]
+      E = body['Eccentricity']
+      parentID = body['ParentID']
+      radius_on_screen = (Utils.AU_INV*self.systemScale)*body['RadiusBody']
+      if (radius_on_screen < self.minPixelSize_Planet):
+        radius_on_screen = self.minPixelSize_Planet
 
       if parentID in system['Stars']:
         screen_star_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
       else:
         screen_star_pos = self.WorldPos2ScreenPos((0,0))
-      # draw orbit
-      if (E > 0):
-        screen_body_pos = self.WorldPos2ScreenPos(body_pos)
-        a *= (self.systemScale)
-        b = a * math.sqrt(1-E*E)
-        c = E * a
-        x_offset = c * math.cos(angle2*math.pi/180)
-        y_offset = c * math.sin(angle2*math.pi/180)
-        offsetPos = Utils.AddTuples(screen_star_pos, (x_offset,y_offset))
-        Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),angle2,1)
-      else:
-        pygame.draw.circle(self.surface,self.color_Orbit,screen_star_pos,d*self.systemScale,1)
+      screen_body_pos = self.WorldPos2ScreenPos(body['Pos'])
+      if (self.showOrbits_Planets):
+        # draw orbit
+        if (E > 0):
+          a = body['Orbit'] * self.systemScale
+          b = a * math.sqrt(1-E*E)
+          c = E * a
+          x_offset = c * math.cos(body['EccentricityAngle']*math.pi/180)
+          y_offset = c * math.sin(body['EccentricityAngle']*math.pi/180)
+          offsetPos = Utils.AddTuples(screen_star_pos, (x_offset,y_offset))
+          Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+        else:
+          pygame.draw.circle(self.surface,self.color_Orbit,screen_star_pos,body['Orbit']*self.systemScale,1)
       # draw planet
-      pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,radius,Utils.FILLED)
-      Utils.DrawTextAtPos(self.surface,name,screen_body_pos,14,self.color_PlanetLabel)
+      pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,radius_on_screen,Utils.FILLED)
+      Utils.DrawTextAtPos(self.surface,body['Name'],screen_body_pos,14,self.color_PlanetLabel)
 
   def DrawSystemJumpPoints(self):
-    JumpPoints = self.GetSystemJumpPoints(self.currentSystem)
-    for JP_ID in JumpPoints:
-      JP = JumpPoints[JP_ID]
+    for JP_ID in self.currentSystemJumpPoints:
+      JP = self.currentSystemJumpPoints[JP_ID]
       screen_pos = self.WorldPos2ScreenPos(JP['Pos'])
       pygame.draw.circle(self.surface,self.color_JP,screen_pos,5,2)
       screen_pos_label = Utils.AddTuples(screen_pos,10)
@@ -171,9 +204,8 @@ class Game():
         pygame.draw.rect(self.surface, self.color_Jumpgate, (gate_pos,(14,14)),1)
 
   def DrawSurveyLocations(self):
-    surveyLocations = self.GetSurveyLocations(self.currentSystem)
-    for id in surveyLocations:
-      SL = surveyLocations[id]
+    for id in self.surveyLocations:
+      SL = self.surveyLocations[id]
       screen_pos = self.WorldPos2ScreenPos(SL['Pos'])
       screen_pos_label = Utils.AddTuples(screen_pos,(0,10))
       if (SL['Surveyed']):
@@ -186,10 +218,9 @@ class Game():
           Utils.DrawTextAtPos(self.surface,str(SL['Number']),screen_pos_label,14,self.color_UnsurveyedLoc)
  
   def DrawSystemFleets(self):
-    fleets = self.GetFleets()
-    if (self.currentSystem in fleets):
-      for fleetID in fleets[self.currentSystem]:
-        fleet = fleets[self.currentSystem][fleetID]
+    if (self.currentSystem in self.fleets):
+      for fleetID in self.fleets[self.currentSystem]:
+        fleet = self.fleets[self.currentSystem][fleetID]
         if (fleet['Ships'] != [] or self.showEmptyFleets):
           if (fleet['Speed'] > 1 or self.showStationaryFleets):
             pos = self.WorldPos2ScreenPos(fleet['Position'])
@@ -254,12 +285,24 @@ class Game():
         systems[systemID] = system
     return systems
 
-  def GetFleets(self, _SystemID = None):
+  def GetSystemBodies(self):
+    systemBodies = {}
+    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection from FCT_SystemBody WHERE GameID = %d AND SystemID = %d AND BodyClass = 1;'''%(self.gameID,self.currentSystem))]
+    for body in body_table:
+      a = body[2]
+      r = body[4]
+      d = body[2]
+      angle = body[5]
+      body_pos = (body[6], body[7])
+      angle2 = body[9]
+      E = body[8]
+      systemBodies[body[0]]={'Name':body[1], 'Orbit':body[2], 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
+                            'Eccentricity':body[8],'EccentricityAngle':body[9], 'Pos':(body[6], body[7])}
+    return systemBodies
+
+  def GetFleets(self):
     fleets = {}
-    if (_SystemID):
-      fleets_table = [list(x) for x in self.db.execute('''SELECT * from FCT_Fleet WHERE GameID = %d AND CivilianFunction = 0 AND RaceID = %d AND SystemID = %d;'''%(self.gameID,self.myRaceID, _SystemID))]
-    else:
-      fleets_table = [list(x) for x in self.db.execute('''SELECT * from FCT_Fleet WHERE GameID = %d AND CivilianFunction = 0 AND RaceID = %d;'''%(self.gameID,self.myRaceID))]
+    fleets_table = [list(x) for x in self.db.execute('''SELECT * from FCT_Fleet WHERE GameID = %d AND CivilianFunction = 0 AND RaceID = %d;'''%(self.gameID,self.myRaceID))]
     for item in fleets_table:
       fleetId = item[0]
       systemID = item[9]
@@ -294,8 +337,8 @@ class Game():
     #ShipID	GameID	FleetID	ShipName	SubFleetID	ActiveSensorsOn	AssignedMSID	Autofire	BoardingCombatClock	Constructed	CrewMorale	CurrentCrew	CurrentShieldStrength	DamageControlID	Destroyed	FireDelay	Fuel	GradePoints	HoldTechData	KillTonnageCommercial	KillTonnageMilitary	LastLaunchTime	LastOverhaul	LastShoreLeave	LaunchMorale	MaintenanceState	MothershipID	RaceID	RefuelPriority	RefuelStatus	ScrapFlag	SensorDelay	ShieldsActive	ShipClassID	ShipFuelEfficiency	ShipNotes	ShippingLineID	SpeciesID	SyncFire	TFPoints	TransponderActive	OrdnanceTransferStatus	HangarLoadType	ResupplyPriority	CurrentMaintSupplies	AutomatedDamageControl	TractorTargetShipID	TractorTargetShipyardID	TractorParentShipID	OverhaulFactor	BioEnergy	LastMissileHitTime	LastBeamHitTime	LastDamageTime	LastPenetratingDamageTime	AssignedFormationID	DistanceTravelled	HullNumber	ParentSquadronID	AssignedSquadronID	LastTransitTime	LastFiringTime	ResupplyStatus
     #47291	95	103154	Arthur C. Clarke 001	0	0	0	0	0	270864000.0	1.0	140	0.0	0	0	0	100000.0	1000.0	0	0	0	0.0	2203468200.0	2203468200.0	0.0	0	0	418	0	0	0	0	0	28338		None	0	382	0	0.0	0	0	0	0	127.0	1	0	0	0	1.0	0.0	0.0	0.0	0.0	0.0	0	41088548759.1404	1	0	0	1336014000.0	0.0	0
     
-  def GetSystemJumpPoints(self, systemID):
-    jp_table = [list(x) for x in self.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(self.gameID, systemID))]
+  def GetSystemJumpPoints(self):
+    jp_table = [list(x) for x in self.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(self.gameID, self.currentSystem))]
     JPs = {}
     index = 1
     for JP in jp_table:
