@@ -61,7 +61,13 @@ class Events:
     if (self.LeftMouseButtonDoubleClicked):
       self.HandleDoubleClickEvents()
 
-
+  def HandleKeyboardEvents(self, event, game):
+    if (event.type == pygame.KEYDOWN):
+      if (event.key == pygame.K_HOME):
+        if (game.screenCenter != game.cameraCenter):
+          game.screenCenter = game.cameraCenter
+        else:
+          game.systemScale = game.systemScaleStart
 
   def HandleMouseDownEvents(self, event,game):
     current_time = self.GetTimeinSeconds()
@@ -180,6 +186,13 @@ class Events:
     if (event.button == 4):
       if (game.systemScale < 100000000):
         game.systemScale *= 2
+        delta = Utils.SubTuples(game.screenCenter, game.cameraCenter)
+        #zoomed_delta = Utils.MulTuples(delta, 2)
+        game.screenCenter=Utils.AddTuples(game.screenCenter, delta)
+
     else:
       if (game.systemScale > 0.1):
         game.systemScale /= 2
+        delta = Utils.SubTuples(game.screenCenter, game.cameraCenter)
+        zoomed_delta = Utils.DivTuples(delta, 2)
+        game.screenCenter=Utils.SubTuples(game.screenCenter, zoomed_delta)

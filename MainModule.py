@@ -22,8 +22,9 @@ class Game():
     self.deltaTime = 0
     self.homeSystemID = -1
     self.currentSystem = -1
-    self.cameraCenter = (0,0)
+    self.cameraCenter = (self.width/2,self.height/2)
     self.screenCenter = (self.width/2,self.height/2)
+    self.systemScaleStart = 50
     self.systemScale = 50
     self.mousePos = (0,0)
     self.radius_Sun = 696000
