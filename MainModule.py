@@ -31,8 +31,9 @@ class Game():
     self.minPixelSize_Planet = 6
     self.minPixelSize_Moon = 4
     self.minPixelSize_Small = 3
-
-
+    self.mouseDragged = (0,0)
+    self.refreshData = True
+    self.screenCenterBeforeDrag = self.screenCenter
     # Options
     self.showEmptyFleets = False
     self.showStationaryFleets = False
@@ -74,7 +75,8 @@ class Game():
 
     # draw mouse position and scale
     Utils.DrawTextAtPos(self.surface,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE)
-
+    Utils.DrawTextAtPos(self.surface,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE)
+    
     self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
     self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
 
@@ -189,14 +191,14 @@ class Game():
         fleet = fleets[self.currentSystem][fleetID]
         if (fleet['Ships'] != [] or self.showEmptyFleets):
           if (fleet['Speed'] > 1 or self.showStationaryFleets):
-            pos = (pos_x,pos_y) = (self.width/2+fleet['Position'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position'][1]*Utils.AU_INV*self.systemScale)
+            pos = self.WorldPos2ScreenPos(fleet['Position'])
             if (self.showFleetTraces):
-              prev_pos = (self.width/2+fleet['Position_prev'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position_prev'][1]*Utils.AU_INV*self.systemScale)
+              prev_pos = self.WorldPos2ScreenPos(fleet['Position_prev'])
               pygame.draw.line(self.surface, self.color_Fleet, prev_pos, pos,1)
             Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
           
             #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
-            Utils.DrawTextAt2(self.surface,fleet['Name'],pos_x+10,pos_y-6,12,self.color_Fleet)
+            Utils.DrawTextAt2(self.surface,fleet['Name'],pos[0]+10,pos[1]-6,12,self.color_Fleet)
 
   def DrawMiniMap(self):
     pass

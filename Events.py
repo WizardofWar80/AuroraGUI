@@ -1,6 +1,7 @@
 import time
 import pygame
 import logger as lg
+import Utils
 
 logger = lg.Logger(logfile= 'log_events.txt', module='Events.py', log_level = 1)
 logger.Reset()
@@ -50,7 +51,7 @@ class Events:
       if (event.button == 4 or event.button == 5):
         self.HandleMouseWheelEvents(event, game)
       else:
-        self.HandleMouseDownEvents(event)
+        self.HandleMouseDownEvents(event, game)
     if event.type == pygame.MOUSEBUTTONUP:
       self.HandleMouseUpEvents(event)
     if event.type == pygame.MOUSEMOTION:
@@ -62,11 +63,13 @@ class Events:
 
 
 
-  def HandleMouseDownEvents(self, event):
+  def HandleMouseDownEvents(self, event,game):
     current_time = self.GetTimeinSeconds()
     if (event.button == 1):
       logger.write('Button %d down at: %d,%d'%(event.button,event.pos[0], event.pos[1]))
       #print('LMB')
+      if(not self.LeftMouseButtonDown):
+        game.screenCenterBeforeDrag = game.screenCenter
       if (self.TimeSinceLeftMouseButtonReleased < self.doubleClickTiming):
         self.LeftMouseButtonDoubleClicked = True
         self.TimeLeftMouseButtonDoubleClick = current_time
@@ -91,7 +94,6 @@ class Events:
     #print(event.pos)
     #print(event.button)
     #print(event.touch)
-
 
   def HandleMouseUpEvents(self, event):
     current_time = self.GetTimeinSeconds()
@@ -130,7 +132,11 @@ class Events:
     #print(event.buttons)
     #print(event.touch)
     game.mousePos = event.pos
-
+    if (self.LeftMouseButtonDown):
+      if (self.TimeSinceLeftMouseButtonPressed > 0.3):
+        mousePosDelta2 = Utils.SubTuples(game.mousePos, self.LeftMousePressPosition)
+        game.mouseDragged = mousePosDelta2
+        game.screenCenter = Utils.AddTuples(game.screenCenterBeforeDrag, mousePosDelta2)
 
   def HandleSingleClickEvents(self):
     clicked_clickable = -1
