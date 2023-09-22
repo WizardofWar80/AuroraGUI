@@ -172,7 +172,7 @@ class Events:
     # The button will be set to 4 when the wheel is rolled up, and to button 5 when the wheel is rolled down
     current_time = self.GetTimeinSeconds()
     if (event.button == 4):
-      if (game.systemScale < 10000):
+      if (game.systemScale < 100000000):
         game.systemScale *= 2
     else:
       if (game.systemScale > 0.1):

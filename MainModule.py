@@ -26,6 +26,12 @@ class Game():
     self.screenCenter = (self.width/2,self.height/2)
     self.systemScale = 50
     self.mousePos = (0,0)
+    self.radius_Sun = 696000
+    self.minPixelSize_Star = 10
+    self.minPixelSize_Planet = 6
+    self.minPixelSize_Moon = 4
+    self.minPixelSize_Small = 3
+
 
     # Options
     self.showEmptyFleets = False
@@ -97,13 +103,17 @@ class Game():
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
       # draw star
-      pygame.draw.circle(self.surface,self.color_Star,screen_star_pos,5,Utils.FILLED)
+      
+      r = 1
+      radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
+      if (radius < self.minPixelSize_Star):
+        radius = self.minPixelSize_Star
+      pygame.draw.circle(self.surface,self.color_Star,screen_star_pos,radius,Utils.FILLED)
       Utils.DrawTextAtPos(self.surface,system['Name'],screen_star_pos,14,self.color_Star_Label)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       # draw orbit
       pygame.draw.circle(self.surface,self.color_Orbit,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
-    ##############################
-
+    
 
     body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection from FCT_SystemBody WHERE GameID = %d AND SystemID = %d AND BodyClass = 1;'''%(self.gameID,self.currentSystem))]
     for body in body_table:
@@ -116,6 +126,10 @@ class Game():
       body_pos = (body[6], body[7])
       angle2 = body[9]
       E = body[8]
+      radius = (Utils.AU_INV*self.systemScale)*r
+      if (radius < self.minPixelSize_Planet):
+        radius = self.minPixelSize_Planet
+
       if parentID in system['Stars']:
         screen_star_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
       else:
@@ -133,7 +147,7 @@ class Game():
       else:
         pygame.draw.circle(self.surface,self.color_Orbit,screen_star_pos,d*self.systemScale,1)
       # draw planet
-      pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,5,Utils.FILLED)
+      pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,radius,Utils.FILLED)
       Utils.DrawTextAtPos(self.surface,name,screen_body_pos,14,self.color_PlanetLabel)
     ##############################
 
