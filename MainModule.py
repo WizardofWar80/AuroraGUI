@@ -25,7 +25,7 @@ class Game():
     self.showEmptyFleets = False
     self.showStationaryFleets = False
     self.showFleetTraces = True
-    self.systemScale = 50
+    self.systemScale = 100
     self.cameraCenter = (0,0)
     self.screenCenter = (self.width/2,self.height/2)
 
@@ -63,7 +63,8 @@ class Game():
 
   def DrawSystem(self):
     systems = self.GetSystems()
-    #self.currentSystem = 8497
+    self.currentSystem = 8497 # Alpha Centauri
+    self.currentSystem = 8499
     if self.currentSystem not in systems:
       return
     system = systems[self.currentSystem]
@@ -76,6 +77,8 @@ class Game():
       Utils.DrawTextAtPos(self.surface,system['Name'],screen_star_pos,14,Utils.WHITE)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       pygame.draw.circle(self.surface,Utils.WHITE,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
+    ##############################
+
 
     body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection from FCT_SystemBody WHERE GameID = %d AND SystemID = %d AND BodyClass = 1;'''%(self.gameID,self.currentSystem))]
     for body in body_table:
@@ -105,25 +108,41 @@ class Game():
         pygame.draw.circle(self.surface,Utils.WHITE,screen_star_pos,d*self.systemScale,1)
       pygame.draw.circle(self.surface,Utils.GREEN,screen_body_pos,5,Utils.FILLED)
       Utils.DrawTextAtPos(self.surface,name,screen_body_pos,14,Utils.WHITE)
+    ##############################
+
+    # draw Jump Points
+    JumpPoints = self.GetSystemJumpPoints(self.currentSystem)
+    for JP_ID in JumpPoints:
+      JP = JumpPoints[JP_ID]
+      screen_pos = self.WorldPos2ScreenPos(JP['Pos'])
+      pygame.draw.circle(self.surface,Utils.ORANGE,screen_pos,5,2)
+      screen_pos_label = Utils.AddTuples(screen_pos,10)
+      Utils.DrawTextAtPos(self.surface,JP['Destination'],screen_pos_label,14,Utils.ORANGE)
+      if (JP['Gate']):
+        gate_pos = Utils.SubTuples(screen_pos,7)
+        pygame.draw.rect(self.surface, Utils.ORANGE, (gate_pos,(14,14)),1)
+    ##############################
 
     # Draw fleets
     fleets = self.GetFleets()
-    for fleetID in fleets[self.currentSystem]:
-      fleet = fleets[self.currentSystem][fleetID]
-      if (fleet['Ships'] != [] or self.showEmptyFleets):
-        if (fleet['Speed'] > 1 or self.showStationaryFleets):
+    if (self.currentSystem in fleets):
+      for fleetID in fleets[self.currentSystem]:
+        fleet = fleets[self.currentSystem][fleetID]
+        if (fleet['Ships'] != [] or self.showEmptyFleets):
+          if (fleet['Speed'] > 1 or self.showStationaryFleets):
 
-          pos = (pos_x,pos_y) = (self.width/2+fleet['Position'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position'][1]*Utils.AU_INV*self.systemScale)
+            pos = (pos_x,pos_y) = (self.width/2+fleet['Position'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position'][1]*Utils.AU_INV*self.systemScale)
 
-          if (self.showFleetTraces):
-            prev_pos = (self.width/2+fleet['Position_prev'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position_prev'][1]*Utils.AU_INV*self.systemScale)
-            pygame.draw.line(self.surface, Utils.CYAN, prev_pos, pos,1)
+            if (self.showFleetTraces):
+              prev_pos = (self.width/2+fleet['Position_prev'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position_prev'][1]*Utils.AU_INV*self.systemScale)
+              pygame.draw.line(self.surface, Utils.CYAN, prev_pos, pos,1)
 
-          Utils.DrawTriangle(self.surface,pos ,Utils.CYAN, fleet['Heading'])
+            Utils.DrawTriangle(self.surface,pos ,Utils.CYAN, fleet['Heading'])
           
-          #pygame.draw.circle(self.surface,Utils.CYAN,(pos_x,pos_y),5,Utils.FILLED)
-          #Utils.DrawTextAt(self.surface,name,pos_x,pos_y,pygame.freetype.SysFont('courier', 16,bold=False),Utils.RED)
-          Utils.DrawTextAt2(self.surface,fleet['Name'],pos_x+10,pos_y-6,12,Utils.CYAN)
+            #pygame.draw.circle(self.surface,Utils.CYAN,(pos_x,pos_y),5,Utils.FILLED)
+            #Utils.DrawTextAt(self.surface,name,pos_x,pos_y,pygame.freetype.SysFont('courier', 16,bold=False),Utils.RED)
+            Utils.DrawTextAt2(self.surface,fleet['Name'],pos_x+10,pos_y-6,12,Utils.CYAN)
+    ##############################
 
   def DrawMiniMap(self):
     pass
@@ -218,6 +237,32 @@ class Game():
     #ShipID	GameID	FleetID	ShipName	SubFleetID	ActiveSensorsOn	AssignedMSID	Autofire	BoardingCombatClock	Constructed	CrewMorale	CurrentCrew	CurrentShieldStrength	DamageControlID	Destroyed	FireDelay	Fuel	GradePoints	HoldTechData	KillTonnageCommercial	KillTonnageMilitary	LastLaunchTime	LastOverhaul	LastShoreLeave	LaunchMorale	MaintenanceState	MothershipID	RaceID	RefuelPriority	RefuelStatus	ScrapFlag	SensorDelay	ShieldsActive	ShipClassID	ShipFuelEfficiency	ShipNotes	ShippingLineID	SpeciesID	SyncFire	TFPoints	TransponderActive	OrdnanceTransferStatus	HangarLoadType	ResupplyPriority	CurrentMaintSupplies	AutomatedDamageControl	TractorTargetShipID	TractorTargetShipyardID	TractorParentShipID	OverhaulFactor	BioEnergy	LastMissileHitTime	LastBeamHitTime	LastDamageTime	LastPenetratingDamageTime	AssignedFormationID	DistanceTravelled	HullNumber	ParentSquadronID	AssignedSquadronID	LastTransitTime	LastFiringTime	ResupplyStatus
     #47291	95	103154	Arthur C. Clarke 001	0	0	0	0	0	270864000.0	1.0	140	0.0	0	0	0	100000.0	1000.0	0	0	0	0.0	2203468200.0	2203468200.0	0.0	0	0	418	0	0	0	0	0	28338		None	0	382	0	0.0	0	0	0	0	127.0	1	0	0	0	1.0	0.0	0.0	0.0	0.0	0.0	0	41088548759.1404	1	0	0	1336014000.0	0.0	0
     
+  def GetSystemJumpPoints(self, systemID):
+    jp_table = [list(x) for x in self.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(self.gameID, systemID))]
+    JPs = {}
+    index = 1
+    for JP in jp_table:
+      JP_ID = JP[0]
+      JP_fromSystemID = JP[2]
+      JP_toWP = JP[5]
+      JP_explored = (0 if JP_toWP==0 else 1)
+      JP_Gate = (0 if JP[8]==0 else 1)
+      pos = (JP[6],JP[7])
+      bearing = JP[4]
+      JP_fromSystem = self.GetSystemName(JP_fromSystemID)
+      if (JP_explored):
+        JP_toSystemID = self.db.execute('''SELECT SystemID from FCT_JumpPoint WHERE GameID = %d AND WarpPointID = %d;'''%(self.gameID,JP_toWP)).fetchone()[0]
+        JP_toSystem = self.GetSystemName(JP_toSystemID)
+      else:
+        JP_toSystemID = -1
+        JP_toSystem = 'JP '+str(index)
+        index+=1
+      if (JP_fromSystem != 'Unknown'):
+        JPs[JP_ID] = {'Destination': JP_toSystem, 'DestID': JP_toSystemID, 
+                      'Explored':JP_explored, 'Gate':JP_Gate, 'Pos': pos, 'Bearing':bearing, 
+                      'CurrentSystem':JP_fromSystem,'CurrentSystemID':JP_fromSystemID}
+    return JPs
+
   def WorldPos2ScreenPos(self, world_pos):
     scaled_world_pos = Utils.MulTuples(world_pos,(Utils.AU_INV*self.systemScale))
 
