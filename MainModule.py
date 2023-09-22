@@ -22,12 +22,28 @@ class Game():
     self.deltaTime = 0
     self.homeSystemID = -1
     self.currentSystem = -1
-    self.showEmptyFleets = False
-    self.showStationaryFleets = False
-    self.showFleetTraces = True
-    self.systemScale = 100
     self.cameraCenter = (0,0)
     self.screenCenter = (self.width/2,self.height/2)
+    self.systemScale = 10
+
+    # Options
+    self.showEmptyFleets = False
+    self.showStationaryFleets = False
+    self.showUnsurveyedLocations = True
+    self.showSurveyedLocations = True
+    self.showFleetTraces = True
+    
+    # Colorscheme
+    self.color_JP = Utils.ORANGE
+    self.color_Jumpgate = Utils.ORANGE
+    self.color_SurveyedLoc = Utils.TEAL
+    self.color_UnsurveyedLoc = Utils.BLUE
+    self.color_Fleet = Utils.CYAN
+    self.color_Planet = Utils.GREEN
+    self.color_PlanetLabel = Utils.WHITE
+    self.color_Star = Utils.YELLOW
+    self.color_Star_Label = Utils.WHITE
+    self.color_Orbit = Utils.WHITE
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -63,8 +79,8 @@ class Game():
 
   def DrawSystem(self):
     systems = self.GetSystems()
-    self.currentSystem = 8497 # Alpha Centauri
-    self.currentSystem = 8499
+    #self.currentSystem = 8497 # Alpha Centauri
+    #self.currentSystem = 8499
     if self.currentSystem not in systems:
       return
     system = systems[self.currentSystem]
@@ -73,10 +89,12 @@ class Game():
     for starID in system['Stars']:
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
-      pygame.draw.circle(self.surface,Utils.YELLOW,screen_star_pos,5,Utils.FILLED)
-      Utils.DrawTextAtPos(self.surface,system['Name'],screen_star_pos,14,Utils.WHITE)
+      # draw star
+      pygame.draw.circle(self.surface,self.color_Star,screen_star_pos,5,Utils.FILLED)
+      Utils.DrawTextAtPos(self.surface,system['Name'],screen_star_pos,14,self.color_Star_Label)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
-      pygame.draw.circle(self.surface,Utils.WHITE,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
+      # draw orbit
+      pygame.draw.circle(self.surface,self.color_Orbit,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
     ##############################
 
 
@@ -95,6 +113,7 @@ class Game():
         screen_star_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
       else:
         screen_star_pos = self.WorldPos2ScreenPos((0,0))
+      # draw orbit
       if (E > 0):
         screen_body_pos = self.WorldPos2ScreenPos(body_pos)
         a *= (self.systemScale)
@@ -103,11 +122,12 @@ class Game():
         x_offset = c * math.cos(angle2*math.pi/180)
         y_offset = c * math.sin(angle2*math.pi/180)
         offsetPos = Utils.AddTuples(screen_star_pos, (x_offset,y_offset))
-        Utils.draw_ellipse_angle(self.surface,Utils.WHITE,(offsetPos,(2*a,2*b)),angle2,1)
+        Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),angle2,1)
       else:
-        pygame.draw.circle(self.surface,Utils.WHITE,screen_star_pos,d*self.systemScale,1)
-      pygame.draw.circle(self.surface,Utils.GREEN,screen_body_pos,5,Utils.FILLED)
-      Utils.DrawTextAtPos(self.surface,name,screen_body_pos,14,Utils.WHITE)
+        pygame.draw.circle(self.surface,self.color_Orbit,screen_star_pos,d*self.systemScale,1)
+      # draw planet
+      pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,5,Utils.FILLED)
+      Utils.DrawTextAtPos(self.surface,name,screen_body_pos,14,self.color_PlanetLabel)
     ##############################
 
     # draw Jump Points
@@ -115,13 +135,28 @@ class Game():
     for JP_ID in JumpPoints:
       JP = JumpPoints[JP_ID]
       screen_pos = self.WorldPos2ScreenPos(JP['Pos'])
-      pygame.draw.circle(self.surface,Utils.ORANGE,screen_pos,5,2)
+      pygame.draw.circle(self.surface,self.color_JP,screen_pos,5,2)
       screen_pos_label = Utils.AddTuples(screen_pos,10)
-      Utils.DrawTextAtPos(self.surface,JP['Destination'],screen_pos_label,14,Utils.ORANGE)
+      Utils.DrawTextAtPos(self.surface,JP['Destination'],screen_pos_label,14,self.color_JP)
       if (JP['Gate']):
         gate_pos = Utils.SubTuples(screen_pos,7)
-        pygame.draw.rect(self.surface, Utils.ORANGE, (gate_pos,(14,14)),1)
+        pygame.draw.rect(self.surface, self.color_Jumpgate, (gate_pos,(14,14)),1)
     ##############################
+
+    # Draw Survey locations
+    surveyLocations = self.GetSurveyLocations(self.currentSystem)
+    for id in surveyLocations:
+      SL = surveyLocations[id]
+      screen_pos = self.WorldPos2ScreenPos(SL['Pos'])
+      screen_pos_label = Utils.AddTuples(screen_pos,(0,10))
+      if (SL['Surveyed']):
+        if (self.showSurveyedLocations):
+          pygame.draw.circle(self.surface,self.color_SurveyedLoc,screen_pos,5,1)
+          Utils.DrawTextAtPos(self.surface,str(SL['Number']),screen_pos_label,14,self.color_SurveyedLoc)
+      else:
+        if (self.showUnsurveyedLocations):
+          pygame.draw.circle(self.surface,self.color_UnsurveyedLoc,screen_pos,5,1)
+          Utils.DrawTextAtPos(self.surface,str(SL['Number']),screen_pos_label,14,self.color_UnsurveyedLoc)
 
     # Draw fleets
     fleets = self.GetFleets()
@@ -130,18 +165,14 @@ class Game():
         fleet = fleets[self.currentSystem][fleetID]
         if (fleet['Ships'] != [] or self.showEmptyFleets):
           if (fleet['Speed'] > 1 or self.showStationaryFleets):
-
             pos = (pos_x,pos_y) = (self.width/2+fleet['Position'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position'][1]*Utils.AU_INV*self.systemScale)
-
             if (self.showFleetTraces):
               prev_pos = (self.width/2+fleet['Position_prev'][0]*Utils.AU_INV*self.systemScale, self.height/2+fleet['Position_prev'][1]*Utils.AU_INV*self.systemScale)
-              pygame.draw.line(self.surface, Utils.CYAN, prev_pos, pos,1)
-
-            Utils.DrawTriangle(self.surface,pos ,Utils.CYAN, fleet['Heading'])
+              pygame.draw.line(self.surface, self.color_Fleet, prev_pos, pos,1)
+            Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
           
-            #pygame.draw.circle(self.surface,Utils.CYAN,(pos_x,pos_y),5,Utils.FILLED)
-            #Utils.DrawTextAt(self.surface,name,pos_x,pos_y,pygame.freetype.SysFont('courier', 16,bold=False),Utils.RED)
-            Utils.DrawTextAt2(self.surface,fleet['Name'],pos_x+10,pos_y-6,12,Utils.CYAN)
+            #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
+            Utils.DrawTextAt2(self.surface,fleet['Name'],pos_x+10,pos_y-6,12,self.color_Fleet)
     ##############################
 
   def DrawMiniMap(self):
@@ -262,6 +293,40 @@ class Game():
                       'Explored':JP_explored, 'Gate':JP_Gate, 'Pos': pos, 'Bearing':bearing, 
                       'CurrentSystem':JP_fromSystem,'CurrentSystemID':JP_fromSystemID}
     return JPs
+
+  def GetSurveyLocations(self, systemID):
+    surveyLocations = {}
+    # FCT_RaceSurveyLocation - holds all surveyed surveylocations
+    # # RaceID	GameID	SystemID	LocationNumber
+    #   418	    95	    8496	      15
+    mySurveyedLocationsTable = [list(x) for x in self.db.execute('''SELECT LocationNumber from FCT_RaceSurveyLocation WHERE GameID = %d AND SystemID = %d AND RaceID = %d;'''%(self.gameID, systemID, self.myRaceID))]
+    mySurveyedLocations = []
+    for N in mySurveyedLocationsTable:
+      mySurveyedLocations.append(N[0])
+
+    # todo: check for single line returns
+    surveyLocationTable = [list(x) for x in self.db.execute('''SELECT * from FCT_SurveyLocation WHERE GameID = %d AND SystemID = %d;'''%(self.gameID, systemID))]
+    # FCT_SurveyLocation - holds all locations with their coordinates
+    # SurveyLocationID	GameID	SystemID	LocationNumber	          Xcor             	Ycor
+    #   244231           	90	   8144	        1	           -3.67381906146713e-07	-2000000000.0
+    for location in surveyLocationTable:
+      id = location[0]
+      nr = location[3]
+      pos = (location[4],location[5])
+      surveyed = True if nr in mySurveyedLocations else False
+      surveyLocations[id] = {'Number':nr, 'Pos':pos, 'Surveyed':surveyed}
+
+    return surveyLocations
+
+    # FCT_RaceSurveyLocation - holds all surveyed surveylocations
+    # RaceID	GameID	SystemID	LocationNumber
+    #   418	    95	    8496	      15
+
+    # FCT_RaceJumpPointSurvey - holds all Jumppoints weather discovered (charted) and explored or not
+    # GameID	RaceID	WarpPointID	Explored	Charted	AlienUnits	Hide	MilitaryRestricted	IgnoreForDistance
+    # 95      	418      	23417	0	0	0	0	0	0
+    # 95      	418      	23418	1	1	0	0	0	0
+
 
   def WorldPos2ScreenPos(self, world_pos):
     scaled_world_pos = Utils.MulTuples(world_pos,(Utils.AU_INV*self.systemScale))
