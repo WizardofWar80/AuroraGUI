@@ -39,15 +39,28 @@ def DrawTextAt(window, text, x, y, fonttype, fg):
 #  textRect.center = (x, y)
 #  surface.blit(rendered_text, textRect)
 
-def DrawTextAt2(window, text, x, y, textsize, textcolor):
-  DrawTextAtPos(window, text, (x,y), textsize, textcolor)
-
-def DrawTextAtPos(window, text, pos, textsize, textcolor):
+def DrawText2Surface(window, text, pos, textsize, textcolor, transparent = True):
   if (pos[0] > 0 and pos[1] > 0 and pos[0] < window.get_rect()[2] and pos[1] < window.get_rect()[3]):
     font = pygame.font.SysFont("Times New Roman", textsize)
     label = font.render(text, 0, textcolor)
-    label.set_alpha(255)
-    window.blit(label, pos)
+    if (transparent):
+      label.set_alpha(255)
+      window.blit(label, pos)
+    else:
+      sf = pygame.Surface(label.get_rect().size)
+      sf.fill(BLACK)
+      sf.blit(label, (0,0))
+      window.blit(sf,pos)
+
+def DrawText2Screen(screen, text, pos, textsize, textcolor, transparent = True):
+  if (pos[0] > 0 and pos[1] > 0 and pos[0] < screen.get_rect()[2] and pos[1] < screen.get_rect()[3]):
+    font = pygame.font.SysFont("Times New Roman", textsize)
+    label = font.render(text, 0, textcolor)
+    sf = pygame.Surface(label.get_rect().size)
+    if (not transparent):
+      sf.fill(BLACK)
+    sf.blit(label, (0,0))
+    screen.blit(sf,pos)
 
 def DrawTextCenteredAt(window, text, x, y, fonttype, fg):
   if (x > 0 and y > 0 and x < window.get_rect()[2] and y < window.get_rect()[3]):
@@ -136,7 +149,6 @@ def DivTuples(t1,t2):
       return ((t1/t2[0]),(t1/t2[1]))
     else:
       return ((t1/t2),(t1/t2))
-
 
 def MyDrawEllipse(surface, x_c,y_c, a, b, beta=0):
   N = 60

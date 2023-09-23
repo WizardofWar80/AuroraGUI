@@ -8,7 +8,6 @@ class Game():
   def __init__(self, size = (1800,1000), name = 'AuroraGUI'):
     self.logger = lg.Logger(logfile= 'logMain.txt', module='MainModule.py', log_level = 1)
     self.name = name
-    self.bg_color = Utils.BLACK
     self.width = size[0]
     self.height = size[1]
     pygame.display.set_caption(name)
@@ -39,8 +38,10 @@ class Game():
     self.timestampLastSecond = pygame.time.get_ticks()
     self.timestampLast = pygame.time.get_ticks()
     self.FPS = 0
+    self.reDraw = True;
 
     # Options
+    self.bg_color = Utils.BLACK
     self.showEmptyFleets = False
     self.showStationaryFleets = False
     self.showUnsurveyedLocations = True
@@ -79,29 +80,23 @@ class Game():
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
 
-      self.starSystems = self.GetSystems()
-      self.currentSystemJumpPoints = self.GetSystemJumpPoints()
-      self.surveyLocations = self.GetSurveyLocations(self.currentSystem)
-      self.fleets = self.GetFleets()
-      self.systemBodies = self.GetSystemBodies()
-
+      self.GetNewData()
 
   def Draw(self):
     # clear screen
-    self.surface.fill(self.bg_color)
+    if (self.reDraw):
+      self.surface.fill(self.bg_color)
 
-    # draw mouse position and scale
-    Utils.DrawTextAtPos(self.surface,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE)
-    Utils.DrawTextAtPos(self.surface,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE)
-    
-    self.DrawSystem()
+      self.DrawSystem()
 
-    self.DrawMiniMap()
+      self.DrawMiniMap()
 
-    self.DrawInfoWindow()
+      self.DrawInfoWindow()
 
-    self.DrawGUI()
-    
+      self.DrawGUI()
+
+      self.screen.blit(self.surface,(0,0))
+
     self.counter_FPS += 1
 
     currentTimestamp = pygame.time.get_ticks()
@@ -111,12 +106,13 @@ class Game():
       self.FPS = self.counter_FPS 
       self.counter_FPS = 0
       self.timestampLastSecond = currentTimestamp
-      print(self.FPS)
-    
-    Utils.DrawTextAtPos(self.surface,'%d FPS'%(self.FPS),(5,50),18,Utils.WHITE)
-    
-    self.screen.blit(self.surface,(0,0))
+    Utils.DrawText2Screen(self.screen,'%d FPS'%(self.FPS),(5,50),18,Utils.WHITE, False)
+    # draw mouse position and scale
+    Utils.DrawText2Screen(self.screen,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE, False)
+    Utils.DrawText2Screen(self.screen,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE, False)
+
     pygame.display.update()
+    self.reDraw = False
     
     return
 
@@ -139,7 +135,7 @@ class Game():
     self.DrawSystemFleets()
     t2 = pygame.time.get_ticks()
     dt4 = t2-t1
-    print(dt1, dt2, dt3, dt4)
+    #print(dt1, dt2, dt3, dt4)
 
 
   def DrawSystemBodies(self):
@@ -157,7 +153,7 @@ class Game():
       if (radius < self.minPixelSize_Star):
         radius = self.minPixelSize_Star
       pygame.draw.circle(self.surface,self.color_Star,screen_star_pos,radius,Utils.FILLED)
-      Utils.DrawTextAtPos(self.surface,system['Name'],screen_star_pos,14,self.color_Star_Label)
+      Utils.DrawText2Surface(self.surface,system['Name'],screen_star_pos,14,self.color_Star_Label)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       # draw orbit
       if (self.showOrbits_Stars):
@@ -194,7 +190,8 @@ class Game():
           pygame.draw.circle(self.surface,self.color_Orbit,screen_star_pos,body['Orbit']*self.systemScale,1)
       # draw planet
       pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,radius_on_screen,Utils.FILLED)
-      Utils.DrawTextAtPos(self.surface,body['Name'],screen_body_pos,14,self.color_PlanetLabel)
+      Utils.DrawText2Surface(self.surface,body['Name'],screen_body_pos,14,self.color_PlanetLabel)
+
 
   def DrawSystemJumpPoints(self):
     for JP_ID in self.currentSystemJumpPoints:
@@ -202,10 +199,11 @@ class Game():
       screen_pos = self.WorldPos2ScreenPos(JP['Pos'])
       pygame.draw.circle(self.surface,self.color_JP,screen_pos,5,2)
       screen_pos_label = Utils.AddTuples(screen_pos,10)
-      Utils.DrawTextAtPos(self.surface,JP['Destination'],screen_pos_label,14,self.color_JP)
+      Utils.DrawText2Surface(self.surface,JP['Destination'],screen_pos_label,14,self.color_JP)
       if (JP['Gate']):
         gate_pos = Utils.SubTuples(screen_pos,7)
         pygame.draw.rect(self.surface, self.color_Jumpgate, (gate_pos,(14,14)),1)
+
 
   def DrawSurveyLocations(self):
     for id in self.surveyLocations:
@@ -215,12 +213,13 @@ class Game():
       if (SL['Surveyed']):
         if (self.showSurveyedLocations):
           pygame.draw.circle(self.surface,self.color_SurveyedLoc,screen_pos,5,1)
-          Utils.DrawTextAtPos(self.surface,str(SL['Number']),screen_pos_label,14,self.color_SurveyedLoc)
+          Utils.DrawText2Surface(self.surface,str(SL['Number']),screen_pos_label,14,self.color_SurveyedLoc)
       else:
         if (self.showUnsurveyedLocations):
           pygame.draw.circle(self.surface,self.color_UnsurveyedLoc,screen_pos,5,1)
-          Utils.DrawTextAtPos(self.surface,str(SL['Number']),screen_pos_label,14,self.color_UnsurveyedLoc)
+          Utils.DrawText2Surface(self.surface,str(SL['Number']),screen_pos_label,14,self.color_UnsurveyedLoc)
  
+
   def DrawSystemFleets(self):
     if (self.currentSystem in self.fleets):
       for fleetID in self.fleets[self.currentSystem]:
@@ -234,21 +233,26 @@ class Game():
             Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
           
             #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
-            Utils.DrawTextAt2(self.surface,fleet['Name'],pos[0]+10,pos[1]-6,12,self.color_Fleet)
+            Utils.DrawText2Surface(self.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,self.color_Fleet)
+
 
   def DrawMiniMap(self):
     pass
 
+
   def DrawInfoWindow(self):
     pass
 
+
   def DrawGUI(self):
     pass
+
 
   def GetHomeSystemID(self):
     system_number = self.db.execute('''SELECT systemId from FCT_System WHERE GameID = %d AND SystemNumber = 0;'''%(self.gameID)).fetchone()[0]
         
     return system_number
+
 
   def GetSystemName(self, systemID):
     system_number = self.db.execute('''SELECT SystemNumber from FCT_System WHERE GameID = %d AND systemId = %d;'''%(self.gameID,systemID)).fetchone()[0]
@@ -257,6 +261,7 @@ class Game():
     else:
         system_name = 'Unknown'
     return system_name
+
 
   def GetSystems(self):
     systems = {}
@@ -289,6 +294,7 @@ class Game():
         systems[systemID] = system
     return systems
 
+
   def GetSystemBodies(self):
     systemBodies = {}
     body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection from FCT_SystemBody WHERE GameID = %d AND SystemID = %d AND BodyClass = 1;'''%(self.gameID,self.currentSystem))]
@@ -303,6 +309,7 @@ class Game():
       systemBodies[body[0]]={'Name':body[1], 'Orbit':body[2], 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
                             'Eccentricity':body[8],'EccentricityAngle':body[9], 'Pos':(body[6], body[7])}
     return systemBodies
+
 
   def GetFleets(self):
     fleets = {}
@@ -367,7 +374,16 @@ class Game():
                       'CurrentSystem':JP_fromSystem,'CurrentSystemID':JP_fromSystemID}
     return JPs
 
+
   def GetSurveyLocations(self, systemID):
+    # FCT_RaceSurveyLocation - holds all surveyed surveylocations
+    # RaceID	GameID	SystemID	LocationNumber
+    #   418	    95	    8496	      15
+
+    # FCT_RaceJumpPointSurvey - holds all Jumppoints weather discovered (charted) and explored or not
+    # GameID	RaceID	WarpPointID	Explored	Charted	AlienUnits	Hide	MilitaryRestricted	IgnoreForDistance
+    # 95      	418      	23417	0	0	0	0	0	0
+    # 95      	418      	23418	1	1	0	0	0	0
     surveyLocations = {}
     # FCT_RaceSurveyLocation - holds all surveyed surveylocations
     # # RaceID	GameID	SystemID	LocationNumber
@@ -391,14 +407,13 @@ class Game():
 
     return surveyLocations
 
-    # FCT_RaceSurveyLocation - holds all surveyed surveylocations
-    # RaceID	GameID	SystemID	LocationNumber
-    #   418	    95	    8496	      15
 
-    # FCT_RaceJumpPointSurvey - holds all Jumppoints weather discovered (charted) and explored or not
-    # GameID	RaceID	WarpPointID	Explored	Charted	AlienUnits	Hide	MilitaryRestricted	IgnoreForDistance
-    # 95      	418      	23417	0	0	0	0	0	0
-    # 95      	418      	23418	1	1	0	0	0	0
+  def GetNewData(self):
+    self.starSystems = self.GetSystems()
+    self.currentSystemJumpPoints = self.GetSystemJumpPoints()
+    self.surveyLocations = self.GetSurveyLocations(self.currentSystem)
+    self.fleets = self.GetFleets()
+    self.systemBodies = self.GetSystemBodies()
 
 
   def WorldPos2ScreenPos(self, world_pos):

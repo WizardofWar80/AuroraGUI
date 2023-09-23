@@ -68,6 +68,8 @@ class Events:
           game.screenCenter = game.cameraCenter
         else:
           game.systemScale = game.systemScaleStart
+        game.reDraw = True
+
 
   def HandleMouseDownEvents(self, event,game):
     current_time = self.GetTimeinSeconds()
@@ -97,6 +99,7 @@ class Events:
       print('unhandled event for mouse button 2')
       print(event)
       logger.write('Unhandled Button %d down'%event.button)
+
 
   def HandleMouseUpEvents(self, event):
     current_time = self.GetTimeinSeconds()
@@ -130,6 +133,7 @@ class Events:
     #print(event.touch)
     pass
 
+
   def HandleMouseMotionEvents(self, event, game):
     #print(event.pos)
     #print(event.buttons)
@@ -140,6 +144,8 @@ class Events:
         mousePosDelta2 = Utils.SubTuples(game.mousePos, self.LeftMousePressPosition)
         game.mouseDragged = mousePosDelta2
         game.screenCenter = Utils.AddTuples(game.screenCenterBeforeDrag, mousePosDelta2)
+        game.reDraw = True
+
 
   def HandleSingleClickEvents(self):
     clicked_clickable = -1
@@ -186,10 +192,11 @@ class Events:
         delta = Utils.SubTuples(game.screenCenter, game.cameraCenter)
         #zoomed_delta = Utils.MulTuples(delta, 2)
         game.screenCenter=Utils.AddTuples(game.screenCenter, delta)
-
+        game.reDraw = True
     else:
       if (game.systemScale > 0.1):
         game.systemScale /= 2
         delta = Utils.SubTuples(game.screenCenter, game.cameraCenter)
         zoomed_delta = Utils.DivTuples(delta, 2)
         game.screenCenter=Utils.SubTuples(game.screenCenter, zoomed_delta)
+        game.reDraw = True
