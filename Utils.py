@@ -136,3 +136,25 @@ def DivTuples(t1,t2):
       return ((t1/t2[0]),(t1/t2[1]))
     else:
       return ((t1/t2),(t1/t2))
+
+
+def MyDrawEllipse(surface, x_c,y_c, a, b, beta=0):
+  N = 60
+  cos_beta = math.cos(-beta)
+  sin_beta = math.sin(-beta)
+  x = y = 0
+  points = []
+  for i in range(N):
+    i_N = i/N*2*math.pi
+    if (beta == 0):
+      x = a * math.sin(i_N)
+      y = b * math.cos(i_N)
+    else:
+      a_cos_alpha = a * math.cos(i_N)
+      b_sin_alpha = b * math.sin(i_N)
+      x = a_cos_alpha * cos_beta - b_sin_alpha * sin_beta
+      y = a_cos_alpha * sin_beta + b_sin_alpha * cos_beta
+    points.append((x_c+x,y_c-y))
+
+  pygame.draw.polygon(surface,RED, points, 1)
+

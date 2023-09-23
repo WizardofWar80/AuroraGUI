@@ -185,7 +185,11 @@ class Game():
           x_offset = c * math.cos(body['EccentricityAngle']*math.pi/180)
           y_offset = c * math.sin(body['EccentricityAngle']*math.pi/180)
           offsetPos = Utils.AddTuples(screen_star_pos, (x_offset,y_offset))
-          Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+          #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+          # 13 FPS
+          #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+          # 19 FPS @360 segments, 30 FPS at 60 segments
+          Utils.MyDrawEllipse(self.surface, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'])
         else:
           pygame.draw.circle(self.surface,self.color_Orbit,screen_star_pos,body['Orbit']*self.systemScale,1)
       # draw planet
