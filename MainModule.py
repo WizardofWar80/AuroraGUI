@@ -48,7 +48,23 @@ class Game():
     self.showSurveyedLocations = False
     self.showFleetTraces = True
     self.showOrbits_Planets = True
+    self.showOrbits_DwarfPlanets = True
+    self.showOrbits_Moons = True
+    self.showOrbits_Comets = True
+    self.showOrbits_Asteroids = False
     self.showOrbits_Stars = True
+    self.showPlanets = True
+    self.showMoons = True
+    self.showDwarfPlanets = True
+    self.showComets = True
+    self.showAsteroids = False
+    self.showLabels_Planets = True
+    self.showLabels_DwarfPlanets = True
+    self.showLabels_Moons = True
+    self.showLabels_Comets = True
+    self.showLabels_Asteroids = False
+    self.showLabels_Stars = True
+    self.minDist4Labels = 100
     
     # Colorscheme
     self.color_JP = Utils.ORANGE
@@ -56,11 +72,25 @@ class Game():
     self.color_SurveyedLoc = Utils.TEAL
     self.color_UnsurveyedLoc = Utils.BLUE
     self.color_Fleet = Utils.CYAN
-    self.color_Planet = Utils.GREEN
-    self.color_PlanetLabel = Utils.WHITE
+
     self.color_Star = Utils.YELLOW
-    self.color_Star_Label = Utils.WHITE
-    self.color_Orbit = Utils.WHITE
+    self.color_Label_Star = Utils.WHITE
+    self.color_Orbit_Star = Utils.WHITE
+    self.color_Planet = Utils.GREEN
+    self.color_Label_Planet = Utils.WHITE
+    self.color_Orbit_Planet = Utils.WHITE
+    self.color_DwarfPlanet = Utils.GREEN
+    self.color_Label_DwarfPlanet = Utils.WHITE
+    self.color_Orbit_DwarfPlanet = Utils.WHITE
+    self.color_Moon = Utils.GREEN
+    self.color_Label_Moon = Utils.WHITE
+    self.color_Orbit_Moon = Utils.WHITE
+    self.color_Asteroid = Utils.GREEN
+    self.color_Label_Asteroid = Utils.WHITE
+    self.color_Orbit_Asteroid = Utils.WHITE
+    self.color_Comet = Utils.GREEN
+    self.color_Label_Comet = Utils.WHITE
+    self.color_Orbit_Comet = Utils.WHITE
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -153,44 +183,57 @@ class Game():
       if (radius < self.minPixelSize_Star):
         radius = self.minPixelSize_Star
       pygame.draw.circle(self.surface,self.color_Star,screen_star_pos,radius,Utils.FILLED)
-      Utils.DrawText2Surface(self.surface,system['Name'],screen_star_pos,14,self.color_Star_Label)
+      Utils.DrawText2Surface(self.surface,system['Name'],screen_star_pos,14,self.color_Label_Star)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       # draw orbit
       if (self.showOrbits_Stars):
-        pygame.draw.circle(self.surface,self.color_Orbit,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
+        pygame.draw.circle(self.surface,self.color_Orbit_Star,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
     
     for bodyID in self.systemBodies:
       body = self.systemBodies[bodyID]
-      E = body['Eccentricity']
-      parentID = body['ParentID']
-      radius_on_screen = (Utils.AU_INV*self.systemScale)*body['RadiusBody']
-      if (radius_on_screen < self.minPixelSize_Planet):
-        radius_on_screen = self.minPixelSize_Planet
+      print(body['ID'],body['Name'])
 
-      if parentID in system['Stars']:
-        screen_star_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
-      else:
-        screen_star_pos = self.WorldPos2ScreenPos((0,0))
-      screen_body_pos = self.WorldPos2ScreenPos(body['Pos'])
-      if (self.showOrbits_Planets):
-        # draw orbit
-        if (E > 0):
-          a = body['Orbit'] * self.systemScale
-          b = a * math.sqrt(1-E*E)
-          c = E * a
-          x_offset = c * math.cos(body['EccentricityAngle']*math.pi/180)
-          y_offset = c * math.sin(body['EccentricityAngle']*math.pi/180)
-          offsetPos = Utils.AddTuples(screen_star_pos, (x_offset,y_offset))
-          #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-          # 13 FPS
-          #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-          # 19 FPS @360 segments, 30 FPS at 60 segments
-          Utils.MyDrawEllipse(self.surface, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'])
-        else:
-          pygame.draw.circle(self.surface,self.color_Orbit,screen_star_pos,body['Orbit']*self.systemScale,1)
-      # draw planet
-      pygame.draw.circle(self.surface,self.color_Planet,screen_body_pos,radius_on_screen,Utils.FILLED)
-      Utils.DrawText2Surface(self.surface,body['Name'],screen_body_pos,14,self.color_PlanetLabel)
+      draw_cond, draw_color_body, body_min_size = self.GetDrawConditions('Body', body['Class'], body['Type'])
+      if (draw_cond):
+        screen_body_pos = self.WorldPos2ScreenPos(body['Pos'])
+        radius_on_screen = Utils.AU_INV * self.systemScale * body['RadiusBody']
+        if (radius_on_screen < body_min_size):
+          radius_on_screen = body_min_size
+
+        if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < self.width+50 and screen_body_pos[1] < self.height+50 ):
+          draw_cond, draw_color_orbit, void = self.GetDrawConditions('Orbit', body['Class'], body['Type'])
+
+          if (draw_cond):
+            E = body['Eccentricity']
+            parentID = body['ParentID']
+
+            if parentID in system['Stars']:
+              screen_star_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
+            else:
+              screen_star_pos = self.WorldPos2ScreenPos((0,0))
+            # draw orbit
+            if (E > 0):
+              a = body['Orbit'] * self.systemScale
+              b = a * math.sqrt(1-E*E)
+              c = E * a
+              x_offset = c * math.cos(body['EccentricityAngle']*math.pi/180)
+              y_offset = c * math.sin(body['EccentricityAngle']*math.pi/180)
+              offsetPos = Utils.AddTuples(screen_star_pos, (x_offset,y_offset))
+              #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+              # 13 FPS
+              #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+              # 19 FPS @360 segments, 30 FPS at 60 segments
+              Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'])
+            else:
+              if (body['Orbit']*self.systemScale < 50000):
+                pygame.draw.circle(self.surface,draw_color_orbit,screen_star_pos,body['Orbit']*self.systemScale,1)
+          # draw body
+          pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
+
+          # Check if we want to draw the label
+          draw_cond, draw_color_label, min_dist = self.GetDrawConditions('Label', body['Class'], body['Type'])
+          if (draw_cond) and (body['Orbit']*self.systemScale > min_dist):
+            Utils.DrawText2Surface(self.surface,body['Name'],screen_body_pos,14,draw_color_label)
 
 
   def DrawSystemJumpPoints(self):
@@ -297,8 +340,9 @@ class Game():
 
   def GetSystemBodies(self):
     systemBodies = {}
-    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection from FCT_SystemBody WHERE GameID = %d AND SystemID = %d AND BodyClass = 1;'''%(self.gameID,self.currentSystem))]
+    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
     for body in body_table:
+      orbit = body[2] 
       a = body[2]
       r = body[4]
       d = body[2]
@@ -306,9 +350,83 @@ class Game():
       body_pos = (body[6], body[7])
       angle2 = body[9]
       E = body[8]
-      systemBodies[body[0]]={'Name':body[1], 'Orbit':body[2], 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
+      bodyType = '?'
+      bodyClass = '?'
+      if (body[11] in Utils.BodyTypes):
+        bodyType = Utils.BodyTypes[body[11]]
+      if (body[10] in Utils.BodyClasses):
+        bodyClass = Utils.BodyClasses[body[10]]
+      if (bodyClass == 'Moon'):
+        orbit = orbit * Utils.AU_INV
+
+      systemBodies[body[0]]={'ID':body[0],'Name':body[1], 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
                             'Eccentricity':body[8],'EccentricityAngle':body[9], 'Pos':(body[6], body[7])}
     return systemBodies
+
+
+  def GetDrawConditions(self, thing2Draw, bodyClass, bodyType):
+    draw = False
+    color = (0,0,0)
+    min_value = 5
+    if (thing2Draw == 'Body'):
+      if (bodyClass == 'Moon' and self.showMoons):
+        draw = True
+        color = self.color_Moon
+        min_value = self.minPixelSize_Moon
+      elif (bodyClass  == 'Comets' and self.showComets):
+        draw = True
+        color = self.color_Comet
+        min_value = self.minPixelSize_Small
+      elif (bodyClass  == 'Asteroid' and self.showAsteroids):
+        draw = True
+        color = self.color_Asteroid
+        min_value = self.minPixelSize_Small
+      elif (bodyType == 'Planet Small' and self.showDwarfPlanets):
+        draw = True
+        color = self.color_DwarfPlanet
+        min_value = self.minPixelSize_Planet
+      elif (bodyClass == 'Planet' and self.showPlanets and bodyType != 'Planet Small' ):
+        draw = True
+        color = self.color_Planet
+        min_value = self.minPixelSize_Planet
+    elif (thing2Draw == 'Orbit'):
+      if (bodyClass == 'Moon' and self.showOrbits_Moons):
+        draw = True
+        color = self.color_Orbit_Moon
+      elif (bodyClass  == 'Comets' and self.showOrbits_Comets):
+        draw = True
+        color = self.color_Orbit_Comet
+      elif (bodyClass  == 'Asteroid' and self.showOrbits_Asteroids):
+        draw = True
+        color = self.color_Orbit_Asteroid
+      elif (bodyType == 'Planet Small' and self.showOrbits_DwarfPlanets):
+        draw = True
+        color = self.color_Orbit_DwarfPlanet
+      elif (bodyClass == 'Planet' and self.showOrbits_Planets and bodyType != 'Planet Small' ):
+        draw = True
+        color = self.color_Orbit_Planet
+    elif (thing2Draw == 'Label'):
+      if (bodyClass == 'Moon' and self.showLabels_Moons):
+        draw = True
+        color = self.color_Label_Moon
+        min_value = 50
+      elif (bodyClass  == 'Comets' and self.showLabels_Comets):
+        draw = True
+        color = self.color_Label_Comet
+        min_value = 200
+      elif (bodyClass  == 'Asteroid' and self.showLabels_Asteroids):
+        draw = True
+        color = self.color_Label_Asteroid
+        min_value = 200
+      elif (bodyType == 'Planet Small' and self.showLabels_DwarfPlanets):
+        draw = True
+        color = self.color_Label_DwarfPlanet
+        min_value = 5
+      elif (bodyClass == 'Planet' and self.showLabels_Planets and bodyType != 'Planet Small' ):
+        draw = True
+        color = self.color_Label_Planet
+        min_value = 5
+    return draw, color, min_value
 
 
   def GetFleets(self):

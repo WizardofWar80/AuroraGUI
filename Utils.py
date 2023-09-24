@@ -21,6 +21,26 @@ PURPLE = (128, 0, 128)
 GREENSCREEN = (255, 0, 255)
 BLUE = (0, 0, 255)
 
+BodyClasses = {  1:'Planet'
+               , 2:'Moon'
+               , 3:'Asteroid'
+               , 4:'???'
+               , 5:'Comet'}
+
+BodyTypes = {    1:'Asteroid' 
+               , 2:'Planet Terrestrial'
+               , 3:'Planet Small'
+               , 4:'Planet Gas Giant'
+               , 5:'Planet Super Jovian'
+               , 6:'???'
+               , 7:'Moon Small'
+               , 8:'Moon'
+               , 9:'Moon Large'
+               , 10:'Moon Small Terrestrial'
+               , 11:'Moon Terrestrial'
+               , 12:'??? Moon Large Terrestrial'
+               , 13:'???'
+               , 14:'Comet' }
 FILLED = 0
 AU = 150000000
 AU_INV = 6.587E-9
@@ -150,7 +170,7 @@ def DivTuples(t1,t2):
     else:
       return ((t1/t2),(t1/t2))
 
-def MyDrawEllipse(surface, x_c,y_c, a, b, beta=0):
+def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0):
   N = 60
   cos_beta = math.cos(-beta)
   sin_beta = math.sin(-beta)
@@ -168,5 +188,5 @@ def MyDrawEllipse(surface, x_c,y_c, a, b, beta=0):
       y = a_cos_alpha * sin_beta + b_sin_alpha * cos_beta
     points.append((x_c+x,y_c-y))
 
-  pygame.draw.polygon(surface,RED, points, 1)
+  pygame.draw.polygon(surface,color, points, 1)
 
