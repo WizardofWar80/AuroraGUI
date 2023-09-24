@@ -109,7 +109,9 @@ class Game():
       self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
-
+      self.currentSystem = 8497 # Alpha Centauri
+      #self.currentSystem = 8499
+      self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
 
   def Draw(self):
@@ -146,6 +148,7 @@ class Game():
     
     return
 
+
   def DrawSystem(self):
     #self.currentSystem = 8497 # Alpha Centauri
     #self.currentSystem = 8499
@@ -165,7 +168,6 @@ class Game():
     self.DrawSystemFleets()
     t2 = pygame.time.get_ticks()
     dt4 = t2-t1
-    #print(dt1, dt2, dt3, dt4)
 
 
   def DrawSystemBodies(self):
@@ -173,25 +175,28 @@ class Game():
       return
     system = self.starSystems[self.currentSystem]
 
-    #Draw system bodies
+    # Draw Stars
     for starID in system['Stars']:
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
       # draw star
-      r = 1
+      r = star['Radius']
       radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
+      star_color = self.stellarTypes[star['StellarTypeID']]['RGB']
       if (radius < self.minPixelSize_Star):
         radius = self.minPixelSize_Star
-      pygame.draw.circle(self.surface,self.color_Star,screen_star_pos,radius,Utils.FILLED)
-      Utils.DrawText2Surface(self.surface,system['Name'],screen_star_pos,14,self.color_Label_Star)
+      pygame.draw.circle(self.surface,star_color,screen_star_pos,radius,Utils.FILLED)
+      labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
+      Utils.DrawText2Surface(self.surface,system['Name'],labelPos,14,self.color_Label_Star)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       # draw orbit
       if (self.showOrbits_Stars):
         pygame.draw.circle(self.surface,self.color_Orbit_Star,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
     
+    # Draw other bodies
     for bodyID in self.systemBodies:
       body = self.systemBodies[bodyID]
-      print(body['ID'],body['Name'])
+      #print(body['ID'],body['Name'])
 
       draw_cond, draw_color_body, body_min_size = self.GetDrawConditions('Body', body['Class'], body['Type'])
       if (draw_cond):
@@ -324,6 +329,8 @@ class Game():
           ID = star[0]
           stars[ID] = {}
           stars[ID]['Component'] = star[8]
+          stars[ID]['StellarTypeID']=star[3]
+          stars[ID]['Radius']=self.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
           component2ID[star[8]] = ID
           stars[ID]['Parent'] = parentComponent = star[9]
           if (stars[ID]['Parent'] == 0):
@@ -333,9 +340,30 @@ class Game():
           stars[ID]['Bearing'] = star[10]
           stars[ID]['OrbitDistance'] = star[13]
           stars[ID]['Pos'] = (star[6],star[7])
+
         system['Stars'] = stars
         systems[systemID] = system
     return systems
+
+  def GetStellarTypes(self):
+    stellarTypes = {}
+
+    results = self.db.execute('''SELECT StellarTypeID, SpectralClass, SpectralNumber, SizeText, SizeID, Mass, Temperature, Radius, Red, Green, Blue from DIM_StellarType;''').fetchall()
+    
+    for stellarType in results:
+      #stellarType = results[stellarTypeID]
+      stellarTypeID = stellarType[0]
+      stellarTypes[stellarTypeID] = { 'SpectralClass':stellarType[1]
+                                     ,'SpectralNumber':stellarType[2]
+                                     ,'SizeText':stellarType[3]
+                                     ,'SizeID':stellarType[4]
+                                     ,'Mass':stellarType[5]
+                                     ,'Temperature':stellarType[6]
+                                     ,'Radius':stellarType[7]
+                                     ,'RGB':(stellarType[8],stellarType[9],stellarType[10])
+                                    }
+        
+    return stellarTypes
 
 
   def GetSystemBodies(self):

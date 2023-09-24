@@ -59,7 +59,7 @@ def DrawTextAt(window, text, x, y, fonttype, fg):
 #  textRect.center = (x, y)
 #  surface.blit(rendered_text, textRect)
 
-def DrawText2Surface(window, text, pos, textsize, textcolor, transparent = True):
+def DrawText2Surface(window, text, pos, textsize, textcolor, centered = False, transparent = True):
   if (pos[0] > 0 and pos[1] > 0 and pos[0] < window.get_rect()[2] and pos[1] < window.get_rect()[3]):
     font = pygame.font.SysFont("Times New Roman", textsize)
     label = font.render(text, 0, textcolor)
