@@ -189,14 +189,14 @@ class Events:
     if (event.button == 4):
       if (game.systemScale < 100000000):
         game.systemScale *= 2
-        delta = Utils.SubTuples(game.screenCenter, game.cameraCenter)
+        delta = Utils.SubTuples(game.screenCenter, event.pos)# game.cameraCenter)
         #zoomed_delta = Utils.MulTuples(delta, 2)
         game.screenCenter=Utils.AddTuples(game.screenCenter, delta)
         game.reDraw = True
     else:
       if (game.systemScale > 0.1):
         game.systemScale /= 2
-        delta = Utils.SubTuples(game.screenCenter, game.cameraCenter)
+        delta = Utils.SubTuples(game.screenCenter, event.pos)#, game.cameraCenter)
         zoomed_delta = Utils.DivTuples(delta, 2)
         game.screenCenter=Utils.SubTuples(game.screenCenter, zoomed_delta)
         game.reDraw = True
