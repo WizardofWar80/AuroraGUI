@@ -23,8 +23,8 @@ class Game():
     self.currentSystem = -1
     self.cameraCenter = (self.width/2,self.height/2)
     self.screenCenter = (self.width/2,self.height/2)
-    self.systemScaleStart = 50
-    self.systemScale = 50
+    self.systemScaleStart = 0.8
+    self.systemScale = self.systemScaleStart
     self.mousePos = (0,0)
     self.radius_Sun = 696000
     self.minPixelSize_Star = 10
@@ -109,7 +109,7 @@ class Game():
       self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
-      self.currentSystem = 8497 # Alpha Centauri
+      #self.currentSystem = 8497 # Alpha Centauri
       #self.currentSystem = 8499
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
@@ -185,7 +185,11 @@ class Game():
       star_color = self.stellarTypes[star['StellarTypeID']]['RGB']
       if (radius < self.minPixelSize_Star):
         radius = self.minPixelSize_Star
+
+      # draw Star
       pygame.draw.circle(self.surface,star_color,screen_star_pos,radius,Utils.FILLED)
+      #pygame.draw.rect(self.surface,Utils.RED, (screen_star_pos,(1,1)), 0)
+      # Label Star
       labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
       Utils.DrawText2Surface(self.surface,system['Name'],labelPos,14,self.color_Label_Star)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
@@ -220,9 +224,11 @@ class Game():
             if (E > 0):
               a = body['Orbit'] * self.systemScale
               b = a * math.sqrt(1-E*E)
+              #b = body['Orbit'] * self.systemScale
+              #a = b*1/math.sqrt(1-E*E)
               c = E * a
-              x_offset = c * math.cos(body['EccentricityAngle']*math.pi/180)
-              y_offset = c * math.sin(body['EccentricityAngle']*math.pi/180)
+              x_offset = c * math.cos(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
+              y_offset = c * math.sin(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
               offsetPos = Utils.AddTuples(screen_star_pos, (x_offset,y_offset))
               #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
               # 13 FPS

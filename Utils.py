@@ -42,8 +42,9 @@ BodyTypes = {    1:'Asteroid'
                , 13:'???'
                , 14:'Comet' }
 FILLED = 0
-AU = 150000000
-AU_INV = 6.587E-9
+AU = 149597870.7
+AU_INV = 6.6845871222684454959959533702106E-9
+DEGREES_TO_RADIANS = 0.0174533
 
 def Sqr(x):
   return x*x
@@ -171,22 +172,40 @@ def DivTuples(t1,t2):
       return ((t1/t2),(t1/t2))
 
 def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0):
+  beta *= DEGREES_TO_RADIANS
   N = 60
-  cos_beta = math.cos(-beta)
-  sin_beta = math.sin(-beta)
+  cos_beta = math.cos(beta)
+  sin_beta = math.sin(beta)
   x = y = 0
   points = []
   for i in range(N):
     i_N = i/N*2*math.pi
     if (beta == 0):
-      x = a * math.sin(i_N)
-      y = b * math.cos(i_N)
+      x = a * math.cos(i_N)
+      y = b * math.sin(i_N)
     else:
       a_cos_alpha = a * math.cos(i_N)
       b_sin_alpha = b * math.sin(i_N)
       x = a_cos_alpha * cos_beta - b_sin_alpha * sin_beta
       y = a_cos_alpha * sin_beta + b_sin_alpha * cos_beta
-    points.append((x_c+x,y_c-y))
+    points.append((x_c+x,y_c+y))
+
+
+  #i_N = 0
+  #a_cos_alpha = a * math.cos(i_N)
+  #b_sin_alpha = b * math.sin(i_N)
+  #x = x_c+a_cos_alpha * cos_beta - b_sin_alpha * sin_beta
+  #y = y_c+a_cos_alpha * sin_beta + b_sin_alpha * cos_beta
+
+  #i_N = math.pi
+  #a_cos_alpha = a * math.cos(i_N)
+  #b_sin_alpha = b * math.sin(i_N)
+  #x2 = x_c+a_cos_alpha * cos_beta - b_sin_alpha * sin_beta
+  #y2 = y_c+a_cos_alpha * sin_beta + b_sin_alpha * cos_beta
 
   pygame.draw.polygon(surface,color, points, 1)
+  #pygame.draw.line(surface,WHITE, (x,y),(x2,y2), 1)
+  #pygame.draw.rect(surface,RED, ((x_c-1,y_c-1),(3,3)), 0)
+  #pygame.draw.rect(surface,YELLOW, ((x_c+x,y_c+y),(1,1)), 1)
+  #pygame.draw.rect(surface,YELLOW, ((x_c-x,y_c-y),(1,1)), 1)
 
