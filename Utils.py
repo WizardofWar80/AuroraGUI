@@ -171,15 +171,16 @@ def DivTuples(t1,t2):
     else:
       return ((t1/t2),(t1/t2))
 
-def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0):
+def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0, startAngle = 0):
   beta *= DEGREES_TO_RADIANS
+  startAngle *= DEGREES_TO_RADIANS
   N = 60
   cos_beta = math.cos(beta)
   sin_beta = math.sin(beta)
   x = y = 0
   points = []
   for i in range(N):
-    i_N = i/N*2*math.pi
+    i_N = i/N*2*math.pi+startAngle
     if (beta == 0):
       x = a * math.cos(i_N)
       y = b * math.sin(i_N)
