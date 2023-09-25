@@ -26,8 +26,8 @@ def main():
   pygameinstance = pygame.init()
   myEvents = Ev.Events()
 
-  game = MainModule.Game()
-  game.BindEventClass(myEvents)
+  game = MainModule.Game(myEvents)
+  #game.BindEventClass(myEvents)
   file_list = []
   for (dirpath, dirs, files) in os.walk(img_path):
     for filename in files:

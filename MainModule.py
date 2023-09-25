@@ -7,8 +7,8 @@ import random
 import Clickable
 
 class Game():
-  def __init__(self, size = (1800,1000), name = 'AuroraGUI'):
-    self.Events = None
+  def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
+    self.Events = eventsclass
     self.logger = lg.Logger(logfile= 'logMain.txt', module='MainModule.py', log_level = 1)
     self.name = name
     self.width = size[0]
@@ -124,9 +124,6 @@ class Game():
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
 
-  def BindEventClass(self, EC):
-    self.Events = EC
-
 
   def Draw(self):
     # clear screen
@@ -193,6 +190,7 @@ class Game():
     for starID in system['Stars']:
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
+      star_name = system['Name']
       # draw star
       r = star['Radius']
       radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
@@ -216,11 +214,13 @@ class Game():
           pygame.draw.circle(self.surface,star_color,screen_star_pos,radius,Utils.FILLED)
         else:
           pygame.draw.circle(self.surface,Utils.RED,screen_star_pos,radius,5)
+      bb = (screen_star_pos[0]-radius,screen_star_pos[1]-radius,2*radius,2*radius)
+      self.MakeClickable(star_name, bb, left_click_call_back = self.Select_Body, par=starID)
 
       #pygame.draw.rect(self.surface,Utils.RED, (screen_star_pos,(1,1)), 0)
       # Label Star
       labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
-      Utils.DrawText2Surface(self.surface,system['Name'],labelPos,14,self.color_Label_Star)
+      Utils.DrawText2Surface(self.surface,star_name,labelPos,14,self.color_Label_Star)
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       # draw orbit
       if (self.showOrbits_Stars):
@@ -273,9 +273,7 @@ class Game():
           
           if (orbitOnScreen > body_min_dist):
             # draw body
-
             if (body['Image'] is not None):
-              
               if (screen_body_pos[0]-radius < self.width and screen_body_pos[0]+radius > 0 and 
                   screen_body_pos[1]-radius < self.height and screen_body_pos[1]+radius > 0 ):
                 scale = (radius_on_screen*2,radius_on_screen*2)
@@ -287,6 +285,8 @@ class Game():
                 self.surface.blit(scaledSurface,image_offset)
             else:
               pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
+            bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
+            self.MakeClickable(body['Name'], bb, left_click_call_back = self.Select_Body, par=bodyID)
 
             # Check if we want to draw the label
             draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body['Class'], body['Type'])
@@ -337,8 +337,9 @@ class Game():
             if (self.showFleetTraces):
               prev_pos = self.WorldPos2ScreenPos(fleet['Position_prev'])
               pygame.draw.line(self.surface, self.color_Fleet, prev_pos, pos,1)
-            Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
-          
+            bb = Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
+            self.MakeClickable(fleet['Name'], bb, left_click_call_back = self.Select_Fleet, par=fleetID)
+
             #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
             Utils.DrawText2Surface(self.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,self.color_Fleet)
 
@@ -749,9 +750,6 @@ class Game():
     self.starSystems = self.GetSystems()
 
 
-  def CallBack(self, fct, param):
-    print(fct, param)
-
   def MakeClickable(self, name, bounding_box, 
                     left_click_call_back=None, 
                     right_click_call_back=None, 
@@ -774,13 +772,18 @@ class Game():
 
 
   def Select_Fleet(self, id):
-    if (id in self.fleets):
-      # todo highlight fleet
+    if (id in self.fleets[self.currentSystem]):
+      print(self.fleets[self.currentSystem][id])
       self.GetNewData()
 
 
   def Select_Body(self, id):
-    if (id in self.systemBodies):
+    if (id in self.starSystems[self.currentSystem]['Stars']):
       # todo highlight body
+      print(self.starSystems[self.currentSystem]['Stars'][id])
+      self.GetNewData()
+    elif (id in self.systemBodies):
+      # todo highlight body
+      print(self.systemBodies[id])
       self.GetNewData()
 
