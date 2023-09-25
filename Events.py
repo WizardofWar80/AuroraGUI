@@ -15,6 +15,16 @@ class Events:
     self.LeftMousePressPosition = []
     self.LeftMouseReleasePosition = []
     self.LeftDoubleClickPosition = []
+
+    self.RightMouseButtonDown = False
+    self.RightMouseButtonClicked = False
+    self.RightMouseButtonDoubleClicked = False
+    self.RightMouseClickPosition = []
+    self.RightMousePressPosition = []
+    self.RightMouseReleasePosition = []
+    self.RightDoubleClickPosition = []
+
+
     self.TimestampInit = -1000
     self.TimeDeltaInit = 1000
     self.singleClickTiming = 0.7
@@ -27,18 +37,42 @@ class Events:
     self.TimeSinceLeftMouseButtonReleased = self.TimeDeltaInit
     self.TimeLeftMouseButtonDoubleClick = self.TimestampInit
     self.TimeSinceLeftMouseButtonDoubleClick = self.TimeDeltaInit
+
+    self.TimeRightMouseButtonPressed = self.TimestampInit
+    self.TimeSinceRightMouseButtonPressed = self.TimeDeltaInit
+    self.TimeRightMouseButtonReleased = self.TimestampInit
+    self.TimeSinceRightMouseButtonReleased = self.TimeDeltaInit
+    self.TimeRightMouseButtonDoubleClick = self.TimestampInit
+    self.TimeSinceRightMouseButtonDoubleClick = self.TimeDeltaInit
     
   def Update(self):
     current_time = self.GetTimeinSeconds()
+    # Left Mouse Button
     if (self.TimeLeftMouseButtonReleased > self.TimestampInit):
       self.TimeSinceLeftMouseButtonReleased = current_time - self.TimeLeftMouseButtonReleased
     if (self.TimeLeftMouseButtonPressed > self.TimestampInit):
       self.TimeSinceLeftMouseButtonPressed = current_time - self.TimeLeftMouseButtonPressed
     if (self.TimeLeftMouseButtonDoubleClick > self.TimestampInit):
       self.TimeSinceLeftMouseButtonDoubleClick = current_time - self.TimeLeftMouseButtonDoubleClick
+    # Right Mouse Button
+    if (self.TimeRightMouseButtonReleased > self.TimestampInit):
+      self.TimeSinceRightMouseButtonReleased = current_time - self.TimeRightMouseButtonReleased
+    if (self.TimeRightMouseButtonPressed > self.TimestampInit):
+      self.TimeSinceRightMouseButtonPressed = current_time - self.TimeRightMouseButtonPressed
+    if (self.TimeRightMouseButtonDoubleClick > self.TimestampInit):
+      self.TimeSinceRightMouseButtonDoubleClick = current_time - self.TimeRightMouseButtonDoubleClick
+
+
+  def ClearClickables(self):
+    self.clickables = []
 
   def Bind(self, clickable):
     self.clickables.append(clickable)
+
+  def UnBind(self, clickable):
+    #self.clickables.append(clickable)
+    pass
+
 
   def GetTimeinSeconds(self):
     return pygame.time.get_ticks()/1000
@@ -57,9 +91,10 @@ class Events:
     if event.type == pygame.MOUSEMOTION:
       self.HandleMouseMotionEvents(event, game)
     if (self.LeftMouseButtonClicked):
-      self.HandleSingleClickEvents()
+      self.HandleSingleClickEvents(1)
     if (self.LeftMouseButtonDoubleClicked):
-      self.HandleDoubleClickEvents()
+      self.HandleDoubleClickEvents(1)
+
 
   def HandleKeyboardEvents(self, event, game):
     if (event.type == pygame.KEYDOWN):
@@ -125,9 +160,22 @@ class Events:
       print(event)
       logger.write('Unhandled Button %d up'%event.button)
     elif (event.button == 3):
-      print('unhandled event for mouse button 2')
-      print(event)
-      logger.write('Unhandled Button %d up'%event.button)
+      logger.write('Button %d up'%event.button)
+      # store time between mouse down and now
+      self.TimeSinceRightMouseButtonPressed = current_time - self.TimeRightMouseButtonPressed
+      self.RightMouseReleasePosition = event.pos
+      # was this time short enough to count as a click and not a click and hold?
+      if (self.TimeSinceRightMouseButtonPressed < self.singleClickTiming):
+        # was there another click just before then do not register another click
+        if (self.TimeSinceRightMouseButtonDoubleClick > self.singleClickTiming):
+          self.RightMouseButtonClicked = True
+          self.RightMouseClickPosition = event.pos
+
+      self.TimeRightMouseButtonReleased = current_time
+      self.RightMouseButtonDown = False
+      #print('Right MB was pressed for %3.2fs'%self.TimeSinceRightMouseButtonPressed)
+      self.TimeRightMouseButtonPressed = -1000
+      self.TimeSinceRightMouseButtonPressed = 1000
     #print(event.pos)
     #print(event.button)
     #print(event.touch)
@@ -147,36 +195,36 @@ class Events:
         game.reDraw = True
 
 
-  def HandleSingleClickEvents(self):
+  def HandleSingleClickEvents(self, button):
     clicked_clickable = -1
-    clicked_group = -1
     self.LeftMouseButtonClicked = False
+    self.RightMouseButtonClicked = False
     index = 0
     for clickable in self.clickables:
       if (clickable.rect) and (clickable.enabled):
-        if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])
-             and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
-             and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
-             and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
-          clicked_clickable = index
-          clicked_group = clickable.group
-          clickable.clickedAt = self.LeftMouseClickPosition
-          clickable.Press()
+        if (clickable.LeftClickCallBack is not None and button == 1):
+          if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])
+               and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
+               and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
+               and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
+            clicked_clickable = index
+            clickable.LeftClick()
+        elif (clickable.RightClickCallBack is not None and button == 3):
+          if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])
+               and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
+               and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
+               and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
+            clicked_clickable = index
+            clickable.RightClick()
       index += 1
-      # if a clickable item was clicked and it is part of a group, look for all other items in the group and unpress them
-      if (clickable.radiobutton == True):
-        if (clicked_group > -1) and (clicked_clickable > -1):
-          index = 0
-          for clickable in self.clickables:
-            if (clicked_group == clickable.group) and (index != clicked_clickable):
-              clickable.pressed = False
-            index += 1
+
 
   def HandleDoubleClickEvents(self):
     self.LeftMouseButtonClicked = False
+    self.RightMouseButtonClicked = False
     self.LeftMouseButtonDoubleClicked = False
     for clickable in self.clickables:
-      if (clickable.rect) and (clickable.enabled):
+      if (clickable.rect) and (clickable.enabled) and (clickable.DoubleClickCallBack is not None):
         if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])
              and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
              and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
@@ -200,3 +248,11 @@ class Events:
         zoomed_delta = Utils.DivTuples(delta, 2)
         game.screenCenter=Utils.SubTuples(game.screenCenter, zoomed_delta)
         game.reDraw = True
+
+
+  def ProcessClickablesEvents(self, game):
+    for clickable in self.clickables:
+      if (clickable.toBeProcessed):
+        if (not clickable.doubleClicked):
+          clickable.Process()
+          

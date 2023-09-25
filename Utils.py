@@ -45,6 +45,7 @@ FILLED = 0
 AU = 149597870.7
 AU_INV = 6.6845871222684454959959533702106E-9
 DEGREES_TO_RADIANS = 0.0174533
+RADIANS_TO_DEGREES = 57.2957795
 
 def Sqr(x):
   return x*x
@@ -73,6 +74,7 @@ def DrawText2Surface(window, text, pos, textsize, textcolor, centered = False, t
       sf.blit(label, (0,0))
       window.blit(sf,pos)
 
+
 def DrawText2Screen(screen, text, pos, textsize, textcolor, transparent = True):
   if (pos[0] > 0 and pos[1] > 0 and pos[0] < screen.get_rect()[2] and pos[1] < screen.get_rect()[3]):
     font = pygame.font.SysFont("Times New Roman", textsize)
@@ -82,6 +84,7 @@ def DrawText2Screen(screen, text, pos, textsize, textcolor, transparent = True):
       sf.fill(BLACK)
     sf.blit(label, (0,0))
     screen.blit(sf,pos)
+
 
 def DrawTextCenteredAt(window, text, x, y, fonttype, fg):
   if (x > 0 and y > 0 and x < window.get_rect()[2] and y < window.get_rect()[3]):
@@ -120,8 +123,34 @@ def DrawTriangle(surface,position, color, heading=0):
   rotated_surf = pygame.transform.rotate(shape_surf, -heading)
   r = rotated_surf.get_rect(center = target_rect.center)
   surface.blit(rotated_surf,(position[0]-r.center[0]+r[0],position[1]-r.center[1]+r[1]))
-  
+  bounding_box = pygame.Rect(position[0]-r.center[0]+r[0],position[1]-r.center[1]+r[1], r.size[0],r.size[1])
+  return bounding_box
   #pygame.draw.rect(surface,(255,255,255), ((position[0]-6,position[1]-6),(12,12)), 1)
+
+
+def DrawArrow(surface,position, color, heading=0):
+  heading_deg = -heading*RADIANS_TO_DEGREES
+  position = (position[0],position[1]-0)
+  target_rect = pygame.Rect(0,0,15,2*28)
+  shape_surf = pygame.Surface(target_rect.size, pygame.SRCALPHA)
+  points = [(0 ,15),
+            (8 ,15),
+            (8 ,0),
+            (14 ,28),
+            (14 ,29),
+            (8 ,56),
+            (8 ,41),
+            (0 ,41),
+            (0 ,15)]
+  pygame.draw.polygon(shape_surf,color, points, 0)
+  rotated_surf = pygame.transform.rotate(shape_surf, heading_deg)
+  r = rotated_surf.get_rect(center = target_rect.center)
+  offset_x = 25 * math.cos(-heading)
+  offset_y = 25 * math.sin(-heading)
+  surface.blit(rotated_surf,(position[0]-r.center[0]+r[0]+offset_x,position[1]-r.center[1]+r[1]-offset_y))
+  bounding_box = pygame.Rect(position[0]-r.center[0]+r[0]+offset_x ,position[1]-r.center[1]+r[1]-offset_y, r.size[0],r.size[1])
+  return bounding_box
+  #pygame.draw.rect(surface,RED,bounding_box,1)
 
 def AddTuples(t1,t2):
   if isinstance(t1, (list, tuple)):
@@ -135,6 +164,7 @@ def AddTuples(t1,t2):
     else:
       return ((t1+t2),(t1+t2))
 
+
 def SubTuples(t1,t2):
   if isinstance(t1, (list, tuple)):
     if isinstance(t2, (list, tuple)):
@@ -146,6 +176,7 @@ def SubTuples(t1,t2):
       return ((t1-t2[0]),(t1-t2[1]))
     else:
       return ((t1-t2),(t1-t2))
+
 
 def MulTuples(t1,t2):
   if isinstance(t1, (list, tuple)):
@@ -159,6 +190,7 @@ def MulTuples(t1,t2):
     else:
       return ((t1*t2),(t1*t2))
 
+
 def DivTuples(t1,t2):
   if isinstance(t1, (list, tuple)):
     if isinstance(t2, (list, tuple)):
@@ -170,6 +202,7 @@ def DivTuples(t1,t2):
       return ((t1/t2[0]),(t1/t2[1]))
     else:
       return ((t1/t2),(t1/t2))
+
 
 def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0, startAngle = 0):
   beta *= DEGREES_TO_RADIANS

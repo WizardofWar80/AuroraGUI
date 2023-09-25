@@ -4,9 +4,11 @@ import logger as lg
 import Utils
 import math
 import random
+import Clickable
 
 class Game():
   def __init__(self, size = (1800,1000), name = 'AuroraGUI'):
+    self.Events = None
     self.logger = lg.Logger(logfile= 'logMain.txt', module='MainModule.py', log_level = 1)
     self.name = name
     self.width = size[0]
@@ -40,6 +42,7 @@ class Game():
     self.timestampLast = pygame.time.get_ticks()
     self.FPS = 0
     self.reDraw = True;
+    self.clickables = []
 
     # Options
     self.bg_color = Utils.BLACK
@@ -116,10 +119,14 @@ class Game():
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
       #self.currentSystem = 8497 # Alpha Centauri
-      #self.currentSystem = 8499
+      self.currentSystem = 8499
       #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
+
+  def BindEventClass(self, EC):
+    self.Events = EC
+
 
   def Draw(self):
     # clear screen
@@ -291,7 +298,12 @@ class Game():
   def DrawSystemJumpPoints(self):
     for JP_ID in self.currentSystemJumpPoints:
       JP = self.currentSystemJumpPoints[JP_ID]
+      heading = math.atan2(JP['Pos'][1],JP['Pos'][0])
       screen_pos = self.WorldPos2ScreenPos(JP['Pos'])
+      if (JP['Explored']):
+        bb = Utils.DrawArrow(self.surface, screen_pos, Utils.GREEN,heading)
+        self.MakeClickable(JP['Destination'], bb, left_click_call_back = self.Follow_Jumppoint, par = JP['DestID'])
+
       pygame.draw.circle(self.surface,self.color_JP,screen_pos,5,2)
       screen_pos_label = Utils.AddTuples(screen_pos,10)
       Utils.DrawText2Surface(self.surface,JP['Destination'],screen_pos_label,14,self.color_JP)
@@ -672,17 +684,21 @@ class Game():
 
 
   def GetNewData(self):
+    if (self.Events):
+      self.Events.ClearClickables()
     self.starSystems = self.GetSystems()
     self.currentSystemJumpPoints = self.GetSystemJumpPoints()
     self.surveyLocations = self.GetSurveyLocations(self.currentSystem)
     self.fleets = self.GetFleets()
     self.systemBodies = self.GetSystemBodies()
+    self.reDraw = True
 
 
   def WorldPos2ScreenPos(self, world_pos):
     scaled_world_pos = Utils.MulTuples(world_pos,(Utils.AU_INV*self.systemScale))
 
     return Utils.AddTuples(self.screenCenter ,scaled_world_pos)
+
 
   def LoadImages(self, list_of_image_files):
     for sub_folder, name, filename in list_of_image_files:
@@ -731,3 +747,40 @@ class Game():
 
     self.systemBodies = self.GetSystemBodies()
     self.starSystems = self.GetSystems()
+
+
+  def CallBack(self, fct, param):
+    print(fct, param)
+
+  def MakeClickable(self, name, bounding_box, 
+                    left_click_call_back=None, 
+                    right_click_call_back=None, 
+                    double_click_call_back=None, 
+                    par=None,
+                    color=None ):
+    cl = Clickable.Clickable(self, name, bounding_box, parameter=par, 
+                   LeftClickCallBack=left_click_call_back, 
+                   RightClickCallBack=right_click_call_back, 
+                   DoubleClickCallBack=double_click_call_back)
+    if (self.Events):
+      self.Events.Bind(cl)
+    #self.Events.Bind(type, key, {'BoundingBox':bounding_box, 'ColorKey':color, 'EventType':event_type})
+
+  
+  def Follow_Jumppoint(self, id):
+    if (id in self.starSystems):
+      self.currentSystem = id
+      self.GetNewData()
+
+
+  def Select_Fleet(self, id):
+    if (id in self.fleets):
+      # todo highlight fleet
+      self.GetNewData()
+
+
+  def Select_Body(self, id):
+    if (id in self.systemBodies):
+      # todo highlight body
+      self.GetNewData()
+

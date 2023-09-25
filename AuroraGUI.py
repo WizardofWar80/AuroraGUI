@@ -27,6 +27,7 @@ def main():
   myEvents = Ev.Events()
 
   game = MainModule.Game()
+  game.BindEventClass(myEvents)
   file_list = []
   for (dirpath, dirs, files) in os.walk(img_path):
     for filename in files:
@@ -48,11 +49,11 @@ def main():
       myEvents.Update()
       myEvents.HandleMouseEvents(event, game)
       myEvents.HandleKeyboardEvents(event, game)
+      myEvents.ProcessClickablesEvents(game)
       # only do something if the event is of type QUIT
       if event.type == pygame.QUIT:
         # change the value to False, to exit the main loop
         running = False
-    #ProcessClickablesEvents(myEvents, plot, ac)
 
     #recalc = False
     if CheckReDrawFramerate():
