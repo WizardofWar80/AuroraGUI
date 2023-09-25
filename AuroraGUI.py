@@ -16,6 +16,7 @@ screen_width  = 1850
 screen_height = 1000
 
 logger = lg.Logger(logfile= 'log.txt', module='AuroraGUI.py', log_level = 1)
+img_path = "Images"
 
 def CheckReDrawFramerate():
   return True
@@ -26,7 +27,18 @@ def main():
   myEvents = Ev.Events()
 
   game = MainModule.Game()
-  
+  file_list = []
+  for (dirpath, dirs, files) in os.walk(img_path):
+    for filename in files:
+      index_slash = dirpath.rfind('\\')
+      if (index_slash > -1):
+        subfolder = dirpath[index_slash+1:]
+      else:
+        subfolder = 'Sol'
+      file_list.append([subfolder, filename, os.path.join(dirpath, filename).lower()])
+
+  game.LoadImages(file_list)
+
   # define a variable to control the main loop
   running = True
   # main loop

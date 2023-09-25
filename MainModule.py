@@ -3,6 +3,7 @@ import sqlite3
 import logger as lg
 import Utils
 import math
+import random
 
 class Game():
   def __init__(self, size = (1800,1000), name = 'AuroraGUI'):
@@ -95,7 +96,7 @@ class Game():
     self.color_Orbit_Moon = Utils.DARK_GRAY
     self.color_Orbit_Asteroid = Utils.DARK_GRAY
     self.color_Orbit_Comet = Utils.DARK_GRAY
-    
+    self.images_Body = {}
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -116,6 +117,7 @@ class Game():
       self.currentSystem = self.homeSystemID
       #self.currentSystem = 8497 # Alpha Centauri
       #self.currentSystem = 8499
+      #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
 
@@ -192,7 +194,22 @@ class Game():
         radius = self.minPixelSize_Star
 
       # draw Star
-      pygame.draw.circle(self.surface,star_color,screen_star_pos,radius,Utils.FILLED)
+      if (star['Image'] is not None):
+        if (screen_star_pos[0]-radius < self.width and screen_star_pos[0]+radius > 0 and 
+            screen_star_pos[1]-radius < self.height and screen_star_pos[1]+radius > 0 ):
+          scale = (radius*2,radius*2)
+          if (scale[0] > 2*self.width):
+            #todo: fix bug where the scaled surface moves when zooming in too much
+            scale = (2*self.width,2*self.width)
+          scaledSurface = pygame.transform.smoothscale(star['Image'],scale)
+          image_offset = Utils.SubTuples(screen_star_pos,scaledSurface.get_rect().center)
+          self.surface.blit(scaledSurface,image_offset)
+      else:
+        if (not star['Black Hole']):
+          pygame.draw.circle(self.surface,star_color,screen_star_pos,radius,Utils.FILLED)
+        else:
+          pygame.draw.circle(self.surface,Utils.RED,screen_star_pos,radius,5)
+
       #pygame.draw.rect(self.surface,Utils.RED, (screen_star_pos,(1,1)), 0)
       # Label Star
       labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
@@ -249,12 +266,26 @@ class Game():
           
           if (orbitOnScreen > body_min_dist):
             # draw body
-            pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
+
+            if (body['Image'] is not None):
+              
+              if (screen_body_pos[0]-radius < self.width and screen_body_pos[0]+radius > 0 and 
+                  screen_body_pos[1]-radius < self.height and screen_body_pos[1]+radius > 0 ):
+                scale = (radius_on_screen*2,radius_on_screen*2)
+                if (scale[0] > 2*self.width):
+                  #todo: fix bug where the scaled surface moves when zooming in too much
+                  scale = (2*self.width,2*self.width)
+                scaledSurface = pygame.transform.smoothscale(body['Image'],scale)
+                image_offset = Utils.SubTuples(screen_body_pos,scaledSurface.get_rect().center)
+                self.surface.blit(scaledSurface,image_offset)
+            else:
+              pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
 
             # Check if we want to draw the label
             draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body['Class'], body['Type'])
             if (draw_cond) and (orbitOnScreen > min_dist):
-              Utils.DrawText2Surface(self.surface,body['Name'],screen_body_pos,14,draw_color_label)
+              labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
+              Utils.DrawText2Surface(self.surface,body['Name'],labelPos,14,draw_color_label)
 
 
   def DrawSystemJumpPoints(self):
@@ -347,6 +378,14 @@ class Game():
           stars[ID]['Component'] = star[8]
           stars[ID]['StellarTypeID']=star[3]
           stars[ID]['Radius']=self.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
+          stars[ID]['Black Hole']=False
+          spectralClass = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
+          if (spectralClass == 'BH'):
+            # black holes should use Schwartzschildradius:
+            # r = M * 0.000004246 sunradii
+            m = self.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
+            stars[ID]['Radius'] = m * 0.000004246 * 6
+            stars[ID]['Black Hole']=True
           component2ID[star[8]] = ID
           stars[ID]['Parent'] = parentComponent = star[9]
           if (stars[ID]['Parent'] == 0):
@@ -356,7 +395,10 @@ class Game():
           stars[ID]['Bearing'] = star[10]
           stars[ID]['OrbitDistance'] = star[13]
           stars[ID]['Pos'] = (star[6],star[7])
-
+          stars[ID]['Image'] = None
+          if (len(self.images_Body) > 0):
+            if (spectralClass in self.images_Body['Stars']):
+              stars[ID]['Image'] = self.images_Body['Stars'][spectralClass]
         system['Stars'] = stars
         systems[systemID] = system
     return systems
@@ -385,8 +427,9 @@ class Game():
 
   def GetSystemBodies(self):
     systemBodies = {}
-    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
+    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
     for body in body_table:
+      body_name = body[1]
       orbit = body[2] 
       a = body[2]
       r = body[4]
@@ -397,15 +440,61 @@ class Game():
       E = body[8]
       bodyType = '?'
       bodyClass = '?'
+      temp = body[12]-273
+      atm = body[13]
+      hydro = body[14]
       if (body[11] in Utils.BodyTypes):
         bodyType = Utils.BodyTypes[body[11]]
       if (body[10] in Utils.BodyClasses):
         bodyClass = Utils.BodyClasses[body[10]]
       if (bodyClass == 'Moon'):
         orbit = orbit * Utils.AU_INV
+      image = None
+      if (len(self.images_Body) > 0):
+        if (body_name.lower() in self.images_Body['Sol']):
+          image = self.images_Body['Sol'][body_name.lower()]
+        else:
+          if (bodyClass == 'Asteroid'):
+            numImages = len(self.images_Body['Asteroids'])
+            selectedImage = random.randint(0,numImages-1)
+            image = self.images_Body['Asteroids'][selectedImage]
+          elif (bodyClass == 'Planet') or (bodyClass == 'Moon'):
+            if (bodyType == 'Planet Gas Giant' or 'Planet Super Jovian'):
+              numImages = len(self.images_Body['Gas Giants'])
+              selectedImage = random.randint(0,numImages-1)
+              image = self.images_Body['Gas Giants'][selectedImage]
+            elif (bodyType == 'Planet Small' or 'Moon Small'):
+              numImages = len(self.images_Body['Small Bodies'])
+              selectedImage = random.randint(0,numImages-1)
+              image = self.images_Body['Small Bodies'][selectedImage]
+            else:
+              if (temp > 100):
+                numImages = len(self.images_Body['Planets']['h'])
+                selectedImage = random.randint(0,numImages-1)
+                image = self.images_Body['Planets']['h'][selectedImage]
+              elif (hydro > 80):
+                numImages = len(self.images_Body['Planets']['o'])
+                selectedImage = random.randint(0,numImages-1)
+                image = self.images_Body['Planets']['o'][selectedImage]
+              elif (hydro > 50):
+                numImages = len(self.images_Body['Planets']['m'])
+                selectedImage = random.randint(0,numImages-1)
+                image = self.images_Body['Planets']['m'][selectedImage]
+              elif (atm > 0.01):
+                numImages = len(self.images_Body['Planets']['b'])
+                selectedImage = random.randint(0,numImages-1)
+                image = self.images_Body['Planets']['b'][selectedImage]
+              else:
+                numImages = len(self.images_Body['Planets']['a'])
+                selectedImage = random.randint(0,numImages-1)
+                image = self.images_Body['Planets']['a'][selectedImage]
+          elif (bodyClass == 'Comet'):
+            numImages = len(self.images_Body['Comets'])
+            selectedImage = random.randint(0,numImages-1)
+            image = self.images_Body['Comets'][selectedImage]
 
       systemBodies[body[0]]={'ID':body[0],'Name':body[1], 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
-                            'Eccentricity':body[8],'EccentricityAngle':body[9], 'Pos':(body[6], body[7])}
+                            'Eccentricity':body[8],'EccentricityAngle':body[9], 'Pos':(body[6], body[7]), 'Image':image}
     return systemBodies
 
 
@@ -594,3 +683,51 @@ class Game():
     scaled_world_pos = Utils.MulTuples(world_pos,(Utils.AU_INV*self.systemScale))
 
     return Utils.AddTuples(self.screenCenter ,scaled_world_pos)
+
+  def LoadImages(self, list_of_image_files):
+    for sub_folder, name, filename in list_of_image_files:
+      if (sub_folder == 'Sol'):
+        if (not sub_folder in self.images_Body):
+          self.images_Body[sub_folder] = {}
+        file_lower = name.lower()
+        if (file_lower.endswith('.jpg')):
+          hyphen = file_lower.find('-')
+          if (hyphen > -1):
+            body_name = file_lower[:hyphen].strip()
+            self.images_Body[sub_folder][body_name] = pygame.image.load(filename)
+            self.images_Body[sub_folder][body_name].set_colorkey(self.bg_color)
+      elif (sub_folder == 'Planets'):
+        if (not sub_folder in self.images_Body):
+          self.images_Body[sub_folder] = {}
+        file_lower = name.lower()
+        if (file_lower.endswith('.jpg')):
+          if (not file_lower[0] in self.images_Body[sub_folder]):
+            self.images_Body[sub_folder][file_lower[0]] = []
+          hyphen = file_lower.find('.')
+          if (hyphen > -1):
+            body_name = file_lower[:hyphen].strip()
+            self.images_Body[sub_folder][file_lower[0]].append(pygame.image.load(filename))
+            self.images_Body[sub_folder][file_lower[0]][-1].set_colorkey(self.bg_color)
+      elif (sub_folder == 'Stars'):
+        if (not sub_folder in self.images_Body):
+          self.images_Body[sub_folder] = {}
+        file_lower = name.lower()
+        if (file_lower.endswith('.jpg')):
+          hyphen = file_lower.find('.')
+          if (hyphen > -1):
+            body_name = file_lower[:hyphen].strip().upper()
+            self.images_Body[sub_folder][body_name] = pygame.image.load(filename)
+            self.images_Body[sub_folder][body_name].set_colorkey(self.bg_color)
+      else:
+        if (not sub_folder in self.images_Body):
+          self.images_Body[sub_folder] = []
+        file_lower = name.lower()
+        if (file_lower.endswith('.jpg')):
+          hyphen = file_lower.find('.')
+          if (hyphen > -1):
+            body_name = file_lower[:hyphen].strip()
+            self.images_Body[sub_folder].append(pygame.image.load(filename))
+            self.images_Body[sub_folder][-1].set_colorkey(self.bg_color)
+
+    self.systemBodies = self.GetSystemBodies()
+    self.starSystems = self.GetSystems()
