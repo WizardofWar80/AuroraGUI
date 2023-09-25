@@ -459,11 +459,11 @@ class Game():
             selectedImage = random.randint(0,numImages-1)
             image = self.images_Body['Asteroids'][selectedImage]
           elif (bodyClass == 'Planet') or (bodyClass == 'Moon'):
-            if (bodyType == 'Planet Gas Giant' or 'Planet Super Jovian'):
+            if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
               numImages = len(self.images_Body['Gas Giants'])
               selectedImage = random.randint(0,numImages-1)
               image = self.images_Body['Gas Giants'][selectedImage]
-            elif (bodyType == 'Planet Small' or 'Moon Small'):
+            elif (bodyType == 'Planet Small' or bodyType == 'Moon Small'):
               numImages = len(self.images_Body['Small Bodies'])
               selectedImage = random.randint(0,numImages-1)
               image = self.images_Body['Small Bodies'][selectedImage]
