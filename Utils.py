@@ -1,6 +1,7 @@
 import pygame
 import math
 
+LIGHT_GRAY2 = (230,230,230)
 LIGHT_GRAY = (220,220,220)
 MED_GRAY = (200,200,200)
 GRAY = (180,180,180)
@@ -14,6 +15,7 @@ DARK_BLUE = (0, 0, 128)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+MED_YELLOW = (255, 216, 0)
 ORANGE = (255, 168, 54)
 LIGHT_CYAN = (0, 235, 250)
 CYAN = (19, 211, 214)
@@ -277,3 +279,26 @@ def GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta):
   #pygame.draw.rect(surface,YELLOW, ((x_c+x,y_c+y),(1,1)), 1)
   #pygame.draw.rect(surface,YELLOW, ((x_c-x,y_c-y),(1,1)), 1)
 
+def DrawPercentageFilledImage(window, image, pos, percentage, color_unfilled = WHITE, color = LIGHT_GREEN, color_low = None, perc_low = None, color_high = None, perc_high = None):
+  if (percentage > 1):
+    percentage /= 100
+  if (percentage > 1):
+    percentage = 1
+  use_color = color
+  if (perc_low and color_low):
+    if (percentage <= perc_low):
+      use_color = color_low
+  if (perc_high and color_high):
+    if (percentage >= perc_high):
+      use_color = color_high
+
+  image_size = image.get_rect().size
+  image_height_white = int((1-percentage) * image_size[1])
+  image_height_green = image_size[1] - image_height_white
+  white_image = pygame.Surface((image_size[0],image_height_white))
+  white_image.fill(color_unfilled)
+  green_image = pygame.Surface((image_size[0],image_height_green))
+  green_image.fill(use_color)
+  window.blit(white_image,pos)
+  window.blit(green_image,(pos[0],pos[1]+image_height_white))
+  window.blit(image,pos)

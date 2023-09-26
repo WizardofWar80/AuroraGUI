@@ -123,6 +123,7 @@ class Game():
     self.window_map.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_MapWindow = True;
 
+    self.images_GUI = {}
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -408,6 +409,22 @@ class Game():
 
               speed_label_pos, speed_label_size = Utils.DrawText2Surface(self.window_info,speed,(label_pos[0]+label_size[0],
                                                                                                 label_pos[1]),15,color)
+              p = 0
+              if (fleet['Fuel Capacity'] > 0):
+                p = fleet['Fuel']/fleet['Fuel Capacity']
+
+              if ('fuel2' in self.images_GUI):
+                Utils.DrawPercentageFilledImage(self.window_info, 
+                                                self.images_GUI['fuel2'], 
+                                                (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1]), 
+                                                p, 
+                                                color_unfilled = Utils.DARK_GRAY, 
+                                                color = Utils.MED_YELLOW, 
+                                                color_low = Utils.RED, 
+                                                perc_low = 0.3, 
+                                                color_high = Utils.LIGHT_GREEN, 
+                                                perc_high = 0.7)
+
             #print((pad_y+lineNr*line_height), fleet['Name'])
             lineNr +=1
 
@@ -690,10 +707,22 @@ class Game():
         fleets[systemID][fleetId]['Speed'] = math.sqrt((Utils.Sqr(y-y_prev)+Utils.Sqr(x-x_prev)))/self.deltaTime
       
       # Add ships to fleet
-      ships_table = [list(x) for x in self.db.execute('''SELECT * from FCT_Ship WHERE GameID = %d AND FleetID = %d;'''%(self.gameID,fleetId))]
+      ships_table = [list(x) for x in self.db.execute('''SELECT * from FCT_Ship WHERE FleetID = %d;'''%fleetId)]
       fleets[systemID][fleetId]['Ships'] = []
+      fleetFuel = 0
+      fleetFuelCapacity = 0
       for ship in ships_table:
-        fleets[systemID][fleetId]['Ships'].append(ship[3])
+        name = ship[3]
+        fuel = ship[16]
+        shipClassID = ship[33]
+        shipClass = self.db.execute('''SELECT * from FCT_ShipClass WHERE ShipClassID = %d;'''%(shipClassID)).fetchall()[0]
+        fuelCapacity = shipClass[27]
+        fleets[systemID][fleetId]['Ships'].append({'Name':name, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity})
+        fleetFuel += fuel
+        fleetFuelCapacity += fuelCapacity
+      fleets[systemID][fleetId]['Fuel'] = fleetFuel
+      fleets[systemID][fleetId]['Fuel Capacity'] = fleetFuelCapacity
+
 
     return fleets
     #FleetID	GameID	FleetName	AssignedPopulationID	ParentCommandID	OrbitBodyID	OrbitDistance	OrbitBearing	RaceID	SystemID	TradeLocation	CivilianFunction	NPRHomeGuard	TFTraining	SpecialOrderID	SpecialOrderID2	Speed	MaxNebulaSpeed	Xcor	Ycor	LastXcor	LastYcor	LastMoveTime	IncrementStartX	IncrementStartY	EntryJPID	CycleMoves	JustDivided	AxisContactID	Distance	OffsetBearing	ConditionOne	ConditionTwo	ConditionalOrderOne	ConditionalOrderTwo	AvoidDanger	AvoidAlienSystems	NPROperationalGroupID	DisplaySensors	DisplayWeapons	AssignedFormationID	ShippingLine	UseMaximumSpeed	RedeployOrderGiven	MaxStandingOrderDistance	NoSurrender	SpecificThreatID	AnchorFleetID	AnchorFleetDistance	AnchorFleetBearingOffset	GuardNearestHostileContact	UseAnchorDestination	GuardNearestKnownWarship	AssumeJumpCapable	LastTransitTime
@@ -814,6 +843,16 @@ class Game():
             body_name = file_lower[:hyphen].strip().upper()
             self.images_Body[sub_folder][body_name] = pygame.image.load(filename)
             self.images_Body[sub_folder][body_name].set_colorkey(self.bg_color)
+      elif (sub_folder == 'GUI'):
+        file_lower = name.lower()
+        if (file_lower.endswith('.png')):
+          hyphen = file_lower.find('.')
+          if (hyphen > -1):
+            name = file_lower[:hyphen].strip().lower()
+            self.images_GUI[name] = pygame.image.load(filename)
+            self.images_GUI[name].set_colorkey(Utils.GREENSCREEN)
+      elif (sub_folder == 'HiRes'):
+        pass
       else:
         if (not sub_folder in self.images_Body):
           self.images_Body[sub_folder] = []
