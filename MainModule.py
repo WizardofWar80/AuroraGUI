@@ -402,7 +402,12 @@ class Game():
             color = Utils.WHITE
             if (self.highlighted_fleet_ID == fleetID):
               color = Utils.CYAN
-            Utils.DrawText2Surface(self.window_info,fleet['Name'],(pad_x,(pad_y+lineNr*line_height)),15,color)
+            label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name']+ ' - ',(pad_x,(pad_y+lineNr*line_height)),15,color)
+            if (fleet['Speed'] > 1) and label_pos:
+              speed = str(int(fleet['Speed'])) + 'km/s'
+
+              speed_label_pos, speed_label_size = Utils.DrawText2Surface(self.window_info,speed,(label_pos[0]+label_size[0],
+                                                                                                label_pos[1]),15,color)
             #print((pad_y+lineNr*line_height), fleet['Name'])
             lineNr +=1
 

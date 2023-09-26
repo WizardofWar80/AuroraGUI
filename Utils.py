@@ -66,14 +66,18 @@ def DrawText2Surface(window, text, pos, textsize, textcolor, centered = False, t
   if (pos[0] > 0 and pos[1] > 0 and pos[0] < window.get_rect()[2] and pos[1] < window.get_rect()[3]):
     font = pygame.font.SysFont("Times New Roman", textsize)
     label = font.render(text, 0, textcolor)
+    label_size = label.get_rect().size
     if (transparent):
       label.set_alpha(255)
       window.blit(label, pos)
     else:
-      sf = pygame.Surface(label.get_rect().size)
+      sf = pygame.Surface(label_size)
       sf.fill(BLACK)
       sf.blit(label, (0,0))
       window.blit(sf,pos)
+    return pos, label_size
+  else:
+    return None, None
 
 
 def DrawText2Screen(screen, text, pos, textsize, textcolor, transparent = True):
