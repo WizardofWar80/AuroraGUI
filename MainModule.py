@@ -17,6 +17,7 @@ class Game():
     self.screen = pygame.display.set_mode((self.width,self.height))
     self.surface = pygame.Surface((self.width,self.height), pygame.SRCALPHA,32)
     self.surface.set_colorkey(Utils.GREENSCREEN)
+    
     self.db = None
     self.gameID = -1
     self.myRaceID = -1
@@ -41,7 +42,8 @@ class Game():
     self.timestampLastSecond = pygame.time.get_ticks()
     self.timestampLast = pygame.time.get_ticks()
     self.FPS = 0
-    self.reDraw = True;
+    self.reDraw = True
+    self.reDraw_GUI = True
     self.clickables = []
 
     # Options
@@ -51,17 +53,19 @@ class Game():
     self.showUnsurveyedLocations = True
     self.showSurveyedLocations = False
     self.showFleetTraces = True
-    self.showOrbits_Planets = True
-    self.showOrbits_DwarfPlanets = True
-    self.showOrbits_Moons = True
-    self.showOrbits_Comets = True
-    self.showOrbits_Asteroids = False
-    self.showOrbits_Stars = True
     self.showPlanets = True
     self.showMoons = True
     self.showDwarfPlanets = True
     self.showComets = True
     self.showAsteroids = False
+
+    self.showOrbits_Planets = True
+    self.showOrbits_DwarfPlanets = True
+    self.showOrbits_Moons = True
+    self.showOrbits_Comets = False
+    self.showOrbits_Asteroids = False
+    self.showOrbits_Stars = True
+
     self.showLabels_Planets = True
     self.showLabels_DwarfPlanets = True
     self.showLabels_Moons = True
@@ -97,9 +101,28 @@ class Game():
     self.color_Orbit_Planet = Utils.DARK_GRAY
     self.color_Orbit_DwarfPlanet = Utils.DARK_GRAY
     self.color_Orbit_Moon = Utils.DARK_GRAY
-    self.color_Orbit_Asteroid = Utils.DARK_GRAY
-    self.color_Orbit_Comet = Utils.DARK_GRAY
+    self.color_Orbit_Asteroid = Utils.SUPER_DARK_GRAY
+    self.color_Orbit_Comet = Utils.SUPER_DARK_GRAY
     self.images_Body = {}
+
+    self.window_info_size = (300,400)
+    self.window_map_size = (self.window_info_size[0],self.window_info_size[0])
+
+    self.window_info_anchor = (self.width-self.window_info_size[0]-5,self.height-self.window_map_size[1]-self.window_info_size[1]-2*5)
+    self.window_info = pygame.Surface(self.window_info_size, pygame.SRCALPHA,32)
+    self.window_info_rect = pygame.Rect(self.window_info_anchor, self.window_info_size)
+    self.window_info.set_colorkey(Utils.GREENSCREEN)
+    self.reDraw_InfoWindow = True;
+    self.window_info_scoll_pos = 0
+    self.highlighted_fleet_ID = -1
+
+
+    self.window_map_anchor = (self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
+    self.window_map = pygame.Surface(self.window_map_size, pygame.SRCALPHA,32)
+    self.window_map_rect = pygame.Rect(self.window_map_anchor, self.window_map_size)
+    self.window_map.set_colorkey(Utils.GREENSCREEN)
+    self.reDraw_MapWindow = True;
+
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -119,25 +142,30 @@ class Game():
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
       #self.currentSystem = 8497 # Alpha Centauri
-      self.currentSystem = 8499
+      #self.currentSystem = 8499
       #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
 
 
   def Draw(self):
+    reblit = False
     # clear screen
     if (self.reDraw):
+      self.reDraw_InfoWindow = True
+      self.reDraw_MapWindow = True
+      self.reDraw_GUI = True
       self.surface.fill(self.bg_color)
 
-      self.DrawSystem()
+      reblit |= self.DrawSystem()
 
-      self.DrawMiniMap()
+    reblit |= self.DrawMiniMap()
 
-      self.DrawInfoWindow()
+    reblit |= self.DrawInfoWindow()
 
-      self.DrawGUI()
+    reblit |= self.DrawGUI()
 
+    if (reblit):
       self.screen.blit(self.surface,(0,0))
 
     self.counter_FPS += 1
@@ -153,6 +181,10 @@ class Game():
     # draw mouse position and scale
     Utils.DrawText2Screen(self.screen,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE, False)
     Utils.DrawText2Screen(self.screen,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE, False)
+
+    #self.DrawInfoWindow()
+
+    #self.DrawMiniMap()
 
     pygame.display.update()
     self.reDraw = False
@@ -179,6 +211,7 @@ class Game():
     self.DrawSystemFleets()
     t2 = pygame.time.get_ticks()
     dt4 = t2-t1
+    return True
 
 
   def DrawSystemBodies(self):
@@ -215,7 +248,8 @@ class Game():
         else:
           pygame.draw.circle(self.surface,Utils.RED,screen_star_pos,radius,5)
       bb = (screen_star_pos[0]-radius,screen_star_pos[1]-radius,2*radius,2*radius)
-      self.MakeClickable(star_name, bb, left_click_call_back = self.Select_Body, par=starID)
+      if (self.CheckClickableNotBehindGUI(bb)):
+        self.MakeClickable(star_name, bb, left_click_call_back = self.Select_Body, par=starID)
 
       #pygame.draw.rect(self.surface,Utils.RED, (screen_star_pos,(1,1)), 0)
       # Label Star
@@ -231,68 +265,76 @@ class Game():
       body = self.systemBodies[bodyID]
       #print(body['ID'],body['Name'])
 
-      draw_cond, draw_color_body, body_min_size, body_min_dist = self.GetDrawConditions('Body', body['Class'], body['Type'])
-      if (draw_cond):
+      body_draw_cond, draw_color_body, body_min_size, body_min_dist = self.GetDrawConditions('Body', body['Class'], body['Type'])
+      if (body_draw_cond):
         screen_body_pos = self.WorldPos2ScreenPos(body['Pos'])
         radius_on_screen = Utils.AU_INV * self.systemScale * body['RadiusBody']
         if (radius_on_screen < body_min_size):
           radius_on_screen = body_min_size
 
+        orbit_draw_cond, draw_color_orbit, void, min_orbit = self.GetDrawConditions('Orbit', body['Class'], body['Type'])
+        orbitOnScreen = body['Orbit']*self.systemScale
+
+        if (orbit_draw_cond) and (orbitOnScreen > body_min_dist):
+          E = body['Eccentricity']
+          parentID = body['ParentID']
+
+          if parentID in system['Stars']:
+            screen_parent_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
+          elif parentID in self.systemBodies:
+            screen_parent_pos = self.WorldPos2ScreenPos(self.systemBodies[parentID]['Pos'])
+          else:
+            screen_parent_pos = self.WorldPos2ScreenPos((0,0))
+          # draw orbit
+          if (E > 0):
+            a = orbitOnScreen
+            b = a * math.sqrt(1-E*E)
+            #b = body['Orbit'] * self.systemScale
+            #a = b*1/math.sqrt(1-E*E)
+            c = E * a
+            N = 60
+            if (E > 0.9):
+              N = 240
+            x_offset = c * math.cos(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
+            y_offset = c * math.sin(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
+            offsetPos = Utils.AddTuples(screen_parent_pos, (x_offset,y_offset))
+            #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+            # 13 FPS
+            #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+            # 19 FPS @360 segments, 30 FPS at 60 segments
+            Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'],body['Bearing'], N)
+          else:
+            if (orbitOnScreen < 50000 and orbitOnScreen > min_orbit):
+              pygame.draw.circle(self.surface,draw_color_orbit,screen_parent_pos,orbitOnScreen,1)
+        
         if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < self.width+50 and screen_body_pos[1] < self.height+50 ):
-          draw_cond, draw_color_orbit, void, min_orbit = self.GetDrawConditions('Orbit', body['Class'], body['Type'])
-          orbitOnScreen = body['Orbit']*self.systemScale
-
-          if (draw_cond) and (orbitOnScreen > body_min_dist):
-            E = body['Eccentricity']
-            parentID = body['ParentID']
-
-            if parentID in system['Stars']:
-              screen_parent_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
-            elif parentID in self.systemBodies:
-              screen_parent_pos = self.WorldPos2ScreenPos(self.systemBodies[parentID]['Pos'])
-            else:
-              screen_parent_pos = self.WorldPos2ScreenPos((0,0))
-            # draw orbit
-            if (E > 0):
-              a = orbitOnScreen
-              b = a * math.sqrt(1-E*E)
-              #b = body['Orbit'] * self.systemScale
-              #a = b*1/math.sqrt(1-E*E)
-              c = E * a
-              x_offset = c * math.cos(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
-              y_offset = c * math.sin(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
-              offsetPos = Utils.AddTuples(screen_parent_pos, (x_offset,y_offset))
-              #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-              # 13 FPS
-              #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-              # 19 FPS @360 segments, 30 FPS at 60 segments
-              Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'],body['Bearing'])
-            else:
-              if (orbitOnScreen < 50000 and orbitOnScreen > min_orbit):
-                pygame.draw.circle(self.surface,draw_color_orbit,screen_parent_pos,orbitOnScreen,1)
+          pass
+        else:
+          body_draw_cond = False  
+        if (body_draw_cond) and (orbitOnScreen > body_min_dist):
+          # draw body
+          if (body['Image'] is not None):
+            if (screen_body_pos[0]-radius < self.width and screen_body_pos[0]+radius > 0 and 
+                screen_body_pos[1]-radius < self.height and screen_body_pos[1]+radius > 0 ):
+              scale = (radius_on_screen*2,radius_on_screen*2)
+              if (scale[0] > 2*self.width):
+                #todo: fix bug where the scaled surface moves when zooming in too much
+                scale = (2*self.width,2*self.width)
+              scaledSurface = pygame.transform.smoothscale(body['Image'],scale)
+              image_offset = Utils.SubTuples(screen_body_pos,scaledSurface.get_rect().center)
+              self.surface.blit(scaledSurface,image_offset)
+          else:
+            pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
           
-          if (orbitOnScreen > body_min_dist):
-            # draw body
-            if (body['Image'] is not None):
-              if (screen_body_pos[0]-radius < self.width and screen_body_pos[0]+radius > 0 and 
-                  screen_body_pos[1]-radius < self.height and screen_body_pos[1]+radius > 0 ):
-                scale = (radius_on_screen*2,radius_on_screen*2)
-                if (scale[0] > 2*self.width):
-                  #todo: fix bug where the scaled surface moves when zooming in too much
-                  scale = (2*self.width,2*self.width)
-                scaledSurface = pygame.transform.smoothscale(body['Image'],scale)
-                image_offset = Utils.SubTuples(screen_body_pos,scaledSurface.get_rect().center)
-                self.surface.blit(scaledSurface,image_offset)
-            else:
-              pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
-            bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
+          bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
+          if (self.CheckClickableNotBehindGUI(bb)):
             self.MakeClickable(body['Name'], bb, left_click_call_back = self.Select_Body, par=bodyID)
 
-            # Check if we want to draw the label
-            draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body['Class'], body['Type'])
-            if (draw_cond) and (orbitOnScreen > min_dist):
-              labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
-              Utils.DrawText2Surface(self.surface,body['Name'],labelPos,14,draw_color_label)
+          # Check if we want to draw the label
+          draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body['Class'], body['Type'])
+          if (draw_cond) and (orbitOnScreen > min_dist):
+            labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
+            Utils.DrawText2Surface(self.surface,body['Name'],labelPos,14,draw_color_label)
 
 
   def DrawSystemJumpPoints(self):
@@ -302,7 +344,8 @@ class Game():
       screen_pos = self.WorldPos2ScreenPos(JP['Pos'])
       if (JP['Explored']):
         bb = Utils.DrawArrow(self.surface, screen_pos, Utils.GREEN,heading)
-        self.MakeClickable(JP['Destination'], bb, left_click_call_back = self.Follow_Jumppoint, par = JP['DestID'])
+        if (self.CheckClickableNotBehindGUI(bb)):
+          self.MakeClickable(JP['Destination'], bb, left_click_call_back = self.Follow_Jumppoint, par = JP['DestID'])
 
       pygame.draw.circle(self.surface,self.color_JP,screen_pos,5,2)
       screen_pos_label = Utils.AddTuples(screen_pos,10)
@@ -338,22 +381,51 @@ class Game():
               prev_pos = self.WorldPos2ScreenPos(fleet['Position_prev'])
               pygame.draw.line(self.surface, self.color_Fleet, prev_pos, pos,1)
             bb = Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
-            self.MakeClickable(fleet['Name'], bb, left_click_call_back = self.Select_Fleet, par=fleetID)
+            if (self.CheckClickableNotBehindGUI(bb)):
+              self.MakeClickable(fleet['Name'], bb, left_click_call_back = self.Select_Fleet, par=fleetID)
 
             #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
             Utils.DrawText2Surface(self.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,self.color_Fleet)
 
 
-  def DrawMiniMap(self):
-    pass
-
-
   def DrawInfoWindow(self):
-    pass
+    if (self.reDraw_InfoWindow):
+      line_height = 20
+      pad_x = pad_y = 5
+      lineNr = self.window_info_scoll_pos
+      self.window_info.fill(Utils.SUPER_DARK_GRAY)
+      #print(self.window_info_scoll_pos)
+      if (self.currentSystem in self.fleets):
+        for fleetID in self.fleets[self.currentSystem]:
+          fleet = self.fleets[self.currentSystem][fleetID]
+          if (fleet['Ships'] != [] or self.showEmptyFleets):
+            color = Utils.WHITE
+            if (self.highlighted_fleet_ID == fleetID):
+              color = Utils.CYAN
+            Utils.DrawText2Surface(self.window_info,fleet['Name'],(pad_x,(pad_y+lineNr*line_height)),15,color)
+            #print((pad_y+lineNr*line_height), fleet['Name'])
+            lineNr +=1
+
+      self.surface.blit(self.window_info,self.window_info_anchor)
+      self.reDraw_InfoWindow = False
+      return True
+    else:
+      return False
+
+
+  def DrawMiniMap(self):
+    if (self.reDraw_MapWindow):
+      self.window_map.fill(Utils.SUPER_DARK_GRAY)
+
+      self.surface.blit(self.window_map,self.window_map_anchor)
+      self.reDraw_MapWindow = False
+      return True
+    else:
+      return False
 
 
   def DrawGUI(self):
-    pass
+    return False
 
 
   def GetHomeSystemID(self):
@@ -522,7 +594,7 @@ class Game():
         color = self.color_Moon
         min_size = self.minPixelSize_Moon
         min_dist = 10
-      elif (bodyClass  == 'Comets' and self.showComets):
+      elif (bodyClass  == 'Comet' and self.showComets):
         draw = True
         color = self.color_Comet
         min_size = self.minPixelSize_Small
@@ -547,7 +619,7 @@ class Game():
         draw = True
         color = self.color_Orbit_Moon
         min_dist = 10
-      elif (bodyClass  == 'Comets' and self.showOrbits_Comets):
+      elif (bodyClass  == 'Comet' and self.showOrbits_Comets):
         draw = True
         color = self.color_Orbit_Comet
         min_dist = 10
@@ -568,7 +640,7 @@ class Game():
         draw = True
         color = self.color_Label_Moon
         min_dist = 50
-      elif (bodyClass  == 'Comets' and self.showLabels_Comets):
+      elif (bodyClass  == 'Comet' and self.showLabels_Comets):
         draw = True
         color = self.color_Label_Comet
         min_dist = 200
@@ -693,6 +765,8 @@ class Game():
     self.fleets = self.GetFleets()
     self.systemBodies = self.GetSystemBodies()
     self.reDraw = True
+    self.reDraw_InfoWindow = True
+    self.reDraw_MapWindow = True
 
 
   def WorldPos2ScreenPos(self, world_pos):
@@ -764,26 +838,40 @@ class Game():
       self.Events.Bind(cl)
     #self.Events.Bind(type, key, {'BoundingBox':bounding_box, 'ColorKey':color, 'EventType':event_type})
 
-  
+
+  def CheckClickableNotBehindGUI(self, bb):
+    rect = pygame.Rect(bb)
+    if (     (self.window_info_rect.colliderect(rect)) 
+         or ( self.window_map_rect.colliderect(rect) ) ):
+      return False
+    else:
+      return True
+
+
   def Follow_Jumppoint(self, id):
     if (id in self.starSystems):
       self.currentSystem = id
+      self.window_info_scoll_pos = 0
       self.GetNewData()
 
 
   def Select_Fleet(self, id):
-    if (id in self.fleets[self.currentSystem]):
-      print(self.fleets[self.currentSystem][id])
-      self.GetNewData()
+    if (self.currentSystem in self.fleets):
+      if (id in self.fleets[self.currentSystem]):
+        print(self.fleets[self.currentSystem][id])
+        self.highlighted_fleet_ID = id
+        self.GetNewData()
 
 
   def Select_Body(self, id):
     if (id in self.starSystems[self.currentSystem]['Stars']):
       # todo highlight body
       print(self.starSystems[self.currentSystem]['Stars'][id])
+      self.highlighted_fleet_ID = -1
       self.GetNewData()
     elif (id in self.systemBodies):
       # todo highlight body
       print(self.systemBodies[id])
+      self.highlighted_fleet_ID = -1
       self.GetNewData()
 

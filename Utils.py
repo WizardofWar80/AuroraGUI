@@ -5,6 +5,7 @@ LIGHT_GRAY = (220,220,220)
 MED_GRAY = (200,200,200)
 GRAY = (180,180,180)
 DARK_GRAY = (100,100,100)
+SUPER_DARK_GRAY = (30,30,30)
 WHITE = (255, 255, 255)
 LIGHT_GREEN = (0, 255, 0)
 MED_GREEN = (186, 209, 198)
@@ -204,25 +205,54 @@ def DivTuples(t1,t2):
       return ((t1/t2),(t1/t2))
 
 
-def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0, startAngle = 0):
+def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0, startAngle = 0, N = 60):
   beta *= DEGREES_TO_RADIANS
   startAngle *= DEGREES_TO_RADIANS
-  N = 60
   cos_beta = math.cos(beta)
   sin_beta = math.sin(beta)
   x = y = 0
   points = []
+  points_on_screen = []
+  num_points_on_screen = 0
+  surf_rect = surface.get_rect()
   for i in range(N):
-    i_N = i/N*2*math.pi+startAngle
-    if (beta == 0):
-      x = a * math.cos(i_N)
-      y = b * math.sin(i_N)
-    else:
-      a_cos_alpha = a * math.cos(i_N)
-      b_sin_alpha = b * math.sin(i_N)
-      x = a_cos_alpha * cos_beta - b_sin_alpha * sin_beta
-      y = a_cos_alpha * sin_beta + b_sin_alpha * cos_beta
-    points.append((x_c+x,y_c+y))
+    angle =  i/N*2*math.pi+startAngle
+    x,y = GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta)
+    points.append((x,y))
+    points_on_screen.append(surf_rect.collidepoint((x,y)))
+    if (points_on_screen[-1]):
+      num_points_on_screen+=1
+  pygame.draw.polygon(surface,color, points, 1)
+  #if (num_points_on_screen > 1):
+  #  
+  #  if (num_points_on_screen < 0.5 * N):
+  #    points = []
+  #    angle = beta
+  #    x2,y2 = GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta)
+  #    while (angle - beta <= 2*math.pi):
+  #      x1,y1 = GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta)
+  #      if surf_rect.collidepoint((x1,y1)) or surf_rect.collidepoint((x2,y2)):
+  #        points.append((x1,y1))
+  #        angle += 360/N*DEGREES_TO_RADIANS/4
+  #      else:
+  #        angle += 360/N*DEGREES_TO_RADIANS*4
+  #      x2 = x1
+  #      y2 = y1
+  #    pygame.draw.polygon(surface,color, points, 1)
+  #  else:
+  #    pygame.draw.polygon(surface,color, points, 1)
+
+
+def GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta):
+  if (beta == 0):
+    x = a * math.cos(angle)
+    y = b * math.sin(angle)
+  else:
+    a_cos_alpha = a * math.cos(angle)
+    b_sin_alpha = b * math.sin(angle)
+    x = a_cos_alpha * cos_beta - b_sin_alpha * sin_beta
+    y = a_cos_alpha * sin_beta + b_sin_alpha * cos_beta
+  return x_c+x,y_c+y
 
 
   #i_N = 0

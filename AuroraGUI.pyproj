@@ -24,16 +24,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AuroraGUI.py" />
-    <Compile Include="Button.py" />
     <Compile Include="Events.py" />
     <Compile Include="logger.py" />
     <Compile Include="Clickable.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MainModule.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="module1.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils.py" />
