@@ -302,3 +302,5 @@ def DrawPercentageFilledImage(window, image, pos, percentage, color_unfilled = W
   window.blit(white_image,pos)
   window.blit(green_image,(pos[0],pos[1]+image_height_white))
   window.blit(image,pos)
+
+  return (pos[0],pos[1],image_size[0], image_size[1])

@@ -409,21 +409,39 @@ class Game():
 
               speed_label_pos, speed_label_size = Utils.DrawText2Surface(self.window_info,speed,(label_pos[0]+label_size[0],
                                                                                                 label_pos[1]),15,color)
+              icon_pos = (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1])
               p = 0
               if (fleet['Fuel Capacity'] > 0):
                 p = fleet['Fuel']/fleet['Fuel Capacity']
 
               if ('fuel2' in self.images_GUI):
-                Utils.DrawPercentageFilledImage(self.window_info, 
-                                                self.images_GUI['fuel2'], 
-                                                (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1]), 
-                                                p, 
-                                                color_unfilled = Utils.DARK_GRAY, 
-                                                color = Utils.MED_YELLOW, 
-                                                color_low = Utils.RED, 
-                                                perc_low = 0.3, 
-                                                color_high = Utils.LIGHT_GREEN, 
-                                                perc_high = 0.7)
+                icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                                                            self.images_GUI['fuel2'], 
+                                                            icon_pos, 
+                                                            p, 
+                                                            color_unfilled = Utils.DARK_GRAY, 
+                                                            color = Utils.MED_YELLOW, 
+                                                            color_low = Utils.RED, 
+                                                            perc_low = 0.3, 
+                                                            color_high = Utils.LIGHT_GREEN, 
+                                                            perc_high = 0.7)
+
+              icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
+              p = 0
+              if (fleet['Supplies Capacity'] > 0):
+                p = fleet['Supplies']/fleet['Supplies Capacity']
+
+              if ('supplies' in self.images_GUI):
+                icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                                                            self.images_GUI['supplies'], 
+                                                            icon_pos, 
+                                                            p, 
+                                                            color_unfilled = Utils.DARK_GRAY, 
+                                                            color = Utils.MED_YELLOW, 
+                                                            color_low = Utils.RED, 
+                                                            perc_low = 0.3, 
+                                                            color_high = Utils.LIGHT_GREEN, 
+                                                            perc_high = 0.7)
 
             #print((pad_y+lineNr*line_height), fleet['Name'])
             lineNr +=1
@@ -711,17 +729,29 @@ class Game():
       fleets[systemID][fleetId]['Ships'] = []
       fleetFuel = 0
       fleetFuelCapacity = 0
+      fleetSupplies = 0
+      fleetSuppliesCapacity = 0
+      fleetMagazineCapacity = 0
       for ship in ships_table:
         name = ship[3]
         fuel = ship[16]
+        supplies = ship[44]
         shipClassID = ship[33]
         shipClass = self.db.execute('''SELECT * from FCT_ShipClass WHERE ShipClassID = %d;'''%(shipClassID)).fetchall()[0]
         fuelCapacity = shipClass[27]
-        fleets[systemID][fleetId]['Ships'].append({'Name':name, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity})
+        suppliesCapacity = shipClass[84]
+        magazineCapacity = shipClass[38]
+        fleets[systemID][fleetId]['Ships'].append({'Name':name, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity})
         fleetFuel += fuel
         fleetFuelCapacity += fuelCapacity
+        fleetSupplies += supplies
+        fleetSuppliesCapacity += suppliesCapacity
+        fleetMagazineCapacity +=magazineCapacity
       fleets[systemID][fleetId]['Fuel'] = fleetFuel
       fleets[systemID][fleetId]['Fuel Capacity'] = fleetFuelCapacity
+      fleets[systemID][fleetId]['Supplies'] = fleetSupplies
+      fleets[systemID][fleetId]['Supplies Capacity'] = fleetSuppliesCapacity
+      fleets[systemID][fleetId]['Magazine Capacity'] = fleetMagazineCapacity
 
 
     return fleets
