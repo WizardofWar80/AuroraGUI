@@ -111,6 +111,9 @@ class Events:
         else:
           game.systemScale = game.systemScaleStart
         game.reDraw = True
+      if (event.key == pygame.K_d):
+        game.Debug = not game.Debug
+        game.reDraw = True
 
 
   def HandleMouseDownEvents(self, event,game):

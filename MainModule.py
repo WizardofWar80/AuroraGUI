@@ -17,7 +17,8 @@ class Game():
     self.screen = pygame.display.set_mode((self.width,self.height))
     self.surface = pygame.Surface((self.width,self.height), pygame.SRCALPHA,32)
     self.surface.set_colorkey(Utils.GREENSCREEN)
-    
+    self.Debug = False
+
     self.db = None
     self.gameID = -1
     self.myRaceID = -1
@@ -170,6 +171,7 @@ class Game():
     reblit |= self.DrawGUI()
 
     if (reblit):
+      self.DebugDrawClickables()
       self.screen.blit(self.surface,(0,0))
 
     self.counter_FPS += 1
@@ -920,16 +922,10 @@ class Game():
     self.starSystems = self.GetSystems()
 
 
-  def MakeClickable(self, name, bounding_box, 
-                    left_click_call_back=None, 
-                    right_click_call_back=None, 
-                    double_click_call_back=None, 
-                    par=None,
-                    color=None,
-                    parent = None,
-                    anchor = None ):
+  def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None ):
     if (anchor is not None):
       bounding_box = (bounding_box[0]+anchor[0],bounding_box[1]+anchor[1],bounding_box[2],bounding_box[3])
+
     if (Utils.IsOnScreen(self.surface, bounding_box)):
       cl = Clickable.Clickable(self, name, bounding_box, parameter=par, 
                      LeftClickCallBack=left_click_call_back, 
@@ -938,7 +934,6 @@ class Game():
                      parent = parent)
       if (self.Events):
         self.Events.Bind(cl)
-    #self.Events.Bind(type, key, {'BoundingBox':bounding_box, 'ColorKey':color, 'EventType':event_type})
 
 
   def CheckClickableNotBehindGUI(self, bb):
@@ -948,6 +943,13 @@ class Game():
       return False
     else:
       return True
+
+
+  def DebugDrawClickables(self):
+    if (self.Debug):
+      if (self.Events):
+        for clickable in self.Events.clickables:
+          pygame.draw.rect(self.surface, Utils.RED, clickable.rect, 1)
 
 
   def Follow_Jumppoint(self, id):
