@@ -63,8 +63,15 @@ class Events:
       self.TimeSinceRightMouseButtonDoubleClick = current_time - self.TimeRightMouseButtonDoubleClick
 
 
-  def ClearClickables(self):
-    self.clickables = []
+  def ClearClickables(self, parent = None):
+    if(parent):
+      for clickable in self.clickables:
+        if (clickable.parent == parent):
+          self.clickables.remove(clickable)
+    else:
+      self.clickables = []
+    
+
 
   def Bind(self, clickable):
     self.clickables.append(clickable)
@@ -209,6 +216,7 @@ class Events:
                and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
             clicked_clickable = index
             clickable.LeftClick()
+            print(clickable.name)
         elif (clickable.RightClickCallBack is not None and button == 3):
           if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])
                and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
@@ -230,6 +238,7 @@ class Events:
              and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
              and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
           clickable.DoubleClick()
+
 
   def HandleMouseWheelEvents(self, event, game):
     # The button will be set to 4 when the wheel is rolled up, and to button 5 when the wheel is rolled down

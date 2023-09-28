@@ -279,6 +279,26 @@ def GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta):
   #pygame.draw.rect(surface,YELLOW, ((x_c+x,y_c+y),(1,1)), 1)
   #pygame.draw.rect(surface,YELLOW, ((x_c-x,y_c-y),(1,1)), 1)
 
+def DrawExpander(surface, position, textSize, color):
+  bounding_box = pygame.Rect(position[0]+1,position[1]+1, textSize-2,textSize-2 )
+  center = bounding_box.center
+  size = 8
+  pygame.draw.rect(surface, color, bounding_box, 1)
+  x1 = center[0]-size/2
+  x2 = center[0]+size/2
+  y1 = center[1]
+  y2 = center[1]
+  pygame.draw.line(surface, color, (x1,y1), (x2,y2), 1)
+  x1 = center[0]
+  x2 = center[0]
+  y1 = center[1]-size/2
+  y2 = center[1]+size/2
+  pygame.draw.line(surface, color, (x1,y1), (x2,y2), 1)
+  
+  return bounding_box
+
+
+
 def DrawPercentageFilledImage(window, image, pos, percentage, color_unfilled = WHITE, color = LIGHT_GREEN, color_low = None, perc_low = None, color_high = None, perc_high = None):
   if (percentage > 1):
     percentage /= 100
@@ -304,3 +324,6 @@ def DrawPercentageFilledImage(window, image, pos, percentage, color_unfilled = W
   window.blit(image,pos)
 
   return (pos[0],pos[1],image_size[0], image_size[1])
+
+def IsOnScreen(screen, rect):
+  return screen.get_rect().colliderect(rect)

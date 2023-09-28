@@ -105,10 +105,11 @@ class Game():
     self.color_Orbit_Comet = Utils.SUPER_DARK_GRAY
     self.images_Body = {}
 
-    self.window_info_size = (300,400)
+    self.window_info_identifier = 'Fleet Info Window'
+    self.window_info_size = (300,600)
     self.window_map_size = (self.window_info_size[0],self.window_info_size[0])
 
-    self.window_info_anchor = (self.width-self.window_info_size[0]-5,self.height-self.window_map_size[1]-self.window_info_size[1]-2*5)
+    self.window_info_anchor = (5,self.height-self.window_map_size[1]-self.window_info_size[1]-2*5)#(self.width-self.window_info_size[0]-5,self.height-self.window_map_size[1]-self.window_info_size[1]-2*5)
     self.window_info = pygame.Surface(self.window_info_size, pygame.SRCALPHA,32)
     self.window_info_rect = pygame.Rect(self.window_info_anchor, self.window_info_size)
     self.window_info.set_colorkey(Utils.GREENSCREEN)
@@ -117,7 +118,7 @@ class Game():
     self.highlighted_fleet_ID = -1
 
 
-    self.window_map_anchor = (self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
+    self.window_map_anchor = (5,self.height-self.window_map_size[1]-5)#(self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
     self.window_map = pygame.Surface(self.window_map_size, pygame.SRCALPHA,32)
     self.window_map_rect = pygame.Rect(self.window_map_anchor, self.window_map_size)
     self.window_map.set_colorkey(Utils.GREENSCREEN)
@@ -153,6 +154,8 @@ class Game():
     reblit = False
     # clear screen
     if (self.reDraw):
+      if (self.Events):
+        self.Events.ClearClickables()
       self.reDraw_InfoWindow = True
       self.reDraw_MapWindow = True
       self.reDraw_GUI = True
@@ -391,6 +394,7 @@ class Game():
 
   def DrawInfoWindow(self):
     if (self.reDraw_InfoWindow):
+      self.Events.ClearClickables(self.window_info_identifier)
       line_height = 20
       pad_x = pad_y = 5
       lineNr = self.window_info_scoll_pos
@@ -403,7 +407,14 @@ class Game():
             color = Utils.WHITE
             if (self.highlighted_fleet_ID == fleetID):
               color = Utils.CYAN
-            label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name']+ ' - ',(pad_x,(pad_y+lineNr*line_height)),15,color)
+            label_pos = (pad_x,(pad_y+lineNr*line_height))
+            if (fleet['Ships'] != []):
+              expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+              self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+              label_pos = (expRect[2]+10,label_pos[1])
+            label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name']+ ' - ',label_pos,15,color)
+            if (label_pos):
+              self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
             if (fleet['Speed'] > 1) and label_pos:
               speed = str(int(fleet['Speed'])) + 'km/s'
 
@@ -445,6 +456,17 @@ class Game():
 
             #print((pad_y+lineNr*line_height), fleet['Name'])
             lineNr +=1
+            if (fleet['Expanded']):
+              shipClasses = {}
+              for ship in fleet['Ships']:
+                if (ship['ClassName'] not in shipClasses):
+                  shipClasses[ship['ClassName']] = 1
+                else:
+                  shipClasses[ship['ClassName']] += 1
+              for shipClass in shipClasses:
+                label_pos = (expRect[2]+10,(pad_y+lineNr*line_height))
+                label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
+                lineNr +=1
 
       self.surface.blit(self.window_info,self.window_info_anchor)
       self.reDraw_InfoWindow = False
@@ -720,6 +742,7 @@ class Game():
       fleets[systemID][fleetId]['Orbit']['Distance'] = item[6]
       fleets[systemID][fleetId]['Orbit']['Bearing'] = item[7]
       fleets[systemID][fleetId]['Heading'] = math.atan2((y-y_prev),(x-x_prev))/math.pi*180
+      fleets[systemID][fleetId]['Expanded'] = False
       fleets[systemID][fleetId]['Speed'] = 0
       if (self.deltaTime > 0 and fleets[systemID][fleetId]['LastMoveTime'] > 0):
         fleets[systemID][fleetId]['Speed'] = math.sqrt((Utils.Sqr(y-y_prev)+Utils.Sqr(x-x_prev)))/self.deltaTime
@@ -738,10 +761,11 @@ class Game():
         supplies = ship[44]
         shipClassID = ship[33]
         shipClass = self.db.execute('''SELECT * from FCT_ShipClass WHERE ShipClassID = %d;'''%(shipClassID)).fetchall()[0]
+        shipClassName = shipClass[1]
         fuelCapacity = shipClass[27]
         suppliesCapacity = shipClass[84]
         magazineCapacity = shipClass[38]
-        fleets[systemID][fleetId]['Ships'].append({'Name':name, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity})
+        fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity})
         fleetFuel += fuel
         fleetFuelCapacity += fuelCapacity
         fleetSupplies += supplies
@@ -821,8 +845,6 @@ class Game():
 
 
   def GetNewData(self):
-    if (self.Events):
-      self.Events.ClearClickables()
     self.starSystems = self.GetSystems()
     self.currentSystemJumpPoints = self.GetSystemJumpPoints()
     self.surveyLocations = self.GetSurveyLocations(self.currentSystem)
@@ -903,13 +925,19 @@ class Game():
                     right_click_call_back=None, 
                     double_click_call_back=None, 
                     par=None,
-                    color=None ):
-    cl = Clickable.Clickable(self, name, bounding_box, parameter=par, 
-                   LeftClickCallBack=left_click_call_back, 
-                   RightClickCallBack=right_click_call_back, 
-                   DoubleClickCallBack=double_click_call_back)
-    if (self.Events):
-      self.Events.Bind(cl)
+                    color=None,
+                    parent = None,
+                    anchor = None ):
+    if (anchor is not None):
+      bounding_box = (bounding_box[0]+anchor[0],bounding_box[1]+anchor[1],bounding_box[2],bounding_box[3])
+    if (Utils.IsOnScreen(self.surface, bounding_box)):
+      cl = Clickable.Clickable(self, name, bounding_box, parameter=par, 
+                     LeftClickCallBack=left_click_call_back, 
+                     RightClickCallBack=right_click_call_back, 
+                     DoubleClickCallBack=double_click_call_back,
+                     parent = parent)
+      if (self.Events):
+        self.Events.Bind(cl)
     #self.Events.Bind(type, key, {'BoundingBox':bounding_box, 'ColorKey':color, 'EventType':event_type})
 
 
@@ -949,3 +977,7 @@ class Game():
       self.highlighted_fleet_ID = -1
       self.GetNewData()
 
+  def ExpandFleet(self, id):
+    if (id in self.fleets[self.currentSystem]):
+      self.fleets[self.currentSystem][id]['Expanded'] = not self.fleets[self.currentSystem][id]['Expanded']
+      self.reDraw_InfoWindow = True
