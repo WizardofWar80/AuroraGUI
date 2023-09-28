@@ -147,7 +147,7 @@ class Game():
       self.currentSystem = self.homeSystemID
       #self.currentSystem = 8497 # Alpha Centauri
       self.currentSystem = 8499
-      self.currentSystem = 8500
+      #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
@@ -504,7 +504,9 @@ class Game():
   def GetSystemName(self, systemID):
     system_number = self.db.execute('''SELECT SystemNumber from FCT_System WHERE GameID = %d AND systemId = %d;'''%(self.gameID,systemID)).fetchone()[0]
     if (system_number > -1):
-        system_name = self.db.execute('''SELECT Name from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
+        system_name = self.db.execute('''SELECT ConstellationName from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0].strip()
+        if (not system_name):
+          system_name = self.db.execute('''SELECT Name from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
     else:
         system_name = 'Unknown'
     return system_name
@@ -519,7 +521,7 @@ class Game():
       if (systemNumber != -1):
         known_system = self.db.execute('''SELECT * from DIM_KnownSystems WHERE KnownSystemID = %d;'''%systemNumber).fetchone()
         system = {}
-        system['Name'] = known_system[1]
+        system['Name'] = self.GetSystemName(systemID)
         system['Stars'] = None
         stars_table = self.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,systemID))
         stars = {}
@@ -582,6 +584,10 @@ class Game():
     body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
     for body in body_table:
       body_name = body[1]
+      if (body_name == ''):
+        body_name = self.db.execute('''SELECT Name from FCT_SystemBodyName WHERE GameID = %d AND RaceID = %d AND SystemID = %d AND SystemBodyID = %d ;'''%(self.gameID,self.myRaceID, self.currentSystem, body[0])).fetchone()
+        if (not body_name):
+          body_name = '?'
       orbit = body[2] 
       a = body[2]
       r = body[4]
@@ -645,7 +651,7 @@ class Game():
             selectedImage = random.randint(0,numImages-1)
             image = self.images_Body['Comets'][selectedImage]
 
-      systemBodies[body[0]]={'ID':body[0],'Name':body[1], 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
+      systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
                             'Eccentricity':body[8],'EccentricityAngle':body[9], 'Pos':(body[6], body[7]), 'Image':image}
     return systemBodies
 
