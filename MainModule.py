@@ -126,6 +126,7 @@ class Game():
     self.reDraw_MapWindow = True;
 
     self.images_GUI = {}
+    self.GUI_expanded_fleets = []
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -145,7 +146,8 @@ class Game():
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
       #self.currentSystem = 8497 # Alpha Centauri
-      #self.currentSystem = 8499
+      self.currentSystem = 8499
+      self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
@@ -458,7 +460,7 @@ class Game():
 
             #print((pad_y+lineNr*line_height), fleet['Name'])
             lineNr +=1
-            if (fleet['Expanded']):
+            if (fleetID in self.GUI_expanded_fleets):
               shipClasses = {}
               for ship in fleet['Ships']:
                 if (ship['ClassName'] not in shipClasses):
@@ -744,7 +746,6 @@ class Game():
       fleets[systemID][fleetId]['Orbit']['Distance'] = item[6]
       fleets[systemID][fleetId]['Orbit']['Bearing'] = item[7]
       fleets[systemID][fleetId]['Heading'] = math.atan2((y-y_prev),(x-x_prev))/math.pi*180
-      fleets[systemID][fleetId]['Expanded'] = False
       fleets[systemID][fleetId]['Speed'] = 0
       if (self.deltaTime > 0 and fleets[systemID][fleetId]['LastMoveTime'] > 0):
         fleets[systemID][fleetId]['Speed'] = math.sqrt((Utils.Sqr(y-y_prev)+Utils.Sqr(x-x_prev)))/self.deltaTime
@@ -957,6 +958,7 @@ class Game():
       self.currentSystem = id
       self.window_info_scoll_pos = 0
       self.GetNewData()
+      self.CleanUpInfoWindow()
 
 
   def Select_Fleet(self, id):
@@ -979,7 +981,14 @@ class Game():
       self.highlighted_fleet_ID = -1
       self.GetNewData()
 
+  def CleanUpInfoWindow(self):
+    self.GUI_expanded_fleets = []
+
+
   def ExpandFleet(self, id):
     if (id in self.fleets[self.currentSystem]):
-      self.fleets[self.currentSystem][id]['Expanded'] = not self.fleets[self.currentSystem][id]['Expanded']
+      if (id in self.GUI_expanded_fleets):
+        self.GUI_expanded_fleets.remove(id)
+      else:
+        self.GUI_expanded_fleets.append(id)
       self.reDraw_InfoWindow = True

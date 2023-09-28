@@ -65,9 +65,13 @@ class Events:
 
   def ClearClickables(self, parent = None):
     if(parent):
+      listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent == parent):
-          self.clickables.remove(clickable)
+          listOfElementsToDelete.append(clickable)
+
+      for cl in listOfElementsToDelete:
+        self.clickables.remove(cl)
     else:
       self.clickables = []
     
