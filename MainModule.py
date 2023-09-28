@@ -382,8 +382,8 @@ class Game():
     if (self.currentSystem in self.fleets):
       for fleetID in self.fleets[self.currentSystem]:
         fleet = self.fleets[self.currentSystem][fleetID]
-        if (fleet['Ships'] != [] or self.showEmptyFleets):
-          if (fleet['Speed'] > 1 or self.showStationaryFleets):
+        if (fleet['Ships'] != [] or self.showEmptyFleets or (self.highlighted_fleet_ID == fleetID)):
+          if (fleet['Speed'] > 1 or self.showStationaryFleets or (self.highlighted_fleet_ID == fleetID)):
             pos = self.WorldPos2ScreenPos(fleet['Position'])
             if (self.showFleetTraces):
               prev_pos = self.WorldPos2ScreenPos(fleet['Position_prev'])
@@ -391,7 +391,8 @@ class Game():
             bb = Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
             if (self.CheckClickableNotBehindGUI(bb)):
               self.MakeClickable(fleet['Name'], bb, left_click_call_back = self.Select_Fleet, par=fleetID)
-
+            if (self.highlighted_fleet_ID == fleetID):
+              pygame.draw.rect(self.surface, self.color_Fleet,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
             #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
             Utils.DrawText2Surface(self.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,self.color_Fleet)
 
