@@ -1,6 +1,8 @@
 import pygame
 import math
 
+PROFILING = True
+
 LIGHT_GRAY2 = (230,230,230)
 LIGHT_GRAY = (220,220,220)
 MED_GRAY = (200,200,200)
@@ -49,6 +51,9 @@ BodyTypes = {    1:'Asteroid'
                , 12:'??? Moon Large Terrestrial'
                , 13:'???'
                , 14:'Comet' }
+
+star_suffixes = ['A', 'B', 'C', 'D']
+
 FILLED = 0
 AU = 149597870.7
 AU_INV = 6.6845871222684454959959533702106E-9
@@ -217,6 +222,7 @@ def DivTuples(t1,t2):
 
 
 def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0, startAngle = 0, N = 60):
+  t1 = pygame.time.get_ticks()
   beta *= DEGREES_TO_RADIANS
   startAngle *= DEGREES_TO_RADIANS
   cos_beta = math.cos(beta)
@@ -234,6 +240,10 @@ def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0, startAngle = 0, N = 60)
     if (points_on_screen[-1]):
       num_points_on_screen+=1
   pygame.draw.polygon(surface,color, points, 1)
+  t2 = pygame.time.get_ticks()
+  if (PROFILING):
+    dt = t2-t1
+    print('MyDrawEllipse: %d ms'%dt)
   #if (num_points_on_screen > 1):
   #  
   #  if (num_points_on_screen < 0.5 * N):
@@ -342,3 +352,72 @@ def Int2Roman(number):
     roman += I2R_Conv[i][1] #adds the roman numeral equivalent to string
     number -= I2R_Conv[i][0] #decrements your num
   return roman
+
+
+def Sqr(x):
+  return x*x
+
+
+def CalcSqrDistBetweenPoints(p1, p2):
+  return Sqr(p1[0]-p2[0]) + Sqr(p1[1]-p2[1])
+
+
+def GetRectCorners(rect):
+  rect_corners=[]
+  rect_corners.append((rect[0]        ,rect[1]))
+  rect_corners.append((rect[0]+rect[2],rect[1]))
+  rect_corners.append((rect[0]        ,rect[1]+rect[3]))
+  rect_corners.append((rect[0]+rect[2],rect[1]+rect[3]))
+
+  return rect_corners
+
+
+def RectIntersectsRadius(rect, center, radius):
+  radius_sqr = Sqr(radius)
+  rect_corners = GetRectCorners(rect)
+
+  point_inside_circle = False
+  point_outside_circle = False
+  for point in rect_corners:
+    d_sqr = CalcSqrDistBetweenPoints(point, center)
+    if (d_sqr < radius_sqr):
+      point_inside_circle = True
+    else:
+      point_outside_circle = True
+  if (point_inside_circle and point_outside_circle):
+    return True, True
+  elif (point_outside_circle):
+    cr = pygame.Rect(rect)
+    if (cr.collidepoint(center)):
+      return True, False
+    else:
+      # check if circle intersects with screen borders
+      rect_vertices = []
+      rect_vertices.append((rect[0]        ,rect[1], rect[2], 1))       # Top vertex
+      rect_vertices.append((rect[0]        ,rect[1], 1,       rect[3])) # Left vertex
+      rect_vertices.append((rect[0]+rect[2],rect[1], 1,       rect[3])) # Right vertex
+      rect_vertices.append((rect[0]        ,rect[1], rect[2], rect[3])) # bottom vertex
+
+      radius_vertices = []
+      radius_vertices.append(pygame.Rect(center[0]        ,center[1], radius, 1))       # right vertex
+      radius_vertices.append(pygame.Rect(center[0]        ,center[1], 1,       radius)) # down vertex
+      radius_vertices.append(pygame.Rect(center[0]        ,center[1]- radius, 1,radius)) # up vertex
+      radius_vertices.append(pygame.Rect(center[0]- radius,center[1],radius, 1))      # left vertex
+      for rect_v in rect_vertices:
+        for rad_v in radius_vertices:
+          if (rad_v.colliderect(rect_v)):
+            return True, False
+
+  return False, False
+
+
+def GetAnglesEncompassingRectangle(rect, center):
+  rect_corners = GetRectCorners(rect)
+  angles = []
+  for point in rect_corners:
+    angles.append(math.atan2(point[1]-center[1],point[0]-center[0]))
+
+  min_angle = min(angles)
+  max_angle = max(angles)
+
+  return min_angle, max_angle

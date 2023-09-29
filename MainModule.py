@@ -145,8 +145,8 @@ class Game():
       self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
-      #self.currentSystem = 8497 # Alpha Centauri
-      self.currentSystem = 8499
+      self.currentSystem = 8497 # Alpha Centauri
+      #self.currentSystem = 8499 # Lalande
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
@@ -219,6 +219,7 @@ class Game():
     self.DrawSystemFleets()
     t2 = pygame.time.get_ticks()
     dt4 = t2-t1
+    print(dt1,dt2,dt3,dt4)
     return True
 
 
@@ -231,7 +232,7 @@ class Game():
     for starID in system['Stars']:
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
-      star_name = star['Name'] + star['Suffix']
+      star_name = star['Name'] + ' ' + star['Suffix']
       # draw star
       r = star['Radius']
       radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
@@ -266,8 +267,22 @@ class Game():
       screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       # draw orbit
       if (self.showOrbits_Stars):
-        pygame.draw.circle(self.surface,self.color_Orbit_Star,screen_parent_pos,star['OrbitDistance']*self.systemScale,1)
+        orbitRadiusOnScreen = star['OrbitDistance']*self.systemScale
+        if (orbitRadiusOnScreen > 0):
+          circle_visible, partial = Utils.RectIntersectsRadius((0,0,self.width, self.height), screen_parent_pos, orbitRadiusOnScreen)
+          if (circle_visible):
+            if (partial):
+              arc_rect = (screen_parent_pos[0]-orbitRadiusOnScreen,screen_parent_pos[1]-orbitRadiusOnScreen,orbitRadiusOnScreen*2,orbitRadiusOnScreen*2)
+              min_angle, max_angle = Utils.GetAnglesEncompassingRectangle((0,0,self.width, self.height), screen_parent_pos)
+              pygame.draw.arc(self.surface, self.color_Orbit_Star, arc_rect, max_angle, min_angle, 1)
+            else:
+              #arc_rect = (screen_parent_pos[0]-orbitRadiusOnScreen,screen_parent_pos[1]-orbitRadiusOnScreen,orbitRadiusOnScreen*2,orbitRadiusOnScreen*2)
+              #pygame.draw.arc(self.surface, self.color_Orbit_Star, arc_rect, 180/180*3.14, 0, 1)
+              pygame.draw.circle(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, 1)
     
+    drawnBodies = 0
+    drawnLabels = 0
+    drawnOrbits = 0
     # Draw other bodies
     for bodyID in self.systemBodies:
       body = self.systemBodies[bodyID]
@@ -311,9 +326,11 @@ class Game():
             #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
             # 19 FPS @360 segments, 30 FPS at 60 segments
             Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'],body['Bearing'], N)
+            drawnOrbits += 1
           else:
             if (orbitOnScreen < 50000 and orbitOnScreen > min_orbit):
               pygame.draw.circle(self.surface,draw_color_orbit,screen_parent_pos,orbitOnScreen,1)
+              drawnOrbits += 1
         
         if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < self.width+50 and screen_body_pos[1] < self.height+50 ):
           pass
@@ -331,9 +348,10 @@ class Game():
               scaledSurface = pygame.transform.smoothscale(body['Image'],scale)
               image_offset = Utils.SubTuples(screen_body_pos,scaledSurface.get_rect().center)
               self.surface.blit(scaledSurface,image_offset)
+              drawnBodies += 1
           else:
             pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
-          
+            drawnBodies += 1
           bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
           if (self.CheckClickableNotBehindGUI(bb)):
             self.MakeClickable(body['Name'], bb, left_click_call_back = self.Select_Body, par=bodyID)
@@ -343,7 +361,9 @@ class Game():
           if (draw_cond) and (orbitOnScreen > min_dist):
             labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
             Utils.DrawText2Surface(self.surface,body['Name'],labelPos,14,draw_color_label)
+            drawnLabels+=1
 
+    print('Bodies %d, Labels %d, Orbits %d'%(drawnBodies, drawnLabels, drawnOrbits))
 
   def DrawSystemJumpPoints(self):
     for JP_ID in self.currentSystemJumpPoints:
@@ -531,14 +551,14 @@ class Game():
           num_stars += 1
         # we moved the cursor so we have to run the query again
         stars_table = self.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,systemID))
-        star_suffixes = ['A', 'B', 'C', 'D']
+        
         star_index = 0
         for star in stars_table:
           ID = star[0]
           stars[ID] = {}
           stars[ID]['Name'] = system['Name']
           if (num_stars > 1):
-            stars[ID]['Name'] += star_suffixes[star_index]
+            stars[ID]['Name'] += '-'+Utils.star_suffixes[star_index]
 
           stars[ID]['Component'] = star[8]
           stars[ID]['StellarTypeID']=star[3]
@@ -547,7 +567,7 @@ class Game():
           spectralClass = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
           spectralNumber = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralNumber']
           sizeText = self.stellarTypes[stars[ID]['StellarTypeID']]['SizeText']
-          stars[ID]['Suffix'] = spectralClass + str(spectralNumber) + sizeText
+          stars[ID]['Suffix'] = spectralClass + str(spectralNumber) +'-'+ sizeText
           if (spectralClass == 'BH'):
             # black holes should use Schwartzschildradius:
             # r = M * 0.000004246 sunradii
@@ -596,30 +616,43 @@ class Game():
 
   def GetSystemBodies(self):
     systemBodies = {}
-    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
+    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
     for body in body_table:
       body_name = body[1]
+      planetNumber = body[2]
+      orbitNumber = body[3]
+      parentID = body[5]
+      bodyType = '?'
+      bodyClass = '?'
+      if (body[13] in Utils.BodyTypes):
+        bodyType = Utils.BodyTypes[body[13]]
+      if (body[12] in Utils.BodyClasses):
+        bodyClass = Utils.BodyClasses[body[12]]
+
       if (body_name == ''):
         body_name = self.db.execute('''SELECT Name from FCT_SystemBodyName WHERE GameID = %d AND RaceID = %d AND SystemID = %d AND SystemBodyID = %d ;'''%(self.gameID,self.myRaceID, self.currentSystem, body[0])).fetchone()
         if (not body_name):
-          body_name = '?'
-      orbit = body[2] 
-      a = body[2]
-      r = body[4]
-      d = body[2]
-      angle = body[5]
-      body_pos = (body[6], body[7])
-      angle2 = body[9]
-      E = body[8]
-      bodyType = '?'
-      bodyClass = '?'
-      temp = body[12]-273
-      atm = body[13]
-      hydro = body[14]
-      if (body[11] in Utils.BodyTypes):
-        bodyType = Utils.BodyTypes[body[11]]
-      if (body[10] in Utils.BodyClasses):
-        bodyClass = Utils.BodyClasses[body[10]]
+          if (parentID in systemBodies):
+            parentName = systemBodies[parentID]['Name']
+          elif(parentID in self.starSystems[self.currentSystem]['Stars']):
+            parentName = self.starSystems[self.currentSystem]['Stars'][parentID]['Name']
+
+          if (bodyClass == 'Moon'):
+            parentName = 'Moon ' + (parentName[0] if parentName[1] == '-' and parentName[1] in Utils.star_suffixes else '')
+          else:
+            parentName += ' ' + Utils.Int2Roman(planetNumber)
+          body_name = parentName + ((' ' + str(orbitNumber)) if orbitNumber > 0 else '')
+
+      a = d = orbit = body[4] 
+      r = body[6]
+      angle = body[7]
+      body_pos = (body[8], body[9])
+      angle2 = body[11]
+      E = body[10]
+      temp = body[14]-273
+      atm = body[15]
+      hydro = body[16]
+      
       if (bodyClass == 'Moon'):
         orbit = orbit * Utils.AU_INV
       image = None
@@ -666,8 +699,8 @@ class Game():
             selectedImage = random.randint(0,numImages-1)
             image = self.images_Body['Comets'][selectedImage]
 
-      systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[3], 'RadiusBody':body[4], 'Bearing':body[5],
-                            'Eccentricity':body[8],'EccentricityAngle':body[9], 'Pos':(body[6], body[7]), 'Image':image}
+      systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
+                            'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Image':image}
     return systemBodies
 
 
