@@ -24,6 +24,11 @@ PURPLE = (128, 0, 128)
 GREENSCREEN = (255, 0, 255)
 BLUE = (0, 0, 255)
 
+I2R_Conv = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+            [ 100, 'C'], [ 90, 'XC'], [ 50, 'L'], [ 40, 'XL'],
+            [  10, 'X'], [  9, 'IX'], [  5, 'V'], [  4, 'IV'],
+            [   1, 'I']]
+
 BodyClasses = {  1:'Planet'
                , 2:'Moon'
                , 3:'Asteroid'
@@ -327,3 +332,13 @@ def DrawPercentageFilledImage(window, image, pos, percentage, color_unfilled = W
 
 def IsOnScreen(screen, rect):
   return screen.get_rect().colliderect(rect)
+
+
+def Int2Roman(number):
+  roman = ''
+  i = 0 #initiate i = 0
+  while number > 0:
+    while I2R_Conv[i][0] > number: i+=1 #increments i to largest value greater than current num
+    roman += I2R_Conv[i][1] #adds the roman numeral equivalent to string
+    number -= I2R_Conv[i][0] #decrements your num
+  return roman

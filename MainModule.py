@@ -231,7 +231,7 @@ class Game():
     for starID in system['Stars']:
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
-      star_name = system['Name']
+      star_name = star['Name'] + star['Suffix']
       # draw star
       r = star['Radius']
       radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
@@ -322,8 +322,8 @@ class Game():
         if (body_draw_cond) and (orbitOnScreen > body_min_dist):
           # draw body
           if (body['Image'] is not None):
-            if (screen_body_pos[0]-radius < self.width and screen_body_pos[0]+radius > 0 and 
-                screen_body_pos[1]-radius < self.height and screen_body_pos[1]+radius > 0 ):
+            if (screen_body_pos[0]-radius_on_screen < self.width and screen_body_pos[0]+radius_on_screen > 0 and 
+                screen_body_pos[1]-radius_on_screen < self.height and screen_body_pos[1]+radius_on_screen > 0 ):
               scale = (radius_on_screen*2,radius_on_screen*2)
               if (scale[0] > 2*self.width):
                 #todo: fix bug where the scaled surface moves when zooming in too much
@@ -526,14 +526,28 @@ class Game():
         stars_table = self.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,systemID))
         stars = {}
         component2ID = {}
+        num_stars = 0
+        for x in stars_table:
+          num_stars += 1
+        # we moved the cursor so we have to run the query again
+        stars_table = self.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,systemID))
+        star_suffixes = ['A', 'B', 'C', 'D']
+        star_index = 0
         for star in stars_table:
           ID = star[0]
           stars[ID] = {}
+          stars[ID]['Name'] = system['Name']
+          if (num_stars > 1):
+            stars[ID]['Name'] += star_suffixes[star_index]
+
           stars[ID]['Component'] = star[8]
           stars[ID]['StellarTypeID']=star[3]
           stars[ID]['Radius']=self.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
           stars[ID]['Black Hole']=False
           spectralClass = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
+          spectralNumber = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralNumber']
+          sizeText = self.stellarTypes[stars[ID]['StellarTypeID']]['SizeText']
+          stars[ID]['Suffix'] = spectralClass + str(spectralNumber) + sizeText
           if (spectralClass == 'BH'):
             # black holes should use Schwartzschildradius:
             # r = M * 0.000004246 sunradii
@@ -553,6 +567,7 @@ class Game():
           if (len(self.images_Body) > 0):
             if (spectralClass in self.images_Body['Stars']):
               stars[ID]['Image'] = self.images_Body['Stars'][spectralClass]
+          star_index += 1
         system['Stars'] = stars
         systems[systemID] = system
     return systems
