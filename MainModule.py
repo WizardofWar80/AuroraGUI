@@ -145,7 +145,7 @@ class Game():
       self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
-      self.currentSystem = 8497 # Alpha Centauri
+      self.currentSystem = 8497 # Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
       #self.currentSystem = 8499 # Lalande
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
@@ -235,6 +235,20 @@ class Game():
       star_name = star['Name'] + ' ' + star['Suffix']
       # draw star
       r = star['Radius']
+
+      screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
+      # draw orbit
+      if (self.showOrbits_Stars):
+        orbitRadiusOnScreen = star['OrbitDistance']*self.systemScale
+        if (orbitRadiusOnScreen > 0):
+          Utils.DrawEllipticalOrbit(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, star['Eccentricity'], star['EccentricityAngle'],star['Bearing'], 10)
+          #if (orbitRadiusOnScreen < self.width):
+          #  pygame.draw.circle(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, 1)
+          #else:
+          #  if Utils.RectIntersectsRadius((0,0,self.width, self.height), screen_parent_pos, orbitRadiusOnScreen):
+          #    min_angle, max_angle = Utils.GetAnglesEncompassingRectangle((0,0,self.width, self.height), screen_parent_pos)
+          #    Utils.DrawArc(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, min_angle, max_angle, 1)
+      
       radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
       star_color = self.stellarTypes[star['StellarTypeID']]['RGB']
       if (radius < self.minPixelSize_Star):
@@ -264,21 +278,8 @@ class Game():
       # Label Star
       labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
       Utils.DrawText2Surface(self.surface,star_name,labelPos,14,self.color_Label_Star)
-      screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
-      # draw orbit
-      if (self.showOrbits_Stars):
-        orbitRadiusOnScreen = star['OrbitDistance']*self.systemScale
-        if (orbitRadiusOnScreen > 0):
-          circle_visible, partial = Utils.RectIntersectsRadius((0,0,self.width, self.height), screen_parent_pos, orbitRadiusOnScreen)
-          if (circle_visible):
-            if (partial):
-              arc_rect = (screen_parent_pos[0]-orbitRadiusOnScreen,screen_parent_pos[1]-orbitRadiusOnScreen,orbitRadiusOnScreen*2,orbitRadiusOnScreen*2)
-              min_angle, max_angle = Utils.GetAnglesEncompassingRectangle((0,0,self.width, self.height), screen_parent_pos)
-              pygame.draw.arc(self.surface, self.color_Orbit_Star, arc_rect, max_angle, min_angle, 1)
-            else:
-              #arc_rect = (screen_parent_pos[0]-orbitRadiusOnScreen,screen_parent_pos[1]-orbitRadiusOnScreen,orbitRadiusOnScreen*2,orbitRadiusOnScreen*2)
-              #pygame.draw.arc(self.surface, self.color_Orbit_Star, arc_rect, 180/180*3.14, 0, 1)
-              pygame.draw.circle(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, 1)
+
+
     
     drawnBodies = 0
     drawnLabels = 0
@@ -308,29 +309,30 @@ class Game():
             screen_parent_pos = self.WorldPos2ScreenPos(self.systemBodies[parentID]['Pos'])
           else:
             screen_parent_pos = self.WorldPos2ScreenPos((0,0))
-          # draw orbit
-          if (E > 0):
-            a = orbitOnScreen
-            b = a * math.sqrt(1-E*E)
-            #b = body['Orbit'] * self.systemScale
-            #a = b*1/math.sqrt(1-E*E)
-            c = E * a
-            N = 60
-            if (E > 0.9):
-              N = 240
-            x_offset = c * math.cos(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
-            y_offset = c * math.sin(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
-            offsetPos = Utils.AddTuples(screen_parent_pos, (x_offset,y_offset))
-            #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-            # 13 FPS
-            #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-            # 19 FPS @360 segments, 30 FPS at 60 segments
-            Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'],body['Bearing'], N)
-            drawnOrbits += 1
-          else:
-            if (orbitOnScreen < 50000 and orbitOnScreen > min_orbit):
-              pygame.draw.circle(self.surface,draw_color_orbit,screen_parent_pos,orbitOnScreen,1)
-              drawnOrbits += 1
+          Utils.DrawEllipticalOrbit(self.surface, draw_color_orbit, screen_parent_pos, orbitOnScreen, E, body['EccentricityAngle'],body['Bearing'], min_orbit)
+          ## draw orbit
+          #if (E > 0):
+          #  a = orbitOnScreen
+          #  b = a * math.sqrt(1-E*E)
+          #  #b = body['Orbit'] * self.systemScale
+          #  #a = b*1/math.sqrt(1-E*E)
+          #  c = E * a
+          #  N = 60
+          #  if (E > 0.9):
+          #    N = 240
+          #  x_offset = c * math.cos(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
+          #  y_offset = c * math.sin(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
+          #  offsetPos = Utils.AddTuples(screen_parent_pos, (x_offset,y_offset))
+          #  #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+          #  # 13 FPS
+          #  #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
+          #  # 19 FPS @360 segments, 30 FPS at 60 segments
+          #  Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'],body['Bearing'], N)
+          #  drawnOrbits += 1
+          #else:
+          #  if (orbitOnScreen < 50000 and orbitOnScreen > min_orbit):
+          #    pygame.draw.circle(self.surface,draw_color_orbit,screen_parent_pos,orbitOnScreen,1)
+          #    drawnOrbits += 1
         
         if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < self.width+50 and screen_body_pos[1] < self.height+50 ):
           pass
@@ -364,6 +366,7 @@ class Game():
             drawnLabels+=1
 
     print('Bodies %d, Labels %d, Orbits %d'%(drawnBodies, drawnLabels, drawnOrbits))
+
 
   def DrawSystemJumpPoints(self):
     for JP_ID in self.currentSystemJumpPoints:
@@ -552,6 +555,7 @@ class Game():
         # we moved the cursor so we have to run the query again
         stars_table = self.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,systemID))
         
+        #8497 Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
         star_index = 0
         for star in stars_table:
           ID = star[0]
@@ -582,6 +586,8 @@ class Game():
             stars[ID]['ParentPos'] = stars[component2ID[parentComponent]]['Pos']
           stars[ID]['Bearing'] = star[10]
           stars[ID]['OrbitDistance'] = star[13]
+          stars[ID]['Eccentricity'] = star[15]
+          stars[ID]['EccentricityAngle'] = star[16]
           stars[ID]['Pos'] = (star[6],star[7])
           stars[ID]['Image'] = None
           if (len(self.images_Body) > 0):

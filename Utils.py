@@ -385,30 +385,30 @@ def RectIntersectsRadius(rect, center, radius):
     else:
       point_outside_circle = True
   if (point_inside_circle and point_outside_circle):
-    return True, True
-  elif (point_outside_circle):
-    cr = pygame.Rect(rect)
-    if (cr.collidepoint(center)):
-      return True, False
-    else:
-      # check if circle intersects with screen borders
-      rect_vertices = []
-      rect_vertices.append((rect[0]        ,rect[1], rect[2], 1))       # Top vertex
-      rect_vertices.append((rect[0]        ,rect[1], 1,       rect[3])) # Left vertex
-      rect_vertices.append((rect[0]+rect[2],rect[1], 1,       rect[3])) # Right vertex
-      rect_vertices.append((rect[0]        ,rect[1], rect[2], rect[3])) # bottom vertex
+    return True
+  #elif (point_outside_circle):
+  #  cr = pygame.Rect(rect)
+  #  if (cr.collidepoint(center)):
+  #    return True, False
+  #  else:
+  #    # check if circle intersects with screen borders
+  #    rect_vertices = []
+  #    rect_vertices.append((rect[0]        ,rect[1], rect[2], 1))       # Top vertex
+  #    rect_vertices.append((rect[0]        ,rect[1], 1,       rect[3])) # Left vertex
+  #    rect_vertices.append((rect[0]+rect[2],rect[1], 1,       rect[3])) # Right vertex
+  #    rect_vertices.append((rect[0]        ,rect[1], rect[2], rect[3])) # bottom vertex
 
-      radius_vertices = []
-      radius_vertices.append(pygame.Rect(center[0]        ,center[1], radius, 1))       # right vertex
-      radius_vertices.append(pygame.Rect(center[0]        ,center[1], 1,       radius)) # down vertex
-      radius_vertices.append(pygame.Rect(center[0]        ,center[1]- radius, 1,radius)) # up vertex
-      radius_vertices.append(pygame.Rect(center[0]- radius,center[1],radius, 1))      # left vertex
-      for rect_v in rect_vertices:
-        for rad_v in radius_vertices:
-          if (rad_v.colliderect(rect_v)):
-            return True, False
+  #    radius_vertices = []
+  #    radius_vertices.append(pygame.Rect(center[0]        ,center[1], radius, 1))       # right vertex
+  #    radius_vertices.append(pygame.Rect(center[0]        ,center[1], 1,       radius)) # down vertex
+  #    radius_vertices.append(pygame.Rect(center[0]        ,center[1]- radius, 1,radius)) # up vertex
+  #    radius_vertices.append(pygame.Rect(center[0]- radius,center[1],radius, 1))      # left vertex
+  #    for rect_v in rect_vertices:
+  #      for rad_v in radius_vertices:
+  #        if (rad_v.colliderect(rect_v)):
+  #          return True, False
 
-  return False, False
+  return False
 
 
 def GetAnglesEncompassingRectangle(rect, center):
@@ -421,3 +421,39 @@ def GetAnglesEncompassingRectangle(rect, center):
   max_angle = max(angles)
 
   return min_angle, max_angle
+
+
+def DrawArc(surface, color, center, r, angle_start, angle_end, width):
+  N = 60
+  points = []
+  end = False
+  delta_angle = angle_end - angle_start
+  for i in range(N):
+    angle =  i/N*delta_angle+angle_start
+    if (angle > angle_end):
+      angle = angle_end
+      end = True
+    points.append((center[0]+math.cos(angle)*r,center[1]+math.sin(angle)*r))
+    if end:
+      break
+  pygame.draw.lines(surface,color, False, points, width)
+  
+def DrawEllipticalOrbit(surface, color, pos, orbit, E, angle1, angle2, min_orbit):
+  # draw orbit
+  if (E > 0):
+    a = orbit
+    b = a * math.sqrt(1-E*E)
+    #b = body['Orbit'] * self.systemScale
+    #a = b*1/math.sqrt(1-E*E)
+    c = E * a
+    N = 60
+    if (E > 0.9):
+      N = 240
+    x_offset = c * math.cos(angle1*DEGREES_TO_RADIANS)
+    y_offset = c * math.sin(angle1*DEGREES_TO_RADIANS)
+    offsetPos = AddTuples(pos, (x_offset,y_offset))
+
+    MyDrawEllipse(surface, color, offsetPos[0],offsetPos[1], a, b,angle1,angle2, N)
+  else:
+    if (orbit < 50000 and orbit > min_orbit):
+      pygame.draw.circle(surface, color, pos, orbit,1)
