@@ -640,7 +640,9 @@ class Game():
             parentName = self.starSystems[self.currentSystem]['Stars'][parentID]['Name']
 
           if (bodyClass == 'Moon'):
-            parentName = 'Moon ' + (parentName[0] if parentName[1] == '-' and parentName[1] in Utils.star_suffixes else '')
+            hyphen_pos = parentName.rfind('-')
+            if (hyphen_pos > -1):
+              parentName = 'Moon ' + parentName[hyphen_pos+1:].replace(' ','-')
           else:
             parentName += ' ' + Utils.Int2Roman(planetNumber)
           body_name = parentName + ((' ' + str(orbitNumber)) if orbitNumber > 0 else '')
