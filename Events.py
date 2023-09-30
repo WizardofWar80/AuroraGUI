@@ -63,11 +63,19 @@ class Events:
       self.TimeSinceRightMouseButtonDoubleClick = current_time - self.TimeRightMouseButtonDoubleClick
 
 
-  def ClearClickables(self, parent = None):
+  def ClearClickables(self, parent = None, exclude = None):
     if(parent):
       listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent == parent):
+          listOfElementsToDelete.append(clickable)
+
+      for cl in listOfElementsToDelete:
+        self.clickables.remove(cl)
+    elif (exclude):
+      listOfElementsToDelete = []
+      for clickable in self.clickables:
+        if (clickable.parent != exclude):
           listOfElementsToDelete.append(clickable)
 
       for cl in listOfElementsToDelete:
@@ -102,7 +110,9 @@ class Events:
     if event.type == pygame.MOUSEMOTION:
       self.HandleMouseMotionEvents(event, game)
     if (self.LeftMouseButtonClicked):
-      self.HandleSingleClickEvents(1)
+      self.HandleSingleClickEvents(1, game)
+    if (self.RightMouseButtonClicked):
+      self.HandleSingleClickEvents(3, game)
     #if (self.LeftMouseButtonDoubleClicked):
     #  self.HandleDoubleClickEvents(1)
 
@@ -145,9 +155,23 @@ class Events:
       print(event)
       logger.write('Unhandled Button %d down'%event.button)
     elif (event.button == 3):
-      print('unhandled event for mouse button 2')
-      print(event)
-      logger.write('Unhandled Button %d down'%event.button)
+      logger.write('Button %d down at: %d,%d'%(event.button,event.pos[0], event.pos[1]))
+      #print('LMB')
+      if(not self.RightMouseButtonDown):
+        game.screenCenterBeforeDrag = game.screenCenter
+      if (self.TimeSinceRightMouseButtonReleased < self.doubleClickTiming):
+        self.RightMouseButtonDoubleClicked = True
+        self.TimeRightMouseButtonDoubleClick = current_time
+        self.TimeSinceRightMouseButtonDoubleClick = 0
+        self.RightDoubleClickPosition = event.pos
+
+      self.TimeSinceRightMouseButtonReleased = current_time - self.TimeRightMouseButtonReleased
+      self.TimeRightMouseButtonPressed = current_time
+      self.RightMouseButtonDown = True
+      #print('Left MB was released for %3.2fs'%self.TimeSinceLeftMouseButtonReleased)
+      self.TimeRightMouseButtonReleased = -1000
+      self.TimeSinceRightMouseButtonReleased = 1000
+      self.RightMousePressPosition = event.pos
 
 
   def HandleMouseUpEvents(self, event):
@@ -209,11 +233,12 @@ class Events:
         game.reDraw = True
 
 
-  def HandleSingleClickEvents(self, button):
+  def HandleSingleClickEvents(self, button, game):
     clicked_clickable = -1
     self.LeftMouseButtonClicked = False
     self.RightMouseButtonClicked = False
     index = 0
+    rightClickProcessed = False
     for clickable in self.clickables:
       if (clickable.rect) and (clickable.enabled):
         if (clickable.LeftClickCallBack is not None and button == 1):
@@ -229,9 +254,12 @@ class Events:
                and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
                and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
                and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
+            rightClickProcessed = True
             clicked_clickable = index
             clickable.RightClick()
       index += 1
+    if (button == 3 and rightClickProcessed == False):
+      game.CloseMenus()
 
 
   def HandleDoubleClickEvents(self):

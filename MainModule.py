@@ -5,6 +5,7 @@ import Utils
 import math
 import random
 import Clickable
+import GUI
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -125,8 +126,12 @@ class Game():
     self.window_map.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_MapWindow = True;
 
+    self.GUI_identifier = 'GUI Elements'
+    self.GUI_Elements = {}
+    self.GUI_Bottom_Anchor = (500,self.height-50)
     self.images_GUI = {}
     self.GUI_expanded_fleets = []
+    self.InitGUI()
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -152,13 +157,100 @@ class Game():
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
 
+  def InitGUI(self):
+    idGUI = 1
+    x = self.GUI_Bottom_Anchor[0]
+    y = self.GUI_Bottom_Anchor[1]
+    size = 32
+    bb = (x,y,size,size)
+    name = 'ShowBodies'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    showBodiesGUI = self.GUI_Elements[idGUI]
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Planets'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showPlanets)
+    showBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Moons'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showMoons)
+    showBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Asteroids'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showAsteroids)
+    showBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Comets'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showComets)
+    showBodiesGUI.AddChildren(idGUI)
+
+    # Second Column
+    idGUI += 1
+    x += size+5
+    y = self.GUI_Bottom_Anchor[1]
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Show Orbits'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    showOrbitsGUI = self.GUI_Elements[idGUI]
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Planet Orbits'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Planets)
+    showOrbitsGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Moon Orbits'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Moons)
+    showOrbitsGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Asteroid Orbits'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Asteroids)
+    showOrbitsGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Show Comet Orbits'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Comets)
+    showOrbitsGUI.AddChildren(idGUI)
+
+
 
   def Draw(self):
     reblit = False
     # clear screen
     if (self.reDraw):
       if (self.Events):
-        self.Events.ClearClickables()
+        self.Events.ClearClickables(exclude=self.GUI_identifier)
       self.reDraw_InfoWindow = True
       self.reDraw_MapWindow = True
       self.reDraw_GUI = True
@@ -418,7 +510,7 @@ class Game():
 
   def DrawInfoWindow(self):
     if (self.reDraw_InfoWindow):
-      self.Events.ClearClickables(self.window_info_identifier)
+      self.Events.ClearClickables(parent=self.window_info_identifier)
       line_height = 20
       pad_x = pad_y = 5
       lineNr = self.window_info_scoll_pos
@@ -511,7 +603,15 @@ class Game():
 
 
   def DrawGUI(self):
-    return False
+    if (self.reDraw_GUI):
+      for GUI_ID in self.GUI_Elements:
+        element = self.GUI_Elements[GUI_ID]
+        if (element.visible):
+          element.Draw(self.surface)
+      self.reDraw_GUI = False
+      return True
+    else:
+      return False
 
 
   def GetHomeSystemID(self):
@@ -982,7 +1082,7 @@ class Game():
     self.starSystems = self.GetSystems()
 
 
-  def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None ):
+  def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True ):
     if (anchor is not None):
       bounding_box = (bounding_box[0]+anchor[0],bounding_box[1]+anchor[1],bounding_box[2],bounding_box[3])
 
@@ -991,9 +1091,13 @@ class Game():
                      LeftClickCallBack=left_click_call_back, 
                      RightClickCallBack=right_click_call_back, 
                      DoubleClickCallBack=double_click_call_back,
-                     parent = parent)
+                     parent = parent,
+                     enabled = enabled)
       if (self.Events):
         self.Events.Bind(cl)
+      return cl
+    else:
+      return None
 
 
   def CheckClickableNotBehindGUI(self, bb):
@@ -1009,7 +1113,8 @@ class Game():
     if (self.Debug):
       if (self.Events):
         for clickable in self.Events.clickables:
-          pygame.draw.rect(self.surface, Utils.RED, clickable.rect, 1)
+          if (clickable.enabled):
+            pygame.draw.rect(self.surface, Utils.RED, clickable.rect, 1)
 
 
   def Follow_Jumppoint(self, id):
@@ -1040,6 +1145,67 @@ class Game():
       self.highlighted_fleet_ID = -1
       self.GetNewData()
 
+
+  def ToggleGUI(self, id):
+    if (id in self.GUI_Elements):
+      self.reDraw = True
+      element = self.GUI_Elements[id]
+      print('Click '+element.name)
+      if (element.parent):
+        element.enabled = not element.enabled
+        self.ToggleGUI_Element_ByName(element.name)
+        #element.clickable.enabled = not element.clickable.enabled
+      else:
+        element.open = not element.open
+
+      for childID in element.children:
+        if (childID not in self.GUI_Elements):
+          print('Error, GUI child %d does not exist for parent %d (%s)'%(childID, id, element.name))
+        else:
+          child = self.GUI_Elements[childID]
+          child.visible = element.open
+          child.clickable.enabled = element.open
+
+  def CloseMenus(self):
+    for id in self.GUI_Elements:
+      element = self.GUI_Elements[id]
+      if (not element.parent):
+        if (element.open):
+          self.ToggleGUI(id)
+
+
+  def ToggleGUI_Element_ByName(self, name):
+    #self.showEmptyFleets = False
+    #self.showStationaryFleets = False
+    #self.showUnsurveyedLocations = True
+    #self.showSurveyedLocations = False
+    #self.showFleetTraces = True
+    #self.showDwarfPlanets = True
+    #self.showLabels_Planets = True
+    #self.showLabels_DwarfPlanets = True
+    #self.showLabels_Moons = True
+    #self.showLabels_Comets = True
+    #self.showLabels_Asteroids = False
+    #self.showLabels_Stars = True
+
+    if (name == 'Show Planets'):
+      self.showPlanets = not self.showPlanets
+    elif (name == 'Show Moons'):
+      self.showMoons = not self.showMoons
+    elif (name == 'Show Comets'):
+      self.showComets = not self.showComets
+    elif (name == 'Show Asteroids'):
+      self.showAsteroids = not self.showAsteroids
+    elif (name == 'Show Planet Orbits'):
+      self.showOrbits_Planets = not self.showOrbits_Planets
+    elif (name == 'Show Moon Orbits'):
+      self.showOrbits_Moons = not self.showOrbits_Moons
+    elif (name == 'Show Comet Orbits'):
+      self.showOrbits_Comets = not self.showOrbits_Comets
+    elif (name == 'Show Asteroid Orbits'):
+      self.showOrbits_Asteroids = not self.showOrbits_Asteroids
+
+
   def CleanUpInfoWindow(self):
     self.GUI_expanded_fleets = []
 
@@ -1051,3 +1217,4 @@ class Game():
       else:
         self.GUI_expanded_fleets.append(id)
       self.reDraw_InfoWindow = True
+
