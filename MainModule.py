@@ -227,17 +227,19 @@ class Game():
     if self.currentSystem not in self.starSystems:
       return
     system = self.starSystems[self.currentSystem]
-
+    
+    ###################
     # Draw Stars
+    ###################
     for starID in system['Stars']:
       star = system['Stars'][starID]
       screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
       star_name = star['Name'] + ' ' + star['Suffix']
       # draw star
-      r = star['Radius']
-
-      screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
+      
       # draw orbit
+      ############
+      screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
       if (self.showOrbits_Stars):
         orbitRadiusOnScreen = star['OrbitDistance']*self.systemScale
         if (orbitRadiusOnScreen > 0):
@@ -249,12 +251,13 @@ class Game():
           #    min_angle, max_angle = Utils.GetAnglesEncompassingRectangle((0,0,self.width, self.height), screen_parent_pos)
           #    Utils.DrawArc(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, min_angle, max_angle, 1)
       
-      radius = (Utils.AU_INV*self.systemScale)*r*self.radius_Sun
+      # draw Star, either as image or as simple filled circle
+      ####################
+      radius = (Utils.AU_INV*self.systemScale)*star['Radius']*self.radius_Sun
       star_color = self.stellarTypes[star['StellarTypeID']]['RGB']
       if (radius < self.minPixelSize_Star):
         radius = self.minPixelSize_Star
 
-      # draw Star
       if (star['Image'] is not None):
         if (screen_star_pos[0]-radius < self.width and screen_star_pos[0]+radius > 0 and 
             screen_star_pos[1]-radius < self.height and screen_star_pos[1]+radius > 0 ):
@@ -274,16 +277,11 @@ class Game():
       if (self.CheckClickableNotBehindGUI(bb)):
         self.MakeClickable(star_name, bb, left_click_call_back = self.Select_Body, par=starID)
 
-      #pygame.draw.rect(self.surface,Utils.RED, (screen_star_pos,(1,1)), 0)
       # Label Star
+      ################
       labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
       Utils.DrawText2Surface(self.surface,star_name,labelPos,14,self.color_Label_Star)
 
-
-    
-    drawnBodies = 0
-    drawnLabels = 0
-    drawnOrbits = 0
     # Draw other bodies
     for bodyID in self.systemBodies:
       body = self.systemBodies[bodyID]
@@ -328,12 +326,12 @@ class Game():
           #  #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
           #  # 19 FPS @360 segments, 30 FPS at 60 segments
           #  Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'],body['Bearing'], N)
-          #  drawnOrbits += 1
           #else:
           #  if (orbitOnScreen < 50000 and orbitOnScreen > min_orbit):
           #    pygame.draw.circle(self.surface,draw_color_orbit,screen_parent_pos,orbitOnScreen,1)
-          #    drawnOrbits += 1
         
+        # check if we want to draw the object
+        ################
         if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < self.width+50 and screen_body_pos[1] < self.height+50 ):
           pass
         else:
@@ -350,10 +348,11 @@ class Game():
               scaledSurface = pygame.transform.smoothscale(body['Image'],scale)
               image_offset = Utils.SubTuples(screen_body_pos,scaledSurface.get_rect().center)
               self.surface.blit(scaledSurface,image_offset)
-              drawnBodies += 1
           else:
             pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
-            drawnBodies += 1
+          
+          
+          # Make object clickable
           bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
           if (self.CheckClickableNotBehindGUI(bb)):
             self.MakeClickable(body['Name'], bb, left_click_call_back = self.Select_Body, par=bodyID)
@@ -363,9 +362,6 @@ class Game():
           if (draw_cond) and (orbitOnScreen > min_dist):
             labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
             Utils.DrawText2Surface(self.surface,body['Name'],labelPos,14,draw_color_label)
-            drawnLabels+=1
-
-    print('Bodies %d, Labels %d, Orbits %d'%(drawnBodies, drawnLabels, drawnOrbits))
 
 
   def DrawSystemJumpPoints(self):
