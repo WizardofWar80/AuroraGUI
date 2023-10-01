@@ -1,7 +1,7 @@
 import pygame
 import math
 
-PROFILING = True
+PROFILING = False
 
 LIGHT_GRAY2 = (230,230,230)
 LIGHT_GRAY = (220,220,220)

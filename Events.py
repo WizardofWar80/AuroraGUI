@@ -24,11 +24,10 @@ class Events:
     self.RightMouseReleasePosition = []
     self.RightDoubleClickPosition = []
 
-
     self.TimestampInit = -1000
     self.TimeDeltaInit = 1000
     self.singleClickTiming = 0.7
-    self.doubleClickTiming = 0.5
+    self.doubleClickTiming = 0.2
     self.clickables = clickables
 
     self.TimeLeftMouseButtonPressed = self.TimestampInit

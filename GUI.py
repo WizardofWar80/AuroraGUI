@@ -20,12 +20,26 @@ class GUI():
   def Draw(self, surface):
     if (self.enabled):
       if (not self.image_enabled):
+        pygame.draw.rect(surface, Utils.SUPER_DARK_GRAY, self.rect, 0)
         pygame.draw.rect(surface, Utils.GREEN, self.rect, 3)
+        find_space = self.name.find(' ')
+        if (find_space > -1):
+          label = (self.name[find_space+1:])[0]
+        else:
+          label = self.name[0]
+        Utils.DrawText2Surface(surface, label, (self.rect[0]+10,self.rect[1]+5),20,Utils.GREEN)
       else:
         surface.blit(self.image_enabled,(self.rect[0],self.rect[1]))
     else:
       if (not self.image_disabled):
+        pygame.draw.rect(surface, Utils.SUPER_DARK_GRAY, self.rect, 0)
         pygame.draw.rect(surface, Utils.RED, self.rect, 3)
+        find_space = self.name.find(' ')
+        if (find_space > -1):
+          label = (self.name[find_space+1:])[0]
+        else:
+          label = self.name[0]
+        Utils.DrawText2Surface(surface, label, (self.rect[0]+10,self.rect[1]+5),20,Utils.RED)
       else:
         surface.blit(self.image_disabled,(self.rect[0],self.rect[1]))
 

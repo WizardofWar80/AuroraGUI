@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>AuroraGUI</Name>
     <RootNamespace>AuroraGUI</RootNamespace>
-    <InterpreterId>CondaEnv|CondaEnv|Anaconda3</InterpreterId>
+    <InterpreterId>Global|ContinuumAnalytics|Anaconda37-64</InterpreterId>
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -38,8 +38,7 @@
     <Compile Include="Utils.py" />
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="CondaEnv|CondaEnv|Anaconda3" />
-    <InterpreterReference Include="CondaEnv|CondaEnv|env" />
+    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda37-64" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

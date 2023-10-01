@@ -54,12 +54,20 @@ class Game():
     self.showStationaryFleets = False
     self.showUnsurveyedLocations = True
     self.showSurveyedLocations = False
-    self.showFleetTraces = True
-    self.showPlanets = True
-    self.showMoons = True
-    self.showDwarfPlanets = True
-    self.showComets = True
-    self.showAsteroids = False
+    self.show_FleetTraces = True
+    self.show_Planets = True
+    self.show_Moons = True
+    self.show_DwarfPlanets = True
+    self.show_Comets = True
+    self.show_Asteroids = False
+
+    self.showColonizedBodies = True
+    self.showIndustrializedBodies = True
+    self.showUnsurveyedBodies = True
+    self.showEnemyBodies = True
+    self.showResourcefulBodies = True
+    self.showXenosBodies = True
+    self.showArtifactsBodies = True
 
     self.showOrbits_Planets = True
     self.showOrbits_DwarfPlanets = True
@@ -157,13 +165,14 @@ class Game():
       self.stellarTypes = self.GetStellarTypes()
       self.GetNewData()
 
+
   def InitGUI(self):
     idGUI = 1
     x = self.GUI_Bottom_Anchor[0]
     y = self.GUI_Bottom_Anchor[1]
     size = 32
     bb = (x,y,size,size)
-    name = 'ShowBodies'
+    name = 'Show Bodies'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
     showBodiesGUI = self.GUI_Elements[idGUI]
@@ -173,7 +182,7 @@ class Game():
     bb = (x,y,size,size)
     name = 'Show Planets'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showPlanets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Planets)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -181,7 +190,7 @@ class Game():
     bb = (x,y,size,size)
     name = 'Show Moons'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showMoons)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Moons)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -189,7 +198,7 @@ class Game():
     bb = (x,y,size,size)
     name = 'Show Asteroids'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showAsteroids)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Asteroids)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -197,7 +206,7 @@ class Game():
     bb = (x,y,size,size)
     name = 'Show Comets'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showComets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Comets)
     showBodiesGUI.AddChildren(idGUI)
 
     # Second Column
@@ -243,6 +252,72 @@ class Game():
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Comets)
     showOrbitsGUI.AddChildren(idGUI)
 
+    # Third Column
+    idGUI += 1
+    x += size+5
+    y = self.GUI_Bottom_Anchor[1]
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Filter'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    FilterBodiesGUI = self.GUI_Elements[idGUI]
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Colonies'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showColonizedBodies)
+    FilterBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Resources'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showResourcefulBodies)
+    FilterBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Mines'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showIndustrializedBodies)
+    FilterBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Unsurveyed'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showUnsurveyedBodies)
+    FilterBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Enemies'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showEnemyBodies)
+    FilterBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Xenos'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showXenosBodies)
+    FilterBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Artifacts'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showArtifactsBodies)
+    FilterBodiesGUI.AddChildren(idGUI)
 
 
   def Draw(self):
@@ -311,7 +386,7 @@ class Game():
     self.DrawSystemFleets()
     t2 = pygame.time.get_ticks()
     dt4 = t2-t1
-    print(dt1,dt2,dt3,dt4)
+    #print(dt1,dt2,dt3,dt4)
     return True
 
 
@@ -379,14 +454,14 @@ class Game():
       body = self.systemBodies[bodyID]
       #print(body['ID'],body['Name'])
 
-      body_draw_cond, draw_color_body, body_min_size, body_min_dist = self.GetDrawConditions('Body', body['Class'], body['Type'])
+      body_draw_cond, draw_color_body, body_min_size, body_min_dist = self.GetDrawConditions('Body', body)
       if (body_draw_cond):
         screen_body_pos = self.WorldPos2ScreenPos(body['Pos'])
         radius_on_screen = Utils.AU_INV * self.systemScale * body['RadiusBody']
         if (radius_on_screen < body_min_size):
           radius_on_screen = body_min_size
 
-        orbit_draw_cond, draw_color_orbit, void, min_orbit = self.GetDrawConditions('Orbit', body['Class'], body['Type'])
+        orbit_draw_cond, draw_color_orbit, void, min_orbit = self.GetDrawConditions('Orbit', body)
         orbitOnScreen = body['Orbit']*self.systemScale
 
         if (orbit_draw_cond) and (orbitOnScreen > body_min_dist):
@@ -450,7 +525,7 @@ class Game():
             self.MakeClickable(body['Name'], bb, left_click_call_back = self.Select_Body, par=bodyID)
 
           # Check if we want to draw the label
-          draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body['Class'], body['Type'])
+          draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body)
           if (draw_cond) and (orbitOnScreen > min_dist):
             labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
             Utils.DrawText2Surface(self.surface,body['Name'],labelPos,14,draw_color_label)
@@ -496,7 +571,7 @@ class Game():
         if (fleet['Ships'] != [] or self.showEmptyFleets or (self.highlighted_fleet_ID == fleetID)):
           if (fleet['Speed'] > 1 or self.showStationaryFleets or (self.highlighted_fleet_ID == fleetID)):
             pos = self.WorldPos2ScreenPos(fleet['Position'])
-            if (self.showFleetTraces):
+            if (self.show_FleetTraces):
               prev_pos = self.WorldPos2ScreenPos(fleet['Position_prev'])
               pygame.draw.line(self.surface, self.color_Fleet, prev_pos, pos,1)
             bb = Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
@@ -690,6 +765,8 @@ class Game():
             if (spectralClass in self.images_Body['Stars']):
               stars[ID]['Image'] = self.images_Body['Stars'][spectralClass]
           star_index += 1
+          stars[ID]['BodyClass']=spectralClass
+          stars[ID]['BodyType']='Stellar'
         system['Stars'] = stars
         systems[systemID] = system
     return systems
@@ -802,85 +879,113 @@ class Game():
             numImages = len(self.images_Body['Comets'])
             selectedImage = random.randint(0,numImages-1)
             image = self.images_Body['Comets'][selectedImage]
+      
+      colonized = False
+      resources = False
+      industrialized = False
+      enemies = False
+      unsurveyed = False
+      xenos = False
+      artifacts = False
 
       systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
-                            'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Image':image}
+                            'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Image':image, 'Colonized':colonized, 'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts}
     return systemBodies
 
 
-  def GetDrawConditions(self, thing2Draw, bodyClass, bodyType):
+  def GetDrawConditions(self, thing2Draw, body):
     draw = False
     color = (0,0,0)
     min_size = 5
     min_dist = 5
+    if (body['Type'] == 'Stellar'):
+      filter = False
+    else:
+      filter = (body['Colonized'] and self.showColonizedBodies) or (body['Resources'] and self.showResourcefulBodies) or (body['Industrialized'] and self.showIndustrializedBodies) or (body['Xenos'] and self.showXenosBodies)  or (body['Enemies'] and self.showEnemyBodies)  or (body['Unsurveyed'] and self.showUnsurveyedBodies) or (body['Artifacts'] and self.showArtifactsBodies)
+
     if (thing2Draw == 'Body'):
-      if (bodyClass == 'Moon' and self.showMoons):
-        draw = True
-        color = self.color_Moon
-        min_size = self.minPixelSize_Moon
-        min_dist = 10
-      elif (bodyClass  == 'Comet' and self.showComets):
-        draw = True
-        color = self.color_Comet
-        min_size = self.minPixelSize_Small
-        min_dist = 10
-      elif (bodyClass  == 'Asteroid' and self.showAsteroids):
-        draw = True
-        color = self.color_Asteroid
-        min_size = self.minPixelSize_Small
-        min_dist = 10
-      elif (bodyType == 'Planet Small' and self.showDwarfPlanets):
-        draw = True
-        color = self.color_DwarfPlanet
-        min_size = self.minPixelSize_Planet
-        min_dist = 10
-      elif (bodyClass == 'Planet' and self.showPlanets and bodyType != 'Planet Small' ):
-        draw = True
-        color = self.color_Planet
-        min_size = self.minPixelSize_Planet
-        min_dist = 10
+      if (body['Class'] == 'Moon'):
+        if (self.show_Moons or filter):
+          draw = True
+          color = self.color_Moon
+          min_size = self.minPixelSize_Moon
+          min_dist = 10
+      elif (body['Class']  == 'Comet'):
+        if (self.show_Comets or filter):
+          draw = True
+          color = self.color_Comet
+          min_size = self.minPixelSize_Small
+          min_dist = 10
+      elif (body['Class']  == 'Asteroid'):
+        if (self.show_Asteroids or filter):
+          draw = True
+          color = self.color_Asteroid
+          min_size = self.minPixelSize_Small
+          min_dist = 10
+      elif (body['Type'] == 'Planet Small'):
+        if (self.show_DwarfPlanets or filter):
+          draw = True
+          color = self.color_DwarfPlanet
+          min_size = self.minPixelSize_Planet
+          min_dist = 10
+      elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
+        if (self.show_Planets or filter):
+          draw = True
+          color = self.color_Planet
+          min_size = self.minPixelSize_Planet
+          min_dist = 10
     elif (thing2Draw == 'Orbit'):
-      if (bodyClass == 'Moon' and self.showOrbits_Moons):
-        draw = True
-        color = self.color_Orbit_Moon
-        min_dist = 10
-      elif (bodyClass  == 'Comet' and self.showOrbits_Comets):
-        draw = True
-        color = self.color_Orbit_Comet
-        min_dist = 10
-      elif (bodyClass  == 'Asteroid' and self.showOrbits_Asteroids):
-        draw = True
-        color = self.color_Orbit_Asteroid
-        min_dist = 10
-      elif (bodyType == 'Planet Small' and self.showOrbits_DwarfPlanets):
-        draw = True
-        color = self.color_Orbit_DwarfPlanet
-        min_dist = 10
-      elif (bodyClass == 'Planet' and self.showOrbits_Planets and bodyType != 'Planet Small' ):
-        draw = True
-        color = self.color_Orbit_Planet
-        min_dist = 10
+      if (body['Class'] == 'Moon'):
+        if (self.showOrbits_Moons and (self.show_Moons or filter)):
+          draw = True
+          color = self.color_Orbit_Moon
+          min_dist = 10
+      elif (body['Class']  == 'Comet'):
+        if (self.showOrbits_Comets and (self.show_Comets or filter)):
+          draw = True
+          color = self.color_Orbit_Comet
+          min_dist = 10
+      elif (body['Class']  == 'Asteroid'):
+        if (self.showOrbits_Asteroids and (self.show_Asteroids or filter)):
+          draw = True
+          color = self.color_Orbit_Asteroid
+          min_dist = 10
+      elif (body['Type'] == 'Planet Small'):
+        if (self.showOrbits_DwarfPlanets and (self.show_DwarfPlanets or filter)):
+          draw = True
+          color = self.color_Orbit_DwarfPlanet
+          min_dist = 10
+      elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
+        if (self.showOrbits_Planets and (self.show_Planets or filter)):
+          draw = True
+          color = self.color_Orbit_Planet
+          min_dist = 10
     elif (thing2Draw == 'Label'):
-      if (bodyClass == 'Moon' and self.showLabels_Moons):
-        draw = True
-        color = self.color_Label_Moon
-        min_dist = 50
-      elif (bodyClass  == 'Comet' and self.showLabels_Comets):
-        draw = True
-        color = self.color_Label_Comet
-        min_dist = 200
-      elif (bodyClass  == 'Asteroid' and self.showLabels_Asteroids):
-        draw = True
-        color = self.color_Label_Asteroid
-        min_dist = 200
-      elif (bodyType == 'Planet Small' and self.showLabels_DwarfPlanets):
-        draw = True
-        color = self.color_Label_DwarfPlanet
-        min_dist = 5
-      elif (bodyClass == 'Planet' and self.showLabels_Planets and bodyType != 'Planet Small' ):
-        draw = True
-        color = self.color_Label_Planet
-        min_dist = 5
+      if (body['Class'] == 'Moon'):
+        if (self.showLabels_Moons and (self.showMoons or filter)):
+          draw = True
+          color = self.color_Label_Moon
+          min_dist = 50
+      elif (body['Class']  == 'Comet'):
+        if (self.showLabels_Comets and (self.show_Comets or filter)):
+          draw = True
+          color = self.color_Label_Comet
+          min_dist = 200
+      elif (body['Class']  == 'Asteroid'):
+        if (self.showLabels_Asteroids and (self.show_Asteroids or filter)):
+          draw = True
+          color = self.color_Label_Asteroid
+          min_dist = 200
+      elif (body['Type'] == 'Planet Small'):
+        if (self.showLabels_DwarfPlanets and (self.show_DwarfPlanets or filter)):
+          draw = True
+          color = self.color_Label_DwarfPlanet
+          min_dist = 5
+      elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
+        if (self.showLabels_Planets and (self.show_Planets or filter)):
+          draw = True
+          color = self.color_Label_Planet
+          min_dist = 5
     return draw, color, min_size, min_dist
 
 
@@ -1147,15 +1252,18 @@ class Game():
 
 
   def ToggleGUI(self, id):
+
     if (id in self.GUI_Elements):
       self.reDraw = True
       element = self.GUI_Elements[id]
-      print('Click '+element.name)
+      #print('Click '+element.name)
       if (element.parent):
         element.enabled = not element.enabled
         self.ToggleGUI_Element_ByName(element.name)
         #element.clickable.enabled = not element.clickable.enabled
       else:
+        if (not element.open):
+          self.CloseMenus()
         element.open = not element.open
 
       for childID in element.children:
@@ -1165,6 +1273,7 @@ class Game():
           child = self.GUI_Elements[childID]
           child.visible = element.open
           child.clickable.enabled = element.open
+
 
   def CloseMenus(self):
     for id in self.GUI_Elements:
@@ -1189,13 +1298,13 @@ class Game():
     #self.showLabels_Stars = True
 
     if (name == 'Show Planets'):
-      self.showPlanets = not self.showPlanets
+      self.show_Planets = not self.show_Planets
     elif (name == 'Show Moons'):
-      self.showMoons = not self.showMoons
+      self.show_Moons = not self.show_Moons
     elif (name == 'Show Comets'):
-      self.showComets = not self.showComets
+      self.show_Comets = not self.show_Comets
     elif (name == 'Show Asteroids'):
-      self.showAsteroids = not self.showAsteroids
+      self.show_Asteroids = not self.show_Asteroids
     elif (name == 'Show Planet Orbits'):
       self.showOrbits_Planets = not self.showOrbits_Planets
     elif (name == 'Show Moon Orbits'):
@@ -1204,6 +1313,20 @@ class Game():
       self.showOrbits_Comets = not self.showOrbits_Comets
     elif (name == 'Show Asteroid Orbits'):
       self.showOrbits_Asteroids = not self.showOrbits_Asteroids
+    elif (name == 'Colonies'):
+      self.showColonizedBodies = not self.showColonizedBodies
+    elif (name == 'Resources'):
+      self.showResourcefulBodies = not self.showResourcefulBodies
+    elif (name == 'Mines'):
+      self.showIndustrializedBodies = not self.showIndustrializedBodies
+    elif (name == 'Unsurveyed'):
+      self.showUnsurveyedBodies = not self.showUnsurveyedBodies
+    elif (name == 'Enemies'):
+      self.showEnemyBodies = not self.showEnemyBodies
+    elif (name == 'Xenos'):
+      self.showXenosBodies = not self.showXenosBodies
+    elif (name == 'Artifacts'):
+      self.showArtifactsBodies = not self.showArtifactsBodies
 
 
   def CleanUpInfoWindow(self):
