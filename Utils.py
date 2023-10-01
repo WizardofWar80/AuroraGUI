@@ -65,6 +65,21 @@ MineralNames = {   1:'Duranium'
                  , 11:'Gallicite'
                 }
 
+StarTypes = { 'D': 'White Dwarf'
+             ,'WR': 'Wolf–Rayet Star'
+             ,'Y': 'Y-Dwarf'
+             ,'L': 'L-Dwarf'
+             ,'T': 'T-Dwarf'
+             ,'BH': 'Black Hole'}
+
+SpectralColors = { 'A': 'White'
+                  ,'B': 'Blue'
+                  ,'F': 'Yellow'
+                  ,'G': 'Yellow'
+                  ,'K': 'Orange'
+                  ,'M': 'Red'
+                  ,'O': 'Blue'
+                  ,'BH': 'Black'}
 
 star_suffixes = ['A', 'B', 'C', 'D']
 
@@ -452,6 +467,7 @@ def DrawArc(surface, color, center, r, angle_start, angle_end, width):
       break
   pygame.draw.lines(surface,color, False, points, width)
   
+
 def DrawEllipticalOrbit(surface, color, pos, orbit, E, angle1, angle2, min_orbit):
   # draw orbit
   if (E > 0):
@@ -471,3 +487,31 @@ def DrawEllipticalOrbit(surface, color, pos, orbit, E, angle1, angle2, min_orbit
   else:
     if (orbit < 50000 and orbit > min_orbit):
       pygame.draw.circle(surface, color, pos, orbit,1)
+
+
+def GetStarDescription(star):
+  # Neutron Stars:
+  # 1.4 M☉ and 2.16 M
+  # r <= 0.01
+  description = star['BodyClass'] + '-Type Star'
+  if (star['BodyClass'] in StarTypes):
+    description = StarTypes[star['BodyClass']]
+  else:
+    if (star['Radius'] <= 0.01):
+      description = 'Neutron Star'
+    else:
+      if (star['Mass'] <= 1):
+        if (star['BodyClass'] in SpectralColors):
+            color = SpectralColors[star['BodyClass']]
+            description = color + ' Dwarf'
+      elif (star['Mass'] < 10):
+        if (star['Radius'] > 10):
+          if (star['BodyClass'] in SpectralColors):
+            color = SpectralColors[star['BodyClass']]
+            description = color + ' Giant'
+      else:
+        if (star['BodyClass'] in SpectralColors):
+          color = SpectralColors[star['BodyClass']]
+          description = color + ' Supergiant'
+
+  return description

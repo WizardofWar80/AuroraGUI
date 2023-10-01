@@ -694,6 +694,23 @@ class Game():
       pad_x = pad_y = 5
       lineNr = self.window_info_scoll_pos
       self.window_info.fill(Utils.SUPER_DARK_GRAY)
+      color = Utils.WHITE
+      if (self.highlighted_fleet_ID in self.fleets):
+        fleet = self.fleets[self.highlighted_fleet_ID]
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name'],label_pos,15,color)
+      elif (self.highlighted_body_ID in self.starSystems[self.currentSystem]['Stars']):
+        body = self.starSystems[self.currentSystem]['Stars'][self.highlighted_body_ID]
+        #prefix = Utils.StarTypes[body['BodyClass']]+' '
+        prefix = Utils.GetStarDescription(body) + ' '
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,prefix+body['Name'],label_pos,15,color)
+
+      elif (self.highlighted_body_ID in self.systemBodies):
+        body = self.systemBodies[self.highlighted_body_ID]
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,body['Name'],label_pos,15,color)
+
       #print(self.window_fleet_info_scoll_pos)
       #if (self.currentSystem in self.fleets):
       #  for fleetID in self.fleets[self.currentSystem]:
@@ -842,6 +859,7 @@ class Game():
           stars[ID]['Component'] = star[8]
           stars[ID]['StellarTypeID']=star[3]
           stars[ID]['Radius']=self.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
+          stars[ID]['Mass'] = self.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
           stars[ID]['Black Hole']=False
           spectralClass = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
           spectralNumber = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralNumber']
