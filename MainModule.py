@@ -115,24 +115,35 @@ class Game():
     self.color_Orbit_Comet = Utils.SUPER_DARK_GRAY
     self.images_Body = {}
 
-    self.window_info_identifier = 'Fleet Info Window'
-    self.window_info_size = (300,600)
-    self.window_map_size = (self.window_info_size[0],self.window_info_size[0])
+    self.window_fleet_info_identifier = 'Fleet Info Window'
+    self.window_fleet_info_size = (300,600)
+    self.window_map_size = (self.window_fleet_info_size[0],self.window_fleet_info_size[0])
 
-    self.window_info_anchor = (5,self.height-self.window_map_size[1]-self.window_info_size[1]-2*5)#(self.width-self.window_info_size[0]-5,self.height-self.window_map_size[1]-self.window_info_size[1]-2*5)
+    self.window_info_anchor = (5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
+    self.window_fleet_info = pygame.Surface(self.window_fleet_info_size, pygame.SRCALPHA,32)
+    self.window_fleet_info_rect = pygame.Rect(self.window_info_anchor, self.window_fleet_info_size)
+    self.window_fleet_info.set_colorkey(Utils.GREENSCREEN)
+    self.reDraw_FleetInfoWindow = True;
+    self.window_fleet_info_scoll_pos = 0
+    self.highlighted_fleet_ID = -1
+    self.highlighted_body_ID = -1
+
+
+    self.window_info_identifier = 'Info Window'
+    self.window_info_size = (400,600)
+    self.window_anchor = (self.width-self.window_info_size[0]-5,self.height-self.window_fleet_info_size[1]-5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
     self.window_info = pygame.Surface(self.window_info_size, pygame.SRCALPHA,32)
-    self.window_info_rect = pygame.Rect(self.window_info_anchor, self.window_info_size)
+    self.window_info_rect = pygame.Rect(self.window_info_anchor, self.window_fleet_info_size)
     self.window_info.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_InfoWindow = True;
     self.window_info_scoll_pos = 0
-    self.highlighted_fleet_ID = -1
-
 
     self.window_map_anchor = (5,self.height-self.window_map_size[1]-5)#(self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
     self.window_map = pygame.Surface(self.window_map_size, pygame.SRCALPHA,32)
     self.window_map_rect = pygame.Rect(self.window_map_anchor, self.window_map_size)
     self.window_map.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_MapWindow = True;
+
 
     self.GUI_identifier = 'GUI Elements'
     self.GUI_Elements = {}
@@ -328,6 +339,7 @@ class Game():
     if (self.reDraw):
       if (self.Events):
         self.Events.ClearClickables(exclude=self.GUI_identifier)
+      self.reDraw_FleetInfoWindow = True
       self.reDraw_InfoWindow = True
       self.reDraw_MapWindow = True
       self.reDraw_GUI = True
@@ -336,6 +348,8 @@ class Game():
       reblit |= self.DrawSystem()
 
     reblit |= self.DrawMiniMap()
+
+    reblit |= self.DrawFleetInfoWindow()
 
     reblit |= self.DrawInfoWindow()
 
@@ -358,10 +372,6 @@ class Game():
     # draw mouse position and scale
     Utils.DrawText2Screen(self.screen,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE, False)
     Utils.DrawText2Screen(self.screen,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE, False)
-
-    #self.DrawInfoWindow()
-
-    #self.DrawMiniMap()
 
     pygame.display.update()
     self.reDraw = False
@@ -448,8 +458,12 @@ class Game():
 
       # Label Star
       ################
+      if (self.highlighted_body_ID == starID):
+        color = Utils.CYAN
+      else:
+        color = self.color_Label_Star
       labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
-      Utils.DrawText2Surface(self.surface,star_name,labelPos,14,self.color_Label_Star)
+      Utils.DrawText2Surface(self.surface,star_name,labelPos,14,color)
 
     # Draw other bodies
     for bodyID in self.systemBodies:
@@ -520,7 +534,6 @@ class Game():
           else:
             pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
           
-          
           # Make object clickable
           bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
           if (self.CheckClickableNotBehindGUI(bb)):
@@ -530,7 +543,13 @@ class Game():
           draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body)
           if (draw_cond) and (orbitOnScreen > min_dist):
             labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
-            Utils.DrawText2Surface(self.surface,body['Name'],labelPos,14,draw_color_label)
+
+            if (self.highlighted_body_ID == bodyID):
+              color = Utils.CYAN
+            else:
+              color = draw_color_label
+            # draw the label
+            Utils.DrawText2Surface(self.surface, body['Name'], labelPos, 14, color)
 
 
   def DrawSystemJumpPoints(self):
@@ -585,14 +604,14 @@ class Game():
             Utils.DrawText2Surface(self.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,self.color_Fleet)
 
 
-  def DrawInfoWindow(self):
-    if (self.reDraw_InfoWindow):
-      self.Events.ClearClickables(parent=self.window_info_identifier)
+  def DrawFleetInfoWindow(self):
+    if (self.reDraw_FleetInfoWindow):
+      self.Events.ClearClickables(parent=self.window_fleet_info_identifier)
       line_height = 20
       pad_x = pad_y = 5
-      lineNr = self.window_info_scoll_pos
-      self.window_info.fill(Utils.SUPER_DARK_GRAY)
-      #print(self.window_info_scoll_pos)
+      lineNr = self.window_fleet_info_scoll_pos
+      self.window_fleet_info.fill(Utils.SUPER_DARK_GRAY)
+      #print(self.window_fleet_info_scoll_pos)
       if (self.currentSystem in self.fleets):
         for fleetID in self.fleets[self.currentSystem]:
           fleet = self.fleets[self.currentSystem][fleetID]
@@ -602,16 +621,16 @@ class Game():
               color = Utils.CYAN
             label_pos = (pad_x,(pad_y+lineNr*line_height))
             if (fleet['Ships'] != []):
-              expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
-              self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+              expRect = Utils.DrawExpander(self.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
+              self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
               label_pos = (expRect[2]+10,label_pos[1])
-            label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name']+ ' - ',label_pos,15,color)
+            label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
             if (label_pos):
-              self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+              self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
             if (fleet['Speed'] > 1) and label_pos:
               speed = str(int(fleet['Speed'])) + 'km/s'
 
-              speed_label_pos, speed_label_size = Utils.DrawText2Surface(self.window_info,speed,(label_pos[0]+label_size[0],
+              speed_label_pos, speed_label_size = Utils.DrawText2Surface(self.window_fleet_info,speed,(label_pos[0]+label_size[0],
                                                                                                 label_pos[1]),15,color)
               icon_pos = (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1])
               p = 0
@@ -619,7 +638,7 @@ class Game():
                 p = fleet['Fuel']/fleet['Fuel Capacity']
 
               if ('fuel2' in self.images_GUI):
-                icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                icon_rect = Utils.DrawPercentageFilledImage(self.window_fleet_info, 
                                                             self.images_GUI['fuel2'], 
                                                             icon_pos, 
                                                             p, 
@@ -636,7 +655,7 @@ class Game():
                 p = fleet['Supplies']/fleet['Supplies Capacity']
 
               if ('supplies' in self.images_GUI):
-                icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                icon_rect = Utils.DrawPercentageFilledImage(self.window_fleet_info, 
                                                             self.images_GUI['supplies'], 
                                                             icon_pos, 
                                                             p, 
@@ -658,10 +677,93 @@ class Game():
                   shipClasses[ship['ClassName']] += 1
               for shipClass in shipClasses:
                 label_pos = (expRect[2]+10,(pad_y+lineNr*line_height))
-                label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
+                label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
                 lineNr +=1
 
-      self.surface.blit(self.window_info,self.window_info_anchor)
+      self.surface.blit(self.window_fleet_info,self.window_info_anchor)
+      self.reDraw_FleetInfoWindow = False
+      return True
+    else:
+      return False
+
+
+  def DrawInfoWindow(self):
+    if (self.reDraw_InfoWindow):
+      self.Events.ClearClickables(parent=self.window_info_identifier)
+      line_height = 20
+      pad_x = pad_y = 5
+      lineNr = self.window_info_scoll_pos
+      self.window_info.fill(Utils.SUPER_DARK_GRAY)
+      #print(self.window_fleet_info_scoll_pos)
+      #if (self.currentSystem in self.fleets):
+      #  for fleetID in self.fleets[self.currentSystem]:
+      #    fleet = self.fleets[self.currentSystem][fleetID]
+      #    if (fleet['Ships'] != [] or self.showEmptyFleets):
+      #      color = Utils.WHITE
+      #      if (self.highlighted_fleet_ID == fleetID):
+      #        color = Utils.CYAN
+      #      label_pos = (pad_x,(pad_y+lineNr*line_height))
+      #      if (fleet['Ships'] != []):
+      #        expRect = Utils.DrawExpander(self.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
+      #        self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
+      #        label_pos = (expRect[2]+10,label_pos[1])
+      #      label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
+      #      if (label_pos):
+      #        self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
+      #      if (fleet['Speed'] > 1) and label_pos:
+      #        speed = str(int(fleet['Speed'])) + 'km/s'
+
+      #        speed_label_pos, speed_label_size = Utils.DrawText2Surface(self.window_fleet_info,speed,(label_pos[0]+label_size[0],
+      #                                                                                          label_pos[1]),15,color)
+      #        icon_pos = (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1])
+      #        p = 0
+      #        if (fleet['Fuel Capacity'] > 0):
+      #          p = fleet['Fuel']/fleet['Fuel Capacity']
+
+      #        if ('fuel2' in self.images_GUI):
+      #          icon_rect = Utils.DrawPercentageFilledImage(self.window_fleet_info, 
+      #                                                      self.images_GUI['fuel2'], 
+      #                                                      icon_pos, 
+      #                                                      p, 
+      #                                                      color_unfilled = Utils.DARK_GRAY, 
+      #                                                      color = Utils.MED_YELLOW, 
+      #                                                      color_low = Utils.RED, 
+      #                                                      perc_low = 0.3, 
+      #                                                      color_high = Utils.LIGHT_GREEN, 
+      #                                                      perc_high = 0.7)
+
+      #        icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
+      #        p = 0
+      #        if (fleet['Supplies Capacity'] > 0):
+      #          p = fleet['Supplies']/fleet['Supplies Capacity']
+
+      #        if ('supplies' in self.images_GUI):
+      #          icon_rect = Utils.DrawPercentageFilledImage(self.window_fleet_info, 
+      #                                                      self.images_GUI['supplies'], 
+      #                                                      icon_pos, 
+      #                                                      p, 
+      #                                                      color_unfilled = Utils.DARK_GRAY, 
+      #                                                      color = Utils.MED_YELLOW, 
+      #                                                      color_low = Utils.RED, 
+      #                                                      perc_low = 0.3, 
+      #                                                      color_high = Utils.LIGHT_GREEN, 
+      #                                                      perc_high = 0.7)
+
+      #      #print((pad_y+lineNr*line_height), fleet['Name'])
+      #      lineNr +=1
+      #      if (fleetID in self.GUI_expanded_fleets):
+      #        shipClasses = {}
+      #        for ship in fleet['Ships']:
+      #          if (ship['ClassName'] not in shipClasses):
+      #            shipClasses[ship['ClassName']] = 1
+      #          else:
+      #            shipClasses[ship['ClassName']] += 1
+      #        for shipClass in shipClasses:
+      #          label_pos = (expRect[2]+10,(pad_y+lineNr*line_height))
+      #          label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
+      #          lineNr +=1
+
+      self.surface.blit(self.window_info,self.window_anchor)
       self.reDraw_InfoWindow = False
       return True
     else:
@@ -1008,7 +1110,7 @@ class Game():
           min_dist = 10
     elif (thing2Draw == 'Label'):
       if (body['Class'] == 'Moon'):
-        if (self.showLabels_Moons and (self.showMoons or filter)):
+        if (self.showLabels_Moons and (self.show_Moons or filter)):
           draw = True
           color = self.color_Label_Moon
           min_dist = 50
@@ -1165,7 +1267,7 @@ class Game():
     self.colonies = self.GetColonies()
     self.systemBodies = self.GetSystemBodies()
     self.reDraw = True
-    self.reDraw_InfoWindow = True
+    self.reDraw_FleetInfoWindow = True
     self.reDraw_MapWindow = True
 
 
@@ -1295,7 +1397,7 @@ class Game():
   def Follow_Jumppoint(self, id):
     if (id in self.starSystems):
       self.currentSystem = id
-      self.window_info_scoll_pos = 0
+      self.window_fleet_info_scoll_pos = 0
       self.GetNewData()
       self.CleanUpInfoWindow()
 
@@ -1305,20 +1407,22 @@ class Game():
       if (id in self.fleets[self.currentSystem]):
         print(self.fleets[self.currentSystem][id])
         self.highlighted_fleet_ID = id
-        self.GetNewData()
+        self.highlighted_body_ID=-1
+        self.reDraw = True
+        #self.GetNewData()
 
 
   def Select_Body(self, id):
     if (id in self.starSystems[self.currentSystem]['Stars']):
-      # todo highlight body
-      print(self.starSystems[self.currentSystem]['Stars'][id])
+      #print(self.starSystems[self.currentSystem]['Stars'][id])
       self.highlighted_fleet_ID = -1
-      self.GetNewData()
+      self.highlighted_body_ID=id
+      self.reDraw = True
     elif (id in self.systemBodies):
-      # todo highlight body
-      print(self.systemBodies[id])
+      #print(self.systemBodies[id])
       self.highlighted_fleet_ID = -1
-      self.GetNewData()
+      self.highlighted_body_ID=id
+      self.reDraw = True
 
 
   def ToggleGUI(self, id):
@@ -1411,5 +1515,5 @@ class Game():
         self.GUI_expanded_fleets.remove(id)
       else:
         self.GUI_expanded_fleets.append(id)
-      self.reDraw_InfoWindow = True
+      self.reDraw_FleetInfoWindow = True
 

@@ -279,10 +279,10 @@ class Events:
     if (game.window_info_rect.collidepoint(event.pos)):
       # scrool the info window instead of zooming
       if (event.button == 4):
-        if (game.window_info_scoll_pos < 0):
-          game.window_info_scoll_pos+=1
+        if (game.window_fleet_info_scoll_pos < 0):
+          game.window_fleet_info_scoll_pos+=1
       else:
-        game.window_info_scoll_pos-=1
+        game.window_fleet_info_scoll_pos-=1
       game.reDraw_InfoWindow = True
     else:
       if (event.button == 4):
