@@ -52,6 +52,20 @@ BodyTypes = {    1:'Asteroid'
                , 13:'???'
                , 14:'Comet' }
 
+MineralNames = {   1:'Duranium' 
+                 , 2:'Neutronium'
+                 , 3:'Corbomite'
+                 , 4:'Tritanium'
+                 , 5:'Boronide'
+                 , 6:'Mercassium'
+                 , 7:'Vendarite'
+                 , 8:'Sorium'
+                 , 9:'Uridium'
+                 , 10:'Corundium'
+                 , 11:'Gallicite'
+                }
+
+
 star_suffixes = ['A', 'B', 'C', 'D']
 
 FILLED = 0

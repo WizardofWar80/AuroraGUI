@@ -163,6 +163,8 @@ class Game():
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
+      self.colonies = None
+      self.installations = self.GetInstallationInfo()
       self.GetNewData()
 
 
@@ -282,7 +284,7 @@ class Game():
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Mines'
+    name = 'Installations'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showIndustrializedBodies)
     FilterBodiesGUI.AddChildren(idGUI)
@@ -793,9 +795,39 @@ class Game():
     return stellarTypes
 
 
+  def GetInstallationInfo(self):
+    installations = {}
+
+    results = self.db.execute('''SELECT PlanetaryInstallationID, Name from DIM_PlanetaryInstallation;''').fetchall()
+
+    for installation in results:
+      installationID = installation[0]
+      installationName = installation[1]
+      installations[installationID] = {'Name' : installationName}
+        
+    return installations
+
+
+  def GetMineralDeposits(self, systemID):
+    deposits = {}
+    # GameID	MaterialID	SystemID	SystemBodyID	Amount	Accessibility	HalfOriginalAmount	OriginalAcc
+    results = self.db.execute('''SELECT * from FCT_MineralDeposit WHERE GameID = %d and SystemID = %d;'''%(self.gameID, systemID)).fetchall()
+
+    for deposit in results:
+      systemBodyID = deposit[2]
+      deposits[systemBodyID]={}
+      if (deposit[0] in Utils.MineralNames):
+        mineral = Utils.MineralNames[deposit[0]]
+        deposits[systemBodyID][mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
+
+    return deposits
+
+
   def GetSystemBodies(self):
     systemBodies = {}
     body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
+    deposits = self.GetMineralDeposits(self.currentSystem)
+
     for body in body_table:
       body_name = body[1]
       planetNumber = body[2]
@@ -880,13 +912,27 @@ class Game():
             selectedImage = random.randint(0,numImages-1)
             image = self.images_Body['Comets'][selectedImage]
       
-      colonized = False
       resources = False
-      industrialized = False
       enemies = False
-      unsurveyed = False
       xenos = False
       artifacts = False
+
+      #check for surveyed bodies
+      unsurveyed = False
+      result = self.db.execute('''SELECT SystemBodyID from FCT_SystemBodySurveys WHERE GameID = %d AND RaceID = %d AND SystemBodyID = %d;'''%(self.gameID, self.myRaceID, body[0])).fetchone()
+      if (not result):
+        unsurveyed = True
+
+      colonized = False
+      industrialized = False
+      if (body[0] in self.colonies):
+        colony = self.colonies[body[0]]
+        if (colony['Pop'] > 0):
+          colonized = True
+        if (self.colonies[body[0]]['Installations']):
+          industrialized = True
+        if (body[0] in deposits):
+          resources = True
 
       systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
                             'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Image':image, 'Colonized':colonized, 'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts}
@@ -1116,10 +1162,34 @@ class Game():
     self.currentSystemJumpPoints = self.GetSystemJumpPoints()
     self.surveyLocations = self.GetSurveyLocations(self.currentSystem)
     self.fleets = self.GetFleets()
+    self.colonies = self.GetColonies()
     self.systemBodies = self.GetSystemBodies()
     self.reDraw = True
     self.reDraw_InfoWindow = True
     self.reDraw_MapWindow = True
+
+
+  def GetColonies(self):
+    colonies = {}
+    colonies_table = [list(x) for x in self.db.execute('''SELECT * from FCT_Population WHERE GameID = %d AND RaceID = %d ORDER BY Population DESC;'''%(self.gameID,self.myRaceID))]
+    for colony in colonies_table:
+        system_name = self.GetSystemName(colony[29])
+        systemBodyID = colony[30]
+        colonies[systemBodyID] = {'Name':colony[4],'Pop':round(colony[24],2), 'SystemID':colony[29],'System':system_name, 'Stockpile':{'Fuel':int(round(colony[13])),'Supplies':int(round(colony[18]))}}
+        for mineralID in Utils.MineralNames:
+          colonies[systemBodyID]['Stockpile'][Utils.MineralNames[mineralID]] = int(round(colony[34+mineralID-1],0))
+
+        colonies[systemBodyID]['Installations'] = {}
+        industries_table = [list(x) for x in self.db.execute('''SELECT PlanetaryInstallationID, Amount from FCT_PopulationInstallations WHERE GameID = %d AND PopID = %d;'''%(self.gameID,colony[0]))]
+        for installation in industries_table:
+          id = installation[0]
+          amount = installation[1]
+          name = ''
+          if (id in self.installations):
+            name = self.installations[id]['Name']
+          colonies[systemBodyID]['Installations'][id] = {'Name':name, 'Amount':amount}
+
+    return colonies
 
 
   def WorldPos2ScreenPos(self, world_pos):
@@ -1299,6 +1369,7 @@ class Game():
 
     if (name == 'Show Planets'):
       self.show_Planets = not self.show_Planets
+      self.show_DwarfPlanets = self.show_Planets
     elif (name == 'Show Moons'):
       self.show_Moons = not self.show_Moons
     elif (name == 'Show Comets'):
@@ -1307,6 +1378,7 @@ class Game():
       self.show_Asteroids = not self.show_Asteroids
     elif (name == 'Show Planet Orbits'):
       self.showOrbits_Planets = not self.showOrbits_Planets
+      self.showOrbits_DwarfPlanets = self.showOrbits_Planets
     elif (name == 'Show Moon Orbits'):
       self.showOrbits_Moons = not self.showOrbits_Moons
     elif (name == 'Show Comet Orbits'):
@@ -1317,7 +1389,7 @@ class Game():
       self.showColonizedBodies = not self.showColonizedBodies
     elif (name == 'Resources'):
       self.showResourcefulBodies = not self.showResourcefulBodies
-    elif (name == 'Mines'):
+    elif (name == 'Installations'):
       self.showIndustrializedBodies = not self.showIndustrializedBodies
     elif (name == 'Unsurveyed'):
       self.showUnsurveyedBodies = not self.showUnsurveyedBodies
