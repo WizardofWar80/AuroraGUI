@@ -74,12 +74,17 @@ StarTypes = { 'D': 'White Dwarf'
 
 SpectralColors = { 'A': 'White'
                   ,'B': 'Blue'
+                  ,'D': 'White'
                   ,'F': 'Yellow'
                   ,'G': 'Yellow'
                   ,'K': 'Orange'
                   ,'M': 'Red'
                   ,'O': 'Blue'
-                  ,'BH': 'Black'}
+                  ,'Y': 'Brown'
+                  ,'L': 'Red'
+                  ,'T': 'Purple'
+                  ,'BH': 'None'
+                  }
 
 star_suffixes = ['A', 'B', 'C', 'D']
 
@@ -515,3 +520,36 @@ def GetStarDescription(star):
           description = color + ' Supergiant'
 
   return description
+
+
+def GetTimeScale(hours):
+  timeframe = hours
+  unit = 'h'
+  if (timeframe > 72):
+    timeframe /= 24
+    unit = 'd'
+  if (timeframe > 3*365.2):
+    timeframe /= 365.2
+    unit = 'a'
+  fraction = abs(round(timeframe,1)-timeframe)
+  if (fraction < 0.1):
+    return '%d %s'%(round(timeframe,0), unit)
+  else:
+    return '%2.1f %s'%(round(timeframe,1), unit)
+
+def GetFormattedNumber(number):
+  if (abs(number) > 0.99):
+    fraction = abs(round(number,1)-number)
+    if (abs(fraction) < 0.1):
+      return '%d'%(round(number,0))
+    else:
+      return '%2.1f'%(round(number,1))
+  else:
+    if (abs(number) < 0.001):
+      return '{:.1e}'.format(number)
+    elif (abs(number) < 0.01):
+      return '%1.3f'%(round(number,3))
+    elif (abs(number) < 0.1):
+      return '%1.2f'%(round(number,2))
+    else:
+      return '%1.1f'%(round(number,1))

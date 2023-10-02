@@ -89,7 +89,8 @@ class Game():
     self.color_Jumpgate = Utils.ORANGE
     self.color_SurveyedLoc = Utils.TEAL
     self.color_UnsurveyedLoc = Utils.BLUE
-    self.color_Fleet = Utils.CYAN
+    self.color_Fleet = Utils.GREEN
+
     # bodies
     self.color_Star = Utils.YELLOW
     self.color_Planet = Utils.MED_GREEN
@@ -169,7 +170,7 @@ class Game():
       self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
       self.homeSystemID = self.GetHomeSystemID()
       self.currentSystem = self.homeSystemID
-      self.currentSystem = 8497 # Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
+      #self.currentSystem = 8497 # Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
       #self.currentSystem = 8499 # Lalande
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
@@ -592,16 +593,19 @@ class Game():
         if (fleet['Ships'] != [] or self.showEmptyFleets or (self.highlighted_fleet_ID == fleetID)):
           if (fleet['Speed'] > 1 or self.showStationaryFleets or (self.highlighted_fleet_ID == fleetID)):
             pos = self.WorldPos2ScreenPos(fleet['Position'])
+            col = self.color_Fleet
+            if (self.highlighted_fleet_ID == fleetID):
+              col = Utils.CYAN
             if (self.show_FleetTraces):
               prev_pos = self.WorldPos2ScreenPos(fleet['Position_prev'])
-              pygame.draw.line(self.surface, self.color_Fleet, prev_pos, pos,1)
-            bb = Utils.DrawTriangle(self.surface,pos ,self.color_Fleet, fleet['Heading'])
+              pygame.draw.line(self.surface, col, prev_pos, pos,1)
+            bb = Utils.DrawTriangle(self.surface,pos ,col, fleet['Heading'])
             if (self.CheckClickableNotBehindGUI(bb)):
               self.MakeClickable(fleet['Name'], bb, left_click_call_back = self.Select_Fleet, par=fleetID)
             if (self.highlighted_fleet_ID == fleetID):
-              pygame.draw.rect(self.surface, self.color_Fleet,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
-            #pygame.draw.circle(self.surface,self.color_Fleet,(pos_x,pos_y),5,Utils.FILLED)
-            Utils.DrawText2Surface(self.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,self.color_Fleet)
+              pygame.draw.rect(self.surface, col,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
+            #pygame.draw.circle(self.surface,col,(pos_x,pos_y),5,Utils.FILLED)
+            Utils.DrawText2Surface(self.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,col)
 
 
   def DrawFleetInfoWindow(self):
@@ -705,11 +709,117 @@ class Game():
         prefix = Utils.GetStarDescription(body) + ' '
         label_pos = (pad_x,(pad_y+lineNr*line_height))
         label_pos, label_size = Utils.DrawText2Surface(self.window_info,prefix+body['Name'],label_pos,15,color)
-
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Radius:',label_pos,15,color)
+        label_pos2 = (pad_x+80,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['Radius']),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Mass:',label_pos,15,color)
+        label_pos2 = (pad_x+80,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['Mass']),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Temp:',label_pos,15,color)
+        label_pos2 = (pad_x+80,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['Temp'])+'K',label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Luminosity:',label_pos,15,color)
+        label_pos2 = (pad_x+80,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['Luminosity'])+' Suns',label_pos2,15,color)
+        lineNr+=1
+        if (body['BodyClass'] in Utils.SpectralColors):
+          col = Utils.SpectralColors[body['BodyClass']]
+          label_pos = (pad_x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Color:',label_pos,15,color)
+          label_pos2 = (pad_x+80,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,col,label_pos2,15,color)
       elif (self.highlighted_body_ID in self.systemBodies):
         body = self.systemBodies[self.highlighted_body_ID]
         label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,body['Name'],label_pos,15,color)
+        if (body['Class'] == 'Asteroid' or body['Class'] == 'Comet' or body['Class'] == 'Moon'):
+          name = body['Name']
+          if (body['Class'] == 'Comet' and name.find('Comet') == -1):
+            name = 'Comet '+name
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,name,label_pos,15,color)
+        else:
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,body['Class']+' '+body['Name'],label_pos,15,color)
+        lat_offs = 130
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Type:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,body['Type'],label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Radius:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['RadiusBody'])+' km',label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Gravity:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s x Earth'%Utils.GetFormattedNumber(body['Gravity']),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Mass:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s x Earth'%Utils.GetFormattedNumber(body['Mass']),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Orbit:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s AU'%Utils.GetFormattedNumber(body['Orbit']),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Year:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,Utils.GetTimeScale(body['HoursPerYear']),label_pos2,15,color)
+        if (body['Class'] != 'Comet'):
+          lineNr+=1
+          label_pos = (pad_x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Day:',label_pos,15,color)
+          label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,Utils.GetTimeScale(body['HoursPerDay'])+(' - tidal locked' if body['Tidal locked'] else ''), label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Temperature:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%d C'%(int(body['Temperature'])),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Atmosphere:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s atm'%Utils.GetFormattedNumber(body['AtmosPressure'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Hydrosphere:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['Hydrosphere'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Magnetic Field:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['MagneticField'])) if body['MagneticField'] > 0 else '-',label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Density:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s'%Utils.GetFormattedNumber(body['Density']),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Escape Velocity:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s m/s'%Utils.GetFormattedNumber(body['EscapeVelocity']),label_pos2,15,color)
+        lineNr+=1
+        label_pos = (pad_x,(pad_y+lineNr*line_height))
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Greenhouse Factor:',label_pos,15,color)
+        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
+        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['GHFactor'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
+
+
 
       #print(self.window_fleet_info_scoll_pos)
       #if (self.currentSystem in self.fleets):
@@ -860,6 +970,8 @@ class Game():
           stars[ID]['StellarTypeID']=star[3]
           stars[ID]['Radius']=self.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
           stars[ID]['Mass'] = self.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
+          stars[ID]['Temp'] = self.stellarTypes[stars[ID]['StellarTypeID']]['Temperature']
+          stars[ID]['Luminosity'] = self.stellarTypes[stars[ID]['StellarTypeID']]['Luminosity']
           stars[ID]['Black Hole']=False
           spectralClass = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
           spectralNumber = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralNumber']
@@ -897,7 +1009,7 @@ class Game():
   def GetStellarTypes(self):
     stellarTypes = {}
 
-    results = self.db.execute('''SELECT StellarTypeID, SpectralClass, SpectralNumber, SizeText, SizeID, Mass, Temperature, Radius, Red, Green, Blue from DIM_StellarType;''').fetchall()
+    results = self.db.execute('''SELECT StellarTypeID, SpectralClass, SpectralNumber, SizeText, SizeID, Luminosity, Mass, Temperature, Radius, Red, Green, Blue from DIM_StellarType;''').fetchall()
     
     for stellarType in results:
       #stellarType = results[stellarTypeID]
@@ -906,10 +1018,11 @@ class Game():
                                      ,'SpectralNumber':stellarType[2]
                                      ,'SizeText':stellarType[3]
                                      ,'SizeID':stellarType[4]
-                                     ,'Mass':stellarType[5]
-                                     ,'Temperature':stellarType[6]
-                                     ,'Radius':stellarType[7]
-                                     ,'RGB':(stellarType[8],stellarType[9],stellarType[10])
+                                     ,'Luminosity':stellarType[5]
+                                     ,'Mass':stellarType[6]
+                                     ,'Temperature':stellarType[7]
+                                     ,'Radius':stellarType[8]
+                                     ,'RGB':(stellarType[9],stellarType[10],stellarType[11])
                                     }
         
     return stellarTypes
@@ -945,8 +1058,17 @@ class Game():
 
   def GetSystemBodies(self):
     systemBodies = {}
-    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
+    body_table = [list(x) for x in self.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year
+, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,self.currentSystem))]
     deposits = self.GetMineralDeposits(self.currentSystem)
+            # Mass
+        # Orbit
+        # hours / day
+        # day / year
+        # Temperature
+        # Atmospheric pressure
+        # EscapeVelocity
+        # Tidal locked
 
     for body in body_table:
       body_name = body[1]
@@ -985,7 +1107,17 @@ class Game():
       temp = body[14]-273
       atm = body[15]
       hydro = body[16]
-      
+      mass = body[17]
+      surfaceTemp = body[18]
+      hoursPerYear = body[19]
+      hoursPerDay = body[20]
+      tidalLock = body[21]
+      magneticField = body[22]
+      escapeVelocity = body[23]
+      gHFactor = body[24]
+      density = body[25]
+      gravity = body[26]
+
       if (bodyClass == 'Moon'):
         orbit = orbit * Utils.AU_INV
       image = None
@@ -1055,7 +1187,10 @@ class Game():
           resources = True
 
       systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
-                            'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Image':image, 'Colonized':colonized, 'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts}
+                              'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'AtmosPressure':atm,
+                              'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
+                              'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
+                              'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts}
     return systemBodies
 
 
