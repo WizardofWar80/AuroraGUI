@@ -131,7 +131,7 @@ class Events:
   def HandleMouseDownEvents(self, event,game):
     current_time = self.GetTimeinSeconds()
     if (event.button == 1):
-      logger.write('Button %d down at: %d,%d'%(event.button,event.pos[0], event.pos[1]))
+      #logger.write('Button %d down at: %d,%d'%(event.button,event.pos[0], event.pos[1]))
       #print('LMB')
       if(not self.LeftMouseButtonDown):
         game.screenCenterBeforeDrag = game.screenCenter
@@ -153,7 +153,7 @@ class Events:
       print(event)
       logger.write('Unhandled Button %d down'%event.button)
     elif (event.button == 3):
-      logger.write('Button %d down at: %d,%d'%(event.button,event.pos[0], event.pos[1]))
+      #logger.write('Button %d down at: %d,%d'%(event.button,event.pos[0], event.pos[1]))
       #print('LMB')
       if(not self.RightMouseButtonDown):
         game.screenCenterBeforeDrag = game.screenCenter
@@ -175,7 +175,7 @@ class Events:
   def HandleMouseUpEvents(self, event):
     current_time = self.GetTimeinSeconds()
     if (event.button == 1):
-      logger.write('Button %d up'%event.button)
+      #logger.write('Button %d up'%event.button)
       # store time between mouse down and now
       self.TimeSinceLeftMouseButtonPressed = current_time - self.TimeLeftMouseButtonPressed
       self.LeftMouseReleasePosition = event.pos
@@ -196,7 +196,7 @@ class Events:
       print(event)
       logger.write('Unhandled Button %d up'%event.button)
     elif (event.button == 3):
-      logger.write('Button %d up'%event.button)
+      #logger.write('Button %d up'%event.button)
       # store time between mouse down and now
       self.TimeSinceRightMouseButtonPressed = current_time - self.TimeRightMouseButtonPressed
       self.RightMouseReleasePosition = event.pos
@@ -276,13 +276,21 @@ class Events:
   def HandleMouseWheelEvents(self, event, game):
     # The button will be set to 4 when the wheel is rolled up, and to button 5 when the wheel is rolled down
     current_time = self.GetTimeinSeconds()
-    if (game.window_info_rect.collidepoint(event.pos)):
+    if (game.window_fleet_info_rect.collidepoint(event.pos)):
       # scrool the info window instead of zooming
       if (event.button == 4):
         if (game.window_fleet_info_scoll_pos < 0):
           game.window_fleet_info_scoll_pos+=1
       else:
         game.window_fleet_info_scoll_pos-=1
+      game.reDraw_FleetInfoWindow = True
+    elif (game.window_info_rect.collidepoint(event.pos)):
+      # scrool the info window instead of zooming
+      if (event.button == 4):
+        if (game.window_info_scoll_pos < 0):
+          game.window_info_scoll_pos+=1
+      else:
+        game.window_info_scoll_pos-=1
       game.reDraw_InfoWindow = True
     else:
       if (event.button == 4):

@@ -21,13 +21,13 @@ class Clickable():
     if (self.enabled):
       self.toBeProcessed = False
       if (self.leftClicked):
-        self.LeftClickCallBack(self.parameter)
+        self.LeftClickCallBack(self.parameter, self.parent)
         self.leftClicked = False
       if (self.rightClicked):
-        self.RightClickCallBack(parameter)
+        self.RightClickCallBack(self.parameter, self.parent)
         self.rightClicked = False
       if (self.doubleClicked):
-        self.DoubleClickCallBack(parameter)
+        self.DoubleClickCallBack(self.parameter, self.parent)
         self.doubleClicked = False
 
   def LeftClick(self):

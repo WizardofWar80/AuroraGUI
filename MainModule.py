@@ -120,9 +120,9 @@ class Game():
     self.window_fleet_info_size = (300,600)
     self.window_map_size = (self.window_fleet_info_size[0],self.window_fleet_info_size[0])
 
-    self.window_info_anchor = (5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
+    self.window_fleet_info_anchor = (5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
     self.window_fleet_info = pygame.Surface(self.window_fleet_info_size, pygame.SRCALPHA,32)
-    self.window_fleet_info_rect = pygame.Rect(self.window_info_anchor, self.window_fleet_info_size)
+    self.window_fleet_info_rect = pygame.Rect(self.window_fleet_info_anchor, self.window_fleet_info_size)
     self.window_fleet_info.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_FleetInfoWindow = True;
     self.window_fleet_info_scoll_pos = 0
@@ -131,13 +131,19 @@ class Game():
 
 
     self.window_info_identifier = 'Info Window'
-    self.window_info_size = (400,600)
-    self.window_anchor = (self.width-self.window_info_size[0]-5,self.height-self.window_fleet_info_size[1]-5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
+    self.window_info_size = (300,600)
+    self.window_info_anchor = (self.width-self.window_info_size[0]-5,self.height-self.window_fleet_info_size[1]-5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
     self.window_info = pygame.Surface(self.window_info_size, pygame.SRCALPHA,32)
-    self.window_info_rect = pygame.Rect(self.window_info_anchor, self.window_fleet_info_size)
+    self.window_info_rect = pygame.Rect(self.window_info_anchor, self.window_info_size)
     self.window_info.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_InfoWindow = True;
     self.window_info_scoll_pos = 0
+    self.info_category_physical = 'Physical Info'
+    self.info_cat_phys_expanded = False
+    self.info_category_economical = 'Economical Info'
+    self.info_cat_eco_expanded = False
+    self.info_category_orbit = 'Orbit Info'
+    self.info_cat_orbit_expanded = False
 
     self.window_map_anchor = (5,self.height-self.window_map_size[1]-5)#(self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
     self.window_map = pygame.Surface(self.window_map_size, pygame.SRCALPHA,32)
@@ -145,13 +151,15 @@ class Game():
     self.window_map.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_MapWindow = True;
 
-
     self.GUI_identifier = 'GUI Elements'
     self.GUI_Elements = {}
     self.GUI_Bottom_Anchor = (500,self.height-50)
     self.images_GUI = {}
     self.GUI_expanded_fleets = []
+    self.GUI_expanded_fleets2 = []
     self.InitGUI()
+
+
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -178,6 +186,7 @@ class Game():
       self.colonies = None
       self.installations = self.GetInstallationInfo()
       self.GetNewData()
+      self.cc_cost_reduction = self.GetCCreduction()
 
 
   def InitGUI(self):
@@ -626,11 +635,11 @@ class Game():
             label_pos = (pad_x,(pad_y+lineNr*line_height))
             if (fleet['Ships'] != []):
               expRect = Utils.DrawExpander(self.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
-              self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
-              label_pos = (expRect[2]+10,label_pos[1])
+              self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_fleet_info_anchor)
+              label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
             label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
             if (label_pos):
-              self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
+              self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_fleet_info_anchor)
             if (fleet['Speed'] > 1) and label_pos:
               speed = str(int(fleet['Speed'])) + 'km/s'
 
@@ -680,11 +689,11 @@ class Game():
                 else:
                   shipClasses[ship['ClassName']] += 1
               for shipClass in shipClasses:
-                label_pos = (expRect[2]+10,(pad_y+lineNr*line_height))
+                label_pos = (expRect[0]+expRect[2]+5,(pad_y+lineNr*line_height))
                 label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
                 lineNr +=1
 
-      self.surface.blit(self.window_fleet_info,self.window_info_anchor)
+      self.surface.blit(self.window_fleet_info,self.window_fleet_info_anchor)
       self.reDraw_FleetInfoWindow = False
       return True
     else:
@@ -696,7 +705,7 @@ class Game():
       self.Events.ClearClickables(parent=self.window_info_identifier)
       line_height = 20
       pad_x = pad_y = 5
-      lineNr = self.window_info_scoll_pos
+      lineNr = 0
       self.window_info.fill(Utils.SUPER_DARK_GRAY)
       color = Utils.WHITE
       if (self.highlighted_fleet_ID in self.fleets):
@@ -746,151 +755,253 @@ class Game():
           label_pos, label_size = Utils.DrawText2Surface(self.window_info,name,label_pos,15,color)
         else:
           label_pos, label_size = Utils.DrawText2Surface(self.window_info,body['Class']+' '+body['Name'],label_pos,15,color)
-        lat_offs = 130
+        
+        # Physical body info
         lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Type:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,body['Type'],label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Radius:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['RadiusBody'])+' km',label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Gravity:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s x Earth'%Utils.GetFormattedNumber(body['Gravity']),label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Mass:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s x Earth'%Utils.GetFormattedNumber(body['Mass']),label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Orbit:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s AU'%Utils.GetFormattedNumber(body['Orbit']),label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Year:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,Utils.GetTimeScale(body['HoursPerYear']),label_pos2,15,color)
-        if (body['Class'] != 'Comet'):
+        x = label_pos[0]
+        label_pos = (x,(pad_y+lineNr*line_height))
+        expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+        self.MakeClickable(self.info_category_physical, expRect, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_physical, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+        label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,self.info_category_physical,label_pos,15,color)
+        if (self.info_cat_phys_expanded):
+          lat_offs = 130
           lineNr+=1
-          label_pos = (pad_x,(pad_y+lineNr*line_height))
-          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Day:',label_pos,15,color)
-          label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,Utils.GetTimeScale(body['HoursPerDay'])+(' - tidal locked' if body['Tidal locked'] else ''), label_pos2,15,color)
+          x = label_pos[0]+pad_x
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Type:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,body['Type'],label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Radius:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['RadiusBody'])+' km',label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Pop Capacity:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{body['Population Capacity']:,} M",label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Gravity:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s x Earth'%Utils.GetFormattedNumber(body['Gravity']),label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Mass:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s x Earth'%Utils.GetFormattedNumber(body['Mass']),label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Orbit:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s AU'%Utils.GetFormattedNumber(body['Orbit']),label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Year:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,Utils.GetTimeScale(body['HoursPerYear']),label_pos2,15,color)
+          if (body['Class'] != 'Comet'):
+            lineNr+=1
+            label_pos = (x,(pad_y+lineNr*line_height))
+            label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Day:',label_pos,15,color)
+            label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+            label_pos2, label_size = Utils.DrawText2Surface(self.window_info,Utils.GetTimeScale(body['HoursPerDay'])+(' - tidal locked' if body['Tidal locked'] else ''), label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Temperature:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%d C'%(int(body['Temperature'])),label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Atmosphere:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s atm'%Utils.GetFormattedNumber(body['AtmosPressure'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Hydrosphere:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['Hydrosphere'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Magnetic Field:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['MagneticField'])) if body['MagneticField'] > 0 else '-',label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Density:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s'%Utils.GetFormattedNumber(body['Density']),label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Escape Velocity:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s m/s'%Utils.GetFormattedNumber(body['EscapeVelocity']),label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Greenhouse Factor:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['GHFactor'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
+
+        # Economical body info
+        if (self.highlighted_body_ID in self.colonies):
+          colony = self.colonies[self.highlighted_body_ID]
+          lineNr+=1
+          x = pad_x
+          label_pos = (x,(pad_y+lineNr*line_height))
+          expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+          self.MakeClickable(self.info_category_economical, expRect, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_economical, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+          label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,self.info_category_economical,label_pos,15,color)
+          if (self.info_cat_eco_expanded):
+            lat_offs = 140
+            lineNr+=1
+            x = label_pos[0]+pad_x
+            label_pos = (x,(pad_y+lineNr*line_height))
+            label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Population:',label_pos,15,color)
+            label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+            label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(colony['Pop']),label_pos2,15,color)
+            lineNr+=1
+            colony['Installations']
+            supported_pop = 0
+            for installationID in colony['Installations']:
+              if (colony['Installations'][installationID]['Name'] == 'Infrastructure'):
+                amountInstallations = colony['Installations'][installationID]['Amount']
+                colonyCost = colony['ColonyCost'] * (1-self.cc_cost_reduction)
+                if (colonyCost == 0):
+                  supported_pop = body['Population Capacity']
+                else:
+                  supported_pop = amountInstallations / colonyCost / 100
+            label_pos = (x,(pad_y+lineNr*line_height))
+            label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Population Supported:',label_pos,15,color)
+            label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+            label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{round(supported_pop,2):,} M",label_pos2,15,color)
+            lineNr+=1
+            label_pos = (x,(pad_y+lineNr*line_height))
+            label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Annual Growth:',label_pos,15,color)
+            label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+            label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%1.2f%%'%(0),label_pos2,15,color)
+            lineNr+=1
+            label_pos = (x,(pad_y+lineNr*line_height))
+            label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Protection:',label_pos,15,color)
+            req = 0
+            act = 0
+            label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+            label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%d / %d'%(act,req),label_pos2,15,Utils.MED_GREEN if act >= req else Utils.RED)
+
+            if (colony['Stockpile']['Sum'] > 0 or colony['Stockpile']['Sum of Minerals'] > 0):
+              lineNr+=1
+              label_pos = (x,(pad_y+lineNr*line_height))
+              label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Stockpile',label_pos,15,color)
+              lat_offs = 70
+              lineNr+=1
+              if (colony['Stockpile']['Sum'] > 0):
+                label_pos = (x,(pad_y+lineNr*line_height))
+                label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Fuel:',label_pos,15,color)
+                label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+                label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{colony['Stockpile']['Fuel']:,}",label_pos2,15,color)
+                lineNr+=1
+                label_pos = (x,(pad_y+lineNr*line_height))
+                label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Supplies:',label_pos,15,color)
+                label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+                label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{colony['Stockpile']['Supplies']:,}",label_pos2,15,color)
+                lineNr+=1
+              if (colony['Stockpile']['Sum of Minerals'] > 0):
+                lat_offs2 = 30
+                for index in Utils.MineralNames:
+                  mineral = Utils.MineralNames[index]
+                  amount = colony['Stockpile'][mineral]
+                  label_pos = (x,(pad_y+lineNr*line_height))
+                  label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%s:'%mineral[:2],label_pos,15,color)
+                  label_pos2 = (x+lat_offs2,(pad_y+lineNr*line_height))
+                  label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{amount:,}",label_pos2,15,color)
+                  lineNr+=1
+                  if (index == 6):
+                    lineNr -= 6
+                    x += 100
+
         lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Temperature:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%d C'%(int(body['Temperature'])),label_pos2,15,color)
+        x = pad_x
+        label_pos = (x,(pad_y+lineNr*line_height))
+        expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+        self.MakeClickable(self.info_category_orbit, expRect, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_orbit, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+        label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+        label_pos, label_size = Utils.DrawText2Surface(self.window_info,self.info_category_orbit,label_pos,15,color)
         lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Atmosphere:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s atm'%Utils.GetFormattedNumber(body['AtmosPressure'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Hydrosphere:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['Hydrosphere'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Magnetic Field:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['MagneticField'])) if body['MagneticField'] > 0 else '-',label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Density:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s'%Utils.GetFormattedNumber(body['Density']),label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Escape Velocity:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%s m/s'%Utils.GetFormattedNumber(body['EscapeVelocity']),label_pos2,15,color)
-        lineNr+=1
-        label_pos = (pad_x,(pad_y+lineNr*line_height))
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Greenhouse Factor:',label_pos,15,color)
-        label_pos2 = (pad_x+lat_offs,(pad_y+lineNr*line_height))
-        label_pos2, label_size = Utils.DrawText2Surface(self.window_info,('%s'%Utils.GetFormattedNumber(body['GHFactor'])) if body['AtmosPressure'] > 0 else '-',label_pos2,15,color)
+        orbitFleetTopRow = lineNr
+        pygame.draw.line(self.window_info, Utils.WHITE, (x,(pad_y+lineNr*line_height-2)),((x+200,(pad_y+lineNr*line_height-2))),1)
+        lineNr+=self.window_info_scoll_pos
+        if (self.info_cat_orbit_expanded):
+          x = label_pos[0]
+          # orbiting fleets
+          for fleetID in self.fleets[self.currentSystem]:
+            fleet = self.fleets[self.currentSystem][fleetID]
+            if (fleet['Orbit']['Body'] == self.highlighted_body_ID and fleet['Orbit']['Distance'] == 0):
+              if (lineNr >= orbitFleetTopRow):
+                color = Utils.WHITE
+                label_pos = (x,(pad_y+lineNr*line_height))
+                if (fleet['Ships'] != []):
+                  expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+                  self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+                else:
+                  expRect = pygame.draw.rect(self.window_info, color, (label_pos[0]+1,label_pos[1]+3+1, 15-2, 15-2), 1)
+                label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+                label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name']+ ' - ',label_pos,15,color)
+                if (label_pos):
+                  self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+                  p = 0
+                  icon_pos = (label_pos[0]+label_size[0], label_pos[1])
+                  if (fleet['Fuel Capacity'] > 0):
+                    p = fleet['Fuel']/fleet['Fuel Capacity']
 
+                  if ('fuel2' in self.images_GUI):
+                    icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                                                                self.images_GUI['fuel2'], 
+                                                                icon_pos, 
+                                                                p, 
+                                                                color_unfilled = Utils.DARK_GRAY, 
+                                                                color = Utils.MED_YELLOW, 
+                                                                color_low = Utils.RED, 
+                                                                perc_low = 0.3, 
+                                                                color_high = Utils.LIGHT_GREEN, 
+                                                                perc_high = 0.7)
 
+                  icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
+                  p = 0
+                  if (fleet['Supplies Capacity'] > 0):
+                    p = fleet['Supplies']/fleet['Supplies Capacity']
 
-      #print(self.window_fleet_info_scoll_pos)
-      #if (self.currentSystem in self.fleets):
-      #  for fleetID in self.fleets[self.currentSystem]:
-      #    fleet = self.fleets[self.currentSystem][fleetID]
-      #    if (fleet['Ships'] != [] or self.showEmptyFleets):
-      #      color = Utils.WHITE
-      #      if (self.highlighted_fleet_ID == fleetID):
-      #        color = Utils.CYAN
-      #      label_pos = (pad_x,(pad_y+lineNr*line_height))
-      #      if (fleet['Ships'] != []):
-      #        expRect = Utils.DrawExpander(self.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
-      #        self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
-      #        label_pos = (expRect[2]+10,label_pos[1])
-      #      label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
-      #      if (label_pos):
-      #        self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_fleet_info_identifier, anchor=self.window_info_anchor)
-      #      if (fleet['Speed'] > 1) and label_pos:
-      #        speed = str(int(fleet['Speed'])) + 'km/s'
+                  if ('supplies' in self.images_GUI):
+                    icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                                                                self.images_GUI['supplies'], 
+                                                                icon_pos, 
+                                                                p, 
+                                                                color_unfilled = Utils.DARK_GRAY, 
+                                                                color = Utils.MED_YELLOW, 
+                                                                color_low = Utils.RED, 
+                                                                perc_low = 0.3, 
+                                                                color_high = Utils.LIGHT_GREEN, 
+                                                                perc_high = 0.7)
 
-      #        speed_label_pos, speed_label_size = Utils.DrawText2Surface(self.window_fleet_info,speed,(label_pos[0]+label_size[0],
-      #                                                                                          label_pos[1]),15,color)
-      #        icon_pos = (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1])
-      #        p = 0
-      #        if (fleet['Fuel Capacity'] > 0):
-      #          p = fleet['Fuel']/fleet['Fuel Capacity']
+                #print((pad_y+lineNr*line_height), fleet['Name'])
+                lineNr +=1
 
-      #        if ('fuel2' in self.images_GUI):
-      #          icon_rect = Utils.DrawPercentageFilledImage(self.window_fleet_info, 
-      #                                                      self.images_GUI['fuel2'], 
-      #                                                      icon_pos, 
-      #                                                      p, 
-      #                                                      color_unfilled = Utils.DARK_GRAY, 
-      #                                                      color = Utils.MED_YELLOW, 
-      #                                                      color_low = Utils.RED, 
-      #                                                      perc_low = 0.3, 
-      #                                                      color_high = Utils.LIGHT_GREEN, 
-      #                                                      perc_high = 0.7)
+                if (fleetID in self.GUI_expanded_fleets2):
+                  shipClasses = {}
+                  for ship in fleet['Ships']:
+                    if (ship['ClassName'] not in shipClasses):
+                      shipClasses[ship['ClassName']] = 1
+                    else:
+                      shipClasses[ship['ClassName']] += 1
+                  for shipClass in shipClasses:
+                    label_pos = (expRect[0]+expRect[2]+5,(pad_y+lineNr*line_height))
+                    label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
+                    lineNr +=1
+              else:
+                lineNr +=1
 
-      #        icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
-      #        p = 0
-      #        if (fleet['Supplies Capacity'] > 0):
-      #          p = fleet['Supplies']/fleet['Supplies Capacity']
-
-      #        if ('supplies' in self.images_GUI):
-      #          icon_rect = Utils.DrawPercentageFilledImage(self.window_fleet_info, 
-      #                                                      self.images_GUI['supplies'], 
-      #                                                      icon_pos, 
-      #                                                      p, 
-      #                                                      color_unfilled = Utils.DARK_GRAY, 
-      #                                                      color = Utils.MED_YELLOW, 
-      #                                                      color_low = Utils.RED, 
-      #                                                      perc_low = 0.3, 
-      #                                                      color_high = Utils.LIGHT_GREEN, 
-      #                                                      perc_high = 0.7)
-
-      #      #print((pad_y+lineNr*line_height), fleet['Name'])
-      #      lineNr +=1
-      #      if (fleetID in self.GUI_expanded_fleets):
-      #        shipClasses = {}
-      #        for ship in fleet['Ships']:
-      #          if (ship['ClassName'] not in shipClasses):
-      #            shipClasses[ship['ClassName']] = 1
-      #          else:
-      #            shipClasses[ship['ClassName']] += 1
-      #        for shipClass in shipClasses:
-      #          label_pos = (expRect[2]+10,(pad_y+lineNr*line_height))
-      #          label_pos, label_size = Utils.DrawText2Surface(self.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
-      #          lineNr +=1
-
-      self.surface.blit(self.window_info,self.window_anchor)
+      self.surface.blit(self.window_info,self.window_info_anchor)
       self.reDraw_InfoWindow = False
       return True
     else:
@@ -1117,6 +1228,26 @@ class Game():
       gHFactor = body[24]
       density = body[25]
       gravity = body[26]
+      
+      
+      if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
+        popCapacity = 0
+      else:
+        hydroMultiPlier = 1
+        tidalMultiPlier = 1
+        if (hydro > 75):
+          hydroMultiPlier = -0.0396*hydro+3.97
+        if (tidalLock and bodyClass == 'Planet'):
+          tidalMultiPlier = .2
+        surfaceArea = 4*r*r*math.pi
+        surfAreaEarth =  511185932.52 
+        popCapacity = 12000*surfaceArea/surfAreaEarth
+        # todo: Add population desnsity multiplier from race
+
+        popCapacity = popCapacity*hydroMultiPlier*tidalMultiPlier
+        popCapacity = round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1) if popCapacity < 10 else int(round(popCapacity,0))
+        if (popCapacity < 0.05):
+          popCapacity = 0.05
 
       if (bodyClass == 'Moon'):
         orbit = orbit * Utils.AU_INV
@@ -1187,7 +1318,7 @@ class Game():
           resources = True
 
       systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
-                              'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'AtmosPressure':atm,
+                              'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm,
                               'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
                               'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
                               'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts}
@@ -1430,9 +1561,16 @@ class Game():
     for colony in colonies_table:
         system_name = self.GetSystemName(colony[29])
         systemBodyID = colony[30]
-        colonies[systemBodyID] = {'Name':colony[4],'Pop':round(colony[24],2), 'SystemID':colony[29],'System':system_name, 'Stockpile':{'Fuel':int(round(colony[13])),'Supplies':int(round(colony[18]))}}
+        stockpile_sum = 0
+        stockpile_minerals_sum = 0
+        colonies[systemBodyID] = {'Name':colony[4],'Pop':round(colony[24],2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colony[17], 'Stockpile':{'Fuel':int(round(colony[13])),'Supplies':int(round(colony[18]))}}
+        stockpile_sum = int(round(colony[13]) + round(colony[18]))
         for mineralID in Utils.MineralNames:
-          colonies[systemBodyID]['Stockpile'][Utils.MineralNames[mineralID]] = int(round(colony[34+mineralID-1],0))
+          amount = int(round(colony[34+mineralID-1],0))
+          colonies[systemBodyID]['Stockpile'][Utils.MineralNames[mineralID]] = amount
+          stockpile_minerals_sum += amount
+        colonies[systemBodyID]['Stockpile']['Sum of Minerals'] = stockpile_minerals_sum
+        colonies[systemBodyID]['Stockpile']['Sum'] = stockpile_sum
 
         colonies[systemBodyID]['Installations'] = {}
         industries_table = [list(x) for x in self.db.execute('''SELECT PlanetaryInstallationID, Amount from FCT_PopulationInstallations WHERE GameID = %d AND PopID = %d;'''%(self.gameID,colony[0]))]
@@ -1547,25 +1685,25 @@ class Game():
             pygame.draw.rect(self.surface, Utils.RED, clickable.rect, 1)
 
 
-  def Follow_Jumppoint(self, id):
+  def Follow_Jumppoint(self, id, parent):
     if (id in self.starSystems):
       self.currentSystem = id
       self.window_fleet_info_scoll_pos = 0
+      self.CleanFleetUpInfoWindow()
       self.GetNewData()
-      self.CleanUpInfoWindow()
 
 
-  def Select_Fleet(self, id):
+  def Select_Fleet(self, id, parent):
     if (self.currentSystem in self.fleets):
       if (id in self.fleets[self.currentSystem]):
-        print(self.fleets[self.currentSystem][id])
+        #print(self.fleets[self.currentSystem][id])
         self.highlighted_fleet_ID = id
         self.highlighted_body_ID=-1
         self.reDraw = True
         #self.GetNewData()
 
 
-  def Select_Body(self, id):
+  def Select_Body(self, id, parent):
     if (id in self.starSystems[self.currentSystem]['Stars']):
       #print(self.starSystems[self.currentSystem]['Stars'][id])
       self.highlighted_fleet_ID = -1
@@ -1578,7 +1716,7 @@ class Game():
       self.reDraw = True
 
 
-  def ToggleGUI(self, id):
+  def ToggleGUI(self, id, parent):
 
     if (id in self.GUI_Elements):
       self.reDraw = True
@@ -1658,15 +1796,56 @@ class Game():
       self.showArtifactsBodies = not self.showArtifactsBodies
 
 
-  def CleanUpInfoWindow(self):
-    self.GUI_expanded_fleets = []
+  def CleanUpFleetInfoWindow(self, parent):
+    if (parent == self.window_fleet_info_identifier):
+      self.GUI_expanded_fleets = []
+    elif (parent == self.window_info_identifier):
+      self.GUI_expanded_fleets2 = []
 
-
-  def ExpandFleet(self, id):
+  def ExpandFleet(self, id, parent):
     if (id in self.fleets[self.currentSystem]):
-      if (id in self.GUI_expanded_fleets):
-        self.GUI_expanded_fleets.remove(id)
-      else:
-        self.GUI_expanded_fleets.append(id)
-      self.reDraw_FleetInfoWindow = True
+      if (parent == self.window_fleet_info_identifier):
+        if (id in self.GUI_expanded_fleets):
+          self.GUI_expanded_fleets.remove(id)
+        else:
+          self.GUI_expanded_fleets.append(id)
+        self.reDraw_FleetInfoWindow = True
+      elif (parent == self.window_info_identifier):
+        if (id in self.GUI_expanded_fleets2):
+          self.GUI_expanded_fleets2.remove(id)
+        else:
+          self.GUI_expanded_fleets2.append(id)
+        self.reDraw_InfoWindow = True
 
+
+  def ExpandBodyInfo(self, category, parent):
+    if (category == self.info_category_physical):
+      self.info_cat_phys_expanded = not self.info_cat_phys_expanded
+    elif (category == self.info_category_economical):
+      self.info_cat_eco_expanded = not self.info_cat_eco_expanded
+    elif (category == self.info_category_orbit):
+      self.info_cat_orbit_expanded = not self.info_cat_orbit_expanded
+    self.reDraw_InfoWindow = True
+
+
+  def GetCCreduction(self):
+    number = 0
+    searchString = 'Colonization Cost Reduction'
+    results = self.db.execute('''SELECT * from DIM_TechType;''').fetchall()
+    techTypeID = -1
+    for result in results:
+      if (result[1] == searchString):
+        techTypeID = result[0]
+        break
+    results = self.db.execute('''SELECT TechSystemID, Name from FCT_TechSystem WHERE TechTypeID = %d;'''%(techTypeID)).fetchall()
+    for result in results:
+      researchedTechs = self.db.execute('''SELECT * from FCT_RaceTech WHERE GameID = %d AND RaceID = %d AND TechID = %d;'''%(self.gameID, self.myRaceID, result[0])).fetchall()
+      if (researchedTechs):
+        percentage = result[1].replace(searchString,'')
+        try:
+          number = float(percentage[:-1])/100.
+        except:
+          number = 0
+      else:
+        break
+    return number
