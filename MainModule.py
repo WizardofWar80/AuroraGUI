@@ -6,6 +6,7 @@ import math
 import random
 import Clickable
 import GUI
+import Bodies
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -163,6 +164,7 @@ class Game():
     self.GUI_expanded_fleets = []
     self.GUI_expanded_fleets2 = []
     self.InitGUI()
+    self.systemBodies = {}
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -186,11 +188,14 @@ class Game():
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
       self.stellarTypes = self.GetStellarTypes()
-      self.colonies = None
-      self.installations = self.GetInstallationInfo()
-      self.GetNewData()
-      self.cc_cost_reduction = self.GetCCreduction()
       self.gases = self.InitGases()
+      self.installations = self.GetInstallationInfo()
+      self.cc_cost_reduction = self.GetCCreduction()
+
+      self.colonies = None
+      self.GetNewData()
+      
+
 
 
   def InitGUI(self):
@@ -419,151 +424,14 @@ class Game():
   def DrawSystemBodies(self):
     if self.currentSystem not in self.starSystems:
       return
-    system = self.starSystems[self.currentSystem]
-    
+
     ###################
     # Draw Stars
     ###################
-    for starID in system['Stars']:
-      star = system['Stars'][starID]
-      screen_star_pos = self.WorldPos2ScreenPos(star['Pos'])
-      star_name = star['Name'] + ' ' + star['Suffix']
-      # draw star
-      
-      # draw orbit
-      ############
-      screen_parent_pos = self.WorldPos2ScreenPos(star['ParentPos'])
-      if (self.showOrbits_Stars):
-        orbitRadiusOnScreen = star['OrbitDistance']*self.systemScale
-        if (orbitRadiusOnScreen > 0):
-          Utils.DrawEllipticalOrbit(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, star['Eccentricity'], star['EccentricityAngle'],star['Bearing'], 10)
-          #if (orbitRadiusOnScreen < self.width):
-          #  pygame.draw.circle(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, 1)
-          #else:
-          #  if Utils.RectIntersectsRadius((0,0,self.width, self.height), screen_parent_pos, orbitRadiusOnScreen):
-          #    min_angle, max_angle = Utils.GetAnglesEncompassingRectangle((0,0,self.width, self.height), screen_parent_pos)
-          #    Utils.DrawArc(self.surface, self.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, min_angle, max_angle, 1)
-      
-      # draw Star, either as image or as simple filled circle
-      ####################
-      radius = (Utils.AU_INV*self.systemScale)*star['Radius']*self.radius_Sun
-      star_color = self.stellarTypes[star['StellarTypeID']]['RGB']
-      if (radius < self.minPixelSize_Star):
-        radius = self.minPixelSize_Star
-
-      if (star['Image'] is not None):
-        if (screen_star_pos[0]-radius < self.width and screen_star_pos[0]+radius > 0 and 
-            screen_star_pos[1]-radius < self.height and screen_star_pos[1]+radius > 0 ):
-          scale = (radius*2,radius*2)
-          if (scale[0] > 2*self.width):
-            #todo: fix bug where the scaled surface moves when zooming in too much
-            scale = (2*self.width,2*self.width)
-          scaledSurface = pygame.transform.smoothscale(star['Image'],scale)
-          image_offset = Utils.SubTuples(screen_star_pos,scaledSurface.get_rect().center)
-          self.surface.blit(scaledSurface,image_offset)
-      else:
-        if (not star['Black Hole']):
-          pygame.draw.circle(self.surface,star_color,screen_star_pos,radius,Utils.FILLED)
-        else:
-          pygame.draw.circle(self.surface,Utils.RED,screen_star_pos,radius,5)
-      bb = (screen_star_pos[0]-radius,screen_star_pos[1]-radius,2*radius,2*radius)
-      if (self.CheckClickableNotBehindGUI(bb)):
-        self.MakeClickable(star_name, bb, left_click_call_back = self.Select_Body, par=starID)
-
-      # Label Star
-      ################
-      if (self.highlighted_body_ID == starID):
-        color = Utils.CYAN
-      else:
-        color = self.color_Label_Star
-      labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
-      Utils.DrawText2Surface(self.surface,star_name,labelPos,14,color)
+    Bodies.DrawStars(self)
 
     # Draw other bodies
-    for bodyID in self.systemBodies:
-      body = self.systemBodies[bodyID]
-      #print(body['ID'],body['Name'])
-
-      body_draw_cond, draw_color_body, body_min_size, body_min_dist = self.GetDrawConditions('Body', body)
-      if (body_draw_cond):
-        screen_body_pos = self.WorldPos2ScreenPos(body['Pos'])
-        radius_on_screen = Utils.AU_INV * self.systemScale * body['RadiusBody']
-        if (radius_on_screen < body_min_size):
-          radius_on_screen = body_min_size
-
-        orbit_draw_cond, draw_color_orbit, void, min_orbit = self.GetDrawConditions('Orbit', body)
-        orbitOnScreen = body['Orbit']*self.systemScale
-
-        if (orbit_draw_cond) and (orbitOnScreen > body_min_dist):
-          E = body['Eccentricity']
-          parentID = body['ParentID']
-
-          if parentID in system['Stars']:
-            screen_parent_pos = self.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
-          elif parentID in self.systemBodies:
-            screen_parent_pos = self.WorldPos2ScreenPos(self.systemBodies[parentID]['Pos'])
-          else:
-            screen_parent_pos = self.WorldPos2ScreenPos((0,0))
-          Utils.DrawEllipticalOrbit(self.surface, draw_color_orbit, screen_parent_pos, orbitOnScreen, E, body['EccentricityAngle'],body['Bearing'], min_orbit)
-          ## draw orbit
-          #if (E > 0):
-          #  a = orbitOnScreen
-          #  b = a * math.sqrt(1-E*E)
-          #  #b = body['Orbit'] * self.systemScale
-          #  #a = b*1/math.sqrt(1-E*E)
-          #  c = E * a
-          #  N = 60
-          #  if (E > 0.9):
-          #    N = 240
-          #  x_offset = c * math.cos(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
-          #  y_offset = c * math.sin(body['EccentricityAngle']*Utils.DEGREES_TO_RADIANS)
-          #  offsetPos = Utils.AddTuples(screen_parent_pos, (x_offset,y_offset))
-          #  #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-          #  # 13 FPS
-          #  #Utils.draw_ellipse_angle(self.surface,self.color_Orbit,(offsetPos,(2*a,2*b)),body['EccentricityAngle'],1)
-          #  # 19 FPS @360 segments, 30 FPS at 60 segments
-          #  Utils.MyDrawEllipse(self.surface, draw_color_orbit, offsetPos[0],offsetPos[1], a, b,body['EccentricityAngle'],body['Bearing'], N)
-          #else:
-          #  if (orbitOnScreen < 50000 and orbitOnScreen > min_orbit):
-          #    pygame.draw.circle(self.surface,draw_color_orbit,screen_parent_pos,orbitOnScreen,1)
-        
-        # check if we want to draw the object
-        ################
-        if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < self.width+50 and screen_body_pos[1] < self.height+50 ):
-          pass
-        else:
-          body_draw_cond = False  
-        if (body_draw_cond) and (orbitOnScreen > body_min_dist):
-          # draw body
-          if (body['Image'] is not None):
-            if (screen_body_pos[0]-radius_on_screen < self.width and screen_body_pos[0]+radius_on_screen > 0 and 
-                screen_body_pos[1]-radius_on_screen < self.height and screen_body_pos[1]+radius_on_screen > 0 ):
-              scale = (radius_on_screen*2,radius_on_screen*2)
-              if (scale[0] > 2*self.width):
-                #todo: fix bug where the scaled surface moves when zooming in too much
-                scale = (2*self.width,2*self.width)
-              scaledSurface = pygame.transform.smoothscale(body['Image'],scale)
-              image_offset = Utils.SubTuples(screen_body_pos,scaledSurface.get_rect().center)
-              self.surface.blit(scaledSurface,image_offset)
-          else:
-            pygame.draw.circle(self.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
-          
-          # Make object clickable
-          bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
-          if (self.CheckClickableNotBehindGUI(bb)):
-            self.MakeClickable(body['Name'], bb, left_click_call_back = self.Select_Body, par=bodyID)
-
-          # Check if we want to draw the label
-          draw_cond, draw_color_label, void, min_dist = self.GetDrawConditions('Label', body)
-          if (draw_cond) and (orbitOnScreen > min_dist):
-            labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
-
-            if (self.highlighted_body_ID == bodyID):
-              color = Utils.CYAN
-            else:
-              color = draw_color_label
-            # draw the label
-            Utils.DrawText2Surface(self.surface, body['Name'], labelPos, 14, color)
+    Bodies.DrawBodies(self)
 
 
   def DrawSystemJumpPoints(self):
@@ -781,6 +649,11 @@ class Game():
           label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Radius:',label_pos,15,color)
           label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
           label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(body['RadiusBody'])+' km',label_pos2,15,color)
+          lineNr+=1
+          label_pos = (x,(pad_y+lineNr*line_height))
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Colony Cost:',label_pos,15,color)
+          label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+          label_pos2, label_size = Utils.DrawText2Surface(self.window_info,'%2.3f'%body['ColonyCost'],label_pos2,15,color)
           lineNr+=1
           label_pos = (x,(pad_y+lineNr*line_height))
           label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Pop Capacity:',label_pos,15,color)
@@ -1280,7 +1153,6 @@ class Game():
       density = body[25]
       gravity = body[26]
       
-      
       if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
         popCapacity = 0
       else:
@@ -1299,6 +1171,8 @@ class Game():
         popCapacity = round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1) if popCapacity < 10 else int(round(popCapacity,0))
         if (popCapacity < 0.05):
           popCapacity = 0.05
+
+      colonyCost = self.CalculateColonyCost(body[0], temp, atm, hydro, gravity, tidalMultiPlier)
 
       if (bodyClass == 'Moon'):
         orbit = orbit * Utils.AU_INV
@@ -1369,107 +1243,11 @@ class Game():
           resources = True
 
       systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
-                              'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm,
+                              'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm, 'ColonyCost':colonyCost,
                               'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
                               'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
                               'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts}
     return systemBodies
-
-
-  def GetDrawConditions(self, thing2Draw, body):
-    draw = False
-    color = (0,0,0)
-    min_size = 5
-    min_dist = 5
-    if (body['Type'] == 'Stellar'):
-      filter = False
-    else:
-      filter = (body['Colonized'] and self.showColonizedBodies) or (body['Resources'] and self.showResourcefulBodies) or (body['Industrialized'] and self.showIndustrializedBodies) or (body['Xenos'] and self.showXenosBodies)  or (body['Enemies'] and self.showEnemyBodies)  or (body['Unsurveyed'] and self.showUnsurveyedBodies) or (body['Artifacts'] and self.showArtifactsBodies)
-
-    if (thing2Draw == 'Body'):
-      if (body['Class'] == 'Moon'):
-        if (self.show_Moons or filter):
-          draw = True
-          color = self.color_Moon
-          min_size = self.minPixelSize_Moon
-          min_dist = 10
-      elif (body['Class']  == 'Comet'):
-        if (self.show_Comets or filter):
-          draw = True
-          color = self.color_Comet
-          min_size = self.minPixelSize_Small
-          min_dist = 10
-      elif (body['Class']  == 'Asteroid'):
-        if (self.show_Asteroids or filter):
-          draw = True
-          color = self.color_Asteroid
-          min_size = self.minPixelSize_Small
-          min_dist = 10
-      elif (body['Type'] == 'Planet Small'):
-        if (self.show_DwarfPlanets or filter):
-          draw = True
-          color = self.color_DwarfPlanet
-          min_size = self.minPixelSize_Planet
-          min_dist = 10
-      elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
-        if (self.show_Planets or filter):
-          draw = True
-          color = self.color_Planet
-          min_size = self.minPixelSize_Planet
-          min_dist = 10
-    elif (thing2Draw == 'Orbit'):
-      if (body['Class'] == 'Moon'):
-        if (self.showOrbits_Moons and (self.show_Moons or filter)):
-          draw = True
-          color = self.color_Orbit_Moon
-          min_dist = 10
-      elif (body['Class']  == 'Comet'):
-        if (self.showOrbits_Comets and (self.show_Comets or filter)):
-          draw = True
-          color = self.color_Orbit_Comet
-          min_dist = 10
-      elif (body['Class']  == 'Asteroid'):
-        if (self.showOrbits_Asteroids and (self.show_Asteroids or filter)):
-          draw = True
-          color = self.color_Orbit_Asteroid
-          min_dist = 10
-      elif (body['Type'] == 'Planet Small'):
-        if (self.showOrbits_DwarfPlanets and (self.show_DwarfPlanets or filter)):
-          draw = True
-          color = self.color_Orbit_DwarfPlanet
-          min_dist = 10
-      elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
-        if (self.showOrbits_Planets and (self.show_Planets or filter)):
-          draw = True
-          color = self.color_Orbit_Planet
-          min_dist = 10
-    elif (thing2Draw == 'Label'):
-      if (body['Class'] == 'Moon'):
-        if (self.showLabels_Moons and (self.show_Moons or filter)):
-          draw = True
-          color = self.color_Label_Moon
-          min_dist = 50
-      elif (body['Class']  == 'Comet'):
-        if (self.showLabels_Comets and (self.show_Comets or filter)):
-          draw = True
-          color = self.color_Label_Comet
-          min_dist = 200
-      elif (body['Class']  == 'Asteroid'):
-        if (self.showLabels_Asteroids and (self.show_Asteroids or filter)):
-          draw = True
-          color = self.color_Label_Asteroid
-          min_dist = 200
-      elif (body['Type'] == 'Planet Small'):
-        if (self.showLabels_DwarfPlanets and (self.show_DwarfPlanets or filter)):
-          draw = True
-          color = self.color_Label_DwarfPlanet
-          min_dist = 5
-      elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
-        if (self.showLabels_Planets and (self.show_Planets or filter)):
-          draw = True
-          color = self.color_Label_Planet
-          min_dist = 5
-    return draw, color, min_size, min_dist
 
 
   def GetFleets(self):
@@ -1888,15 +1666,13 @@ class Game():
 
   def InitGases(self):
     gases = {}
-    results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel from FCT_AtmosphericGas;''').fetchall()
+    results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel from DIM_Gases;''').fetchall()
     for result in results:
-      gases[results[0]] = {'Name':results[1], 'DangerFactor':results[2], 'DangerousLevel':results[3]/1000}
+      gases[result[0]] = {'Name':result[1], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000}
     return gases
 
 
-  def CalculateColonyCost(self, bodyID):
-    body = self.systemBodies[bodyID]
-
+  def CalculateColonyCost(self, bodyID, currentTemp, atm, hydro, gravity, tidalMultiplier):
     tempFactor = 0
     breathFactor = 0
     dangerAtmFactor = 0
@@ -1904,13 +1680,13 @@ class Game():
     waterFactor = 0
     
     # body data
-    currentTemp = body['Temperature'] # 630.880
-    atm = body['AtmosPressure'] #92.095
-    hydro = body['Hydrosphere']#0
+    #currentTemp = body['Temperature'] # 630.880
+    #atm = body['AtmosPressure'] #92.095
+    #hydro = body['Hydrosphere']#0
     #oxygen atm and %
     breathAtm = 0
     breathAtmLevel = 0
-    gravity = body['Gravity']#.91
+    #gravity = body['Gravity']#.91
 
 
     # Species levels
@@ -1919,7 +1695,7 @@ class Game():
     breatheGas = 'Oxygen'
     breatheMinAtm = 0.1
     breatheMaxAtm = 0.3
-    safeLevel = 0.3
+    safeLevel = 30
     maxAtm = 4
     minGravity = 0.1
     maxGravity = 1.9
@@ -1930,8 +1706,12 @@ class Game():
     # Gas Giants, Super Jovians and worlds with a gravity higher than species tolerance cannot be colonised and therefore have no colony cost. 
 
     # Temperature: If the temperature is outside of the species tolerance, the colony cost factor for temperature is equal to the number of degrees above or below the species tolerance divided by half the total species range. For example, if the species range is from 0C to 30C and the temperature is 75C, the colony cost factor would be 45 / 15 = 3.00. The colony cost factor for tide-locked planets is 20% of normal, so in the example given the colony cost factor would be reduced to 0.60.
-    speciesTempDelta = abs(min(minTemp-currentTemp, maxTemp-currentTemp))
-    tempFactor = speciesTempDelta / (maxTemp-minTemp) * 2
+    if (currentTemp > minTemp) and (currentTemp < maxTemp):
+      tempFactor = 0
+    else:
+      speciesTempDelta = min(abs(minTemp-currentTemp), abs(maxTemp-currentTemp))
+      tempFactor = speciesTempDelta / (maxTemp-minTemp) * 2 * tidalMultiplier
+      
 
     # Hydrosphere Extent: If less than twenty percent of a body is covered with water (less than 20% Hydro Extent), the colony cost factor for hydro extent is (20 - Hydro Extent) / 10, which is a range from zero to 2.00.
     if (hydro >= 20):
@@ -1948,16 +1728,16 @@ class Game():
     dangerAtmFactor = 0
     for bodyGas in bodyGases:
       id = bodyGas[0]
-      amount = bodyGas[1]
+      percentage = bodyGas[1]
       atm = bodyGas[2]
 
       if id in self.gases:
-        if (self.gases[id][DangerFactor] > 0):
-          if (atm > self.gases[id][DangerousLevel]):
-            dangerAtmFactor = max(self.gases[id][DangerFactor], dangerAtmFactor)
-        if (self.gases[id] == 'Oxygen'):
-          breathAtm = amount
-          breathAtmLevel = atm
+        if (self.gases[id]['DangerFactor'] > 0):
+          if (atm > self.gases[id]['DangerousLevel']):
+            dangerAtmFactor = max(self.gases[id]['DangerFactor'], dangerAtmFactor)
+        if (self.gases[id]['Name'] == 'Oxygen'):
+          breathAtm = atm
+          breathAtmLevel = percentage
 
     # Breathable Gas: If the atmosphere does not have a sufficient amount of breathable gas, the colony cost factor for breathable gas is 2.00. If the gas is available in sufficient quantities but exceeds 30% of atmospheric pressure, the colony cost factor is also 2.00.
     if (breathAtm >= breatheMinAtm and breathAtm <= breatheMaxAtm and breathAtmLevel < safeLevel):

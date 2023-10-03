@@ -24,6 +24,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AuroraGUI.py" />
+    <Compile Include="Bodies.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Events.py" />
     <Compile Include="GUI.py">
       <SubType>Code</SubType>
