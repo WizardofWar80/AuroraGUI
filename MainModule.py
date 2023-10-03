@@ -190,6 +190,7 @@ class Game():
       self.installations = self.GetInstallationInfo()
       self.GetNewData()
       self.cc_cost_reduction = self.GetCCreduction()
+      self.gases = self.InitGases()
 
 
   def InitGUI(self):
@@ -1883,6 +1884,90 @@ class Game():
       self.info_cat_inst_expanded = not self.info_cat_inst_expanded
 
     self.reDraw_InfoWindow = True
+
+
+  def InitGases(self):
+    gases = {}
+    results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel from FCT_AtmosphericGas;''').fetchall()
+    for result in results:
+      gases[results[0]] = {'Name':results[1], 'DangerFactor':results[2], 'DangerousLevel':results[3]/1000}
+    return gases
+
+
+  def CalculateColonyCost(self, bodyID):
+    body = self.systemBodies[bodyID]
+
+    tempFactor = 0
+    breathFactor = 0
+    dangerAtmFactor = 0
+    atmFactor = 0
+    waterFactor = 0
+    
+    # body data
+    currentTemp = body['Temperature'] # 630.880
+    atm = body['AtmosPressure'] #92.095
+    hydro = body['Hydrosphere']#0
+    #oxygen atm and %
+    breathAtm = 0
+    breathAtmLevel = 0
+    gravity = body['Gravity']#.91
+
+
+    # Species levels
+    minTemp = -10
+    maxTemp = 38
+    breatheGas = 'Oxygen'
+    breatheMinAtm = 0.1
+    breatheMaxAtm = 0.3
+    safeLevel = 0.3
+    maxAtm = 4
+    minGravity = 0.1
+    maxGravity = 1.9
+    
+    if (gravity > maxGravity):
+      return None
+
+    # Gas Giants, Super Jovians and worlds with a gravity higher than species tolerance cannot be colonised and therefore have no colony cost. 
+
+    # Temperature: If the temperature is outside of the species tolerance, the colony cost factor for temperature is equal to the number of degrees above or below the species tolerance divided by half the total species range. For example, if the species range is from 0C to 30C and the temperature is 75C, the colony cost factor would be 45 / 15 = 3.00. The colony cost factor for tide-locked planets is 20% of normal, so in the example given the colony cost factor would be reduced to 0.60.
+    speciesTempDelta = abs(min(minTemp-currentTemp, maxTemp-currentTemp))
+    tempFactor = speciesTempDelta / (maxTemp-minTemp) * 2
+
+    # Hydrosphere Extent: If less than twenty percent of a body is covered with water (less than 20% Hydro Extent), the colony cost factor for hydro extent is (20 - Hydro Extent) / 10, which is a range from zero to 2.00.
+    if (hydro >= 20):
+      waterFactor = 0
+    else:
+      waterFactor = 2
+
+    # Atmospheric Pressure: If the atmospheric pressure is above species tolerance, the colony cost factor for pressure is equal to pressure / species max pressure; with a minimum of 2.00. For example, if a species has a pressure tolerance of 4 atm and the pressure is 10 atm, the colony cost factor would be 2.50. If the pressure was 6 atm, the colony cost factor would be 2.00, as that is the minimum.
+    atmFactor = max(2,atm/maxAtm) if (atm > maxAtm) else 0
+
+    # Dangerous Gas: If a dangerous gas is present in the atmosphere and the concentration is above the danger level, the colony cost factor for dangerous gases will either be 2.00 or 3.00, depending on the gas. Different gases require different concentrations before becoming 'dangerous'. Halogens such as Chlorine, Bromine or Flourine are the most dangerous at 1 ppm, followed by Nitrogen Dioxide and Sulphur Dioxide at 5 ppm. Hydrogen Sulphide is 20 ppm, Carbon Monoxide and Ammonia are 50 ppm, Hydrogen, Methane (if an oxygen breather) and Oxygen (if a Methane breather) are at 500 ppm and Carbon Dioxide is at 5000 ppm (0.5% of atmosphere). Note that Carbon Dioxide was not classed as a dangerous gas in VB6 Aurora. These gases are not lethal at those concentrations but are dangerous enough that infrastructure would be required to avoid sustained exposure.
+    bodyGases = self.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(self.gameID, bodyID)).fetchall()
+    # gases[results[0]] = {'Name':results[1], 'DangerFactor':results[2], 'DangerousLevel':results[3]/1000}
+    dangerAtmFactor = 0
+    for bodyGas in bodyGases:
+      id = bodyGas[0]
+      amount = bodyGas[1]
+      atm = bodyGas[2]
+
+      if id in self.gases:
+        if (self.gases[id][DangerFactor] > 0):
+          if (atm > self.gases[id][DangerousLevel]):
+            dangerAtmFactor = max(self.gases[id][DangerFactor], dangerAtmFactor)
+        if (self.gases[id] == 'Oxygen'):
+          breathAtm = amount
+          breathAtmLevel = atm
+
+    # Breathable Gas: If the atmosphere does not have a sufficient amount of breathable gas, the colony cost factor for breathable gas is 2.00. If the gas is available in sufficient quantities but exceeds 30% of atmospheric pressure, the colony cost factor is also 2.00.
+    if (breathAtm >= breatheMinAtm and breathAtm <= breatheMaxAtm and breathAtmLevel < safeLevel):
+      breathFactor = 0
+    else:
+      breathFactor = 2
+
+    cc = max([tempFactor, breathFactor, dangerAtmFactor, atmFactor, waterFactor])
+
+    return cc
 
 
   def GetCCreduction(self):

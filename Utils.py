@@ -86,6 +86,22 @@ SpectralColors = { 'A': 'White'
                   ,'BH': 'None'
                   }
 
+SafeGasLevels = { 'Hydrogen':{'Safe Level': 0.05, 'CC':2}
+                 ,'Methane' :{'Safe Level': 0.05, 'CC':2}
+                 ,'Ammonia' :{'Safe Level': 0.005, 'CC':2}
+                 ,'Carbon Monoxide' :{'Safe Level': 0.005, 'CC':2}
+                 ,'Nitrogen Oxide' :{'Safe Level': 0.005, 'CC':2}
+                 ,'Oxygen' :{'Safe Level': 0.3, 'CC':2}
+                 ,'Hydrogen Sulphide' :{'Safe Level': 0.002, 'CC':2}
+                 ,'Carbon Dioxide' :{'Safe Level': 0.5, 'CC':2}
+                 ,'Nitrogen Dioxide' :{'Safe Level': 0.0005, 'CC':2}
+                 ,'Sulphur Dioxide' :{'Safe Level': 0.002, 'CC':2}
+                 ,'Chlorine' :{'Safe Level': 0.0001, 'CC':3}
+                 ,'Fluorine' :{'Safe Level': 0.0001, 'CC':3}
+                 ,'Bromine' :{'Safe Level': 0.0001, 'CC':3}
+                 ,'Iodine' :{'Safe Level': 0.0001, 'CC':2}
+                 }
+
 star_suffixes = ['A', 'B', 'C', 'D']
 
 FILLED = 0
