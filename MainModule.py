@@ -139,11 +139,16 @@ class Game():
     self.reDraw_InfoWindow = True;
     self.window_info_scoll_pos = 0
     self.info_category_physical = 'Physical Info'
-    self.info_cat_phys_expanded = False
+    self.info_cat_phys_expanded = True
     self.info_category_economical = 'Economical Info'
     self.info_cat_eco_expanded = False
     self.info_category_orbit = 'Orbit Info'
     self.info_cat_orbit_expanded = False
+    self.info_category_stockpile = 'Stockpile'
+    self.info_cat_stock_expanded = True
+    self.info_category_installations = 'Installations'
+    self.info_cat_inst_expanded = True
+
 
     self.window_map_anchor = (5,self.height-self.window_map_size[1]-5)#(self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
     self.window_map = pygame.Surface(self.window_map_size, pygame.SRCALPHA,32)
@@ -158,8 +163,6 @@ class Game():
     self.GUI_expanded_fleets = []
     self.GUI_expanded_fleets2 = []
     self.InitGUI()
-
-
 
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     try:
@@ -752,9 +755,9 @@ class Game():
           name = body['Name']
           if (body['Class'] == 'Comet' and name.find('Comet') == -1):
             name = 'Comet '+name
-          label_pos, label_size = Utils.DrawText2Surface(self.window_info,name,label_pos,15,color)
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,name+(' (Unsurveyed)' if body['Unsurveyed'] else ''),label_pos,15,color)
         else:
-          label_pos, label_size = Utils.DrawText2Surface(self.window_info,body['Class']+' '+body['Name'],label_pos,15,color)
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,body['Class']+' '+body['Name']+(' (Unsurveyed)' if body['Unsurveyed'] else ''),label_pos,15,color)
         
         # Physical body info
         lineNr+=1
@@ -850,9 +853,9 @@ class Game():
           lineNr+=1
           x = pad_x
           label_pos = (x,(pad_y+lineNr*line_height))
-          expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
-          self.MakeClickable(self.info_category_economical, expRect, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_economical, parent = self.window_info_identifier, anchor=self.window_info_anchor)
-          label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+          expRect1 = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+          self.MakeClickable(self.info_category_economical, expRect1, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_economical, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+          label_pos = (expRect1[0]+expRect1[2]+5,label_pos[1])
           label_pos, label_size = Utils.DrawText2Surface(self.window_info,self.info_category_economical,label_pos,15,color)
           if (self.info_cat_eco_expanded):
             lat_offs = 140
@@ -863,16 +866,20 @@ class Game():
             label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
             label_pos2, label_size = Utils.DrawText2Surface(self.window_info,str(colony['Pop']),label_pos2,15,color)
             lineNr+=1
-            colony['Installations']
             supported_pop = 0
+            found_Installations = False
             for installationID in colony['Installations']:
+              amountInstallations = colony['Installations'][installationID]['Amount']
+              if (amountInstallations > 0):
+                found_Installations = True
               if (colony['Installations'][installationID]['Name'] == 'Infrastructure'):
-                amountInstallations = colony['Installations'][installationID]['Amount']
                 colonyCost = colony['ColonyCost'] * (1-self.cc_cost_reduction)
                 if (colonyCost == 0):
                   supported_pop = body['Population Capacity']
                 else:
                   supported_pop = amountInstallations / colonyCost / 100
+                if (found_Installations):
+                  break
             label_pos = (x,(pad_y+lineNr*line_height))
             label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Population Supported:',label_pos,15,color)
             label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
@@ -892,114 +899,157 @@ class Game():
 
             if (colony['Stockpile']['Sum'] > 0 or colony['Stockpile']['Sum of Minerals'] > 0):
               lineNr+=1
+              x = expRect1[0]+expRect1[2]+5
               label_pos = (x,(pad_y+lineNr*line_height))
+              #label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Stockpile',label_pos,15,color)
+              expRect2 = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+              self.MakeClickable(self.info_category_stockpile, expRect2, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_stockpile, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+              label_pos = (expRect2[0]+expRect2[2]+5,label_pos[1])
               label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Stockpile',label_pos,15,color)
-              lat_offs = 70
-              lineNr+=1
-              if (colony['Stockpile']['Sum'] > 0):
-                label_pos = (x,(pad_y+lineNr*line_height))
-                label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Fuel:',label_pos,15,color)
-                label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
-                label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{colony['Stockpile']['Fuel']:,}",label_pos2,15,color)
+              if (self.info_cat_stock_expanded):
+                lat_offs = 70
+                x = expRect2[0]+expRect2[2]+5
                 lineNr+=1
-                label_pos = (x,(pad_y+lineNr*line_height))
-                label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Supplies:',label_pos,15,color)
-                label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
-                label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{colony['Stockpile']['Supplies']:,}",label_pos2,15,color)
-                lineNr+=1
-              if (colony['Stockpile']['Sum of Minerals'] > 0):
-                lat_offs2 = 30
-                for index in Utils.MineralNames:
-                  mineral = Utils.MineralNames[index]
-                  amount = colony['Stockpile'][mineral]
+                if (colony['Stockpile']['Sum'] > 0):
                   label_pos = (x,(pad_y+lineNr*line_height))
-                  label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%s:'%mineral[:2],label_pos,15,color)
-                  label_pos2 = (x+lat_offs2,(pad_y+lineNr*line_height))
-                  label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{amount:,}",label_pos2,15,color)
+                  label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Fuel:',label_pos,15,color)
+                  label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+                  label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{colony['Stockpile']['Fuel']:,}",label_pos2,15,color)
                   lineNr+=1
-                  if (index == 6):
-                    lineNr -= 6
-                    x += 100
+                  label_pos = (x,(pad_y+lineNr*line_height))
+                  label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Supplies:',label_pos,15,color)
+                  label_pos2 = (x+lat_offs,(pad_y+lineNr*line_height))
+                  label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{colony['Stockpile']['Supplies']:,}",label_pos2,15,color)
+                  lineNr+=1
+                if (colony['Stockpile']['Sum of Minerals'] > 0):
+                  lat_offs2 = 30
+                  for index in Utils.MineralNames:
+                    mineral = Utils.MineralNames[index]
+                    amount = colony['Stockpile'][mineral]
+                    label_pos = (x,(pad_y+lineNr*line_height))
+                    label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%s:'%mineral[:2],label_pos,15,color)
+                    label_pos2 = (x+lat_offs2,(pad_y+lineNr*line_height))
+                    label_pos2, label_size = Utils.DrawText2Surface(self.window_info,f"{amount:,}",label_pos2,15,color)
+                    lineNr+=1
+                    if (index == 6):
+                      lineNr -= 6
+                      x += 100
+          
+            lineNr+=1
+            # installations
+            if (found_Installations):
+              x = expRect1[0]+expRect1[2]+5
+              label_pos = (x,(pad_y+lineNr*line_height))
+              #label_pos, label_size = Utils.DrawText2Surface(self.window_info,'Stockpile',label_pos,15,color)
+              expRect2 = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+              self.MakeClickable(self.info_category_installations, expRect2, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_installations, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+              label_pos = (expRect2[0]+expRect2[2]+5,label_pos[1])
+              label_pos, label_size = Utils.DrawText2Surface(self.window_info,self.info_category_installations,label_pos,15,color)
+              lineNr+=1
+              if (self.info_cat_inst_expanded):
+                x = expRect2[0]+expRect2[2]+5
+                for InstallationID in colony['Installations']:
+                  installation = colony['Installations'][InstallationID]
+                  name = installation['Name']
+                  amount = installation['Amount']
+                  if (installation['Amount'] > 0):
+                    lat_offs2 = 40
+                    label_pos = (x,(pad_y+lineNr*line_height))
+                    label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%4d'%amount,label_pos,15,color)
+                    label_pos2 = (x+lat_offs2,(pad_y+lineNr*line_height))
+                    label_pos2, label_size = Utils.DrawText2Surface(self.window_info,name,label_pos2,15,color)
+                    lineNr+=1
+                    #if (index == 6):
+                    #  lineNr -= 6
+                    #  x += 100
+        
+        fleetsInOrbit = False
+        for fleetID in self.fleets[self.currentSystem]:
+          fleet = self.fleets[self.currentSystem][fleetID]
+          if (fleet['Orbit']['Body'] == self.highlighted_body_ID and fleet['Orbit']['Distance'] == 0):
+            fleetsInOrbit = True
+            break
+        if fleetsInOrbit:
+          if (not self.info_cat_eco_expanded):
+            lineNr+=1
+          x = pad_x
+          label_pos = (x,(pad_y+lineNr*line_height))
+          expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+          self.MakeClickable(self.info_category_orbit, expRect, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_orbit, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+          label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+          label_pos, label_size = Utils.DrawText2Surface(self.window_info,self.info_category_orbit,label_pos,15,color)
+          lineNr+=1
+          orbitFleetTopRow = lineNr
+          pygame.draw.line(self.window_info, Utils.WHITE, (x,(pad_y+lineNr*line_height-2)),((x+200,(pad_y+lineNr*line_height-2))),1)
+          lineNr+=self.window_info_scoll_pos
+          if (self.info_cat_orbit_expanded):
+            x = label_pos[0] if label_pos else (expRect[0]+expRect[2]+5)
+            # orbiting fleets
+            for fleetID in self.fleets[self.currentSystem]:
+              fleet = self.fleets[self.currentSystem][fleetID]
+              if (fleet['Orbit']['Body'] == self.highlighted_body_ID and fleet['Orbit']['Distance'] == 0):
+                if (lineNr >= orbitFleetTopRow):
+                  color = Utils.WHITE
+                  label_pos = (x,(pad_y+lineNr*line_height))
+                  if (fleet['Ships'] != []):
+                    expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
+                    self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+                  else:
+                    expRect = pygame.draw.rect(self.window_info, color, (label_pos[0]+1,label_pos[1]+3+1, 15-2, 15-2), 1)
+                  label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+                  label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name']+ ' - ',label_pos,15,color)
+                  if (label_pos):
+                    self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+                    p = 0
+                    icon_pos = (label_pos[0]+label_size[0], label_pos[1])
+                    if (fleet['Fuel Capacity'] > 0):
+                      p = fleet['Fuel']/fleet['Fuel Capacity']
 
-        lineNr+=1
-        x = pad_x
-        label_pos = (x,(pad_y+lineNr*line_height))
-        expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
-        self.MakeClickable(self.info_category_orbit, expRect, left_click_call_back = self.ExpandBodyInfo, par=self.info_category_orbit, parent = self.window_info_identifier, anchor=self.window_info_anchor)
-        label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
-        label_pos, label_size = Utils.DrawText2Surface(self.window_info,self.info_category_orbit,label_pos,15,color)
-        lineNr+=1
-        orbitFleetTopRow = lineNr
-        pygame.draw.line(self.window_info, Utils.WHITE, (x,(pad_y+lineNr*line_height-2)),((x+200,(pad_y+lineNr*line_height-2))),1)
-        lineNr+=self.window_info_scoll_pos
-        if (self.info_cat_orbit_expanded):
-          x = label_pos[0]
-          # orbiting fleets
-          for fleetID in self.fleets[self.currentSystem]:
-            fleet = self.fleets[self.currentSystem][fleetID]
-            if (fleet['Orbit']['Body'] == self.highlighted_body_ID and fleet['Orbit']['Distance'] == 0):
-              if (lineNr >= orbitFleetTopRow):
-                color = Utils.WHITE
-                label_pos = (x,(pad_y+lineNr*line_height))
-                if (fleet['Ships'] != []):
-                  expRect = Utils.DrawExpander(self.window_info, (label_pos[0],label_pos[1]+3), 15, color)
-                  self.MakeClickable(fleet['Name'], expRect, left_click_call_back = self.ExpandFleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
+                    if ('fuel2' in self.images_GUI):
+                      icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                                                                  self.images_GUI['fuel2'], 
+                                                                  icon_pos, 
+                                                                  p, 
+                                                                  color_unfilled = Utils.DARK_GRAY, 
+                                                                  color = Utils.MED_YELLOW, 
+                                                                  color_low = Utils.RED, 
+                                                                  perc_low = 0.3, 
+                                                                  color_high = Utils.LIGHT_GREEN, 
+                                                                  perc_high = 0.7)
+
+                    icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
+                    p = 0
+                    if (fleet['Supplies Capacity'] > 0):
+                      p = fleet['Supplies']/fleet['Supplies Capacity']
+
+                    if ('supplies' in self.images_GUI):
+                      icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
+                                                                  self.images_GUI['supplies'], 
+                                                                  icon_pos, 
+                                                                  p, 
+                                                                  color_unfilled = Utils.DARK_GRAY, 
+                                                                  color = Utils.MED_YELLOW, 
+                                                                  color_low = Utils.RED, 
+                                                                  perc_low = 0.3, 
+                                                                  color_high = Utils.LIGHT_GREEN, 
+                                                                  perc_high = 0.7)
+
+                  #print((pad_y+lineNr*line_height), fleet['Name'])
+                  lineNr +=1
+
+                  if (fleetID in self.GUI_expanded_fleets2):
+                    shipClasses = {}
+                    for ship in fleet['Ships']:
+                      if (ship['ClassName'] not in shipClasses):
+                        shipClasses[ship['ClassName']] = 1
+                      else:
+                        shipClasses[ship['ClassName']] += 1
+                    for shipClass in shipClasses:
+                      label_pos = (expRect[0]+expRect[2]+5,(pad_y+lineNr*line_height))
+                      label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
+                      lineNr +=1
                 else:
-                  expRect = pygame.draw.rect(self.window_info, color, (label_pos[0]+1,label_pos[1]+3+1, 15-2, 15-2), 1)
-                label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
-                label_pos, label_size = Utils.DrawText2Surface(self.window_info,fleet['Name']+ ' - ',label_pos,15,color)
-                if (label_pos):
-                  self.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = self.Select_Fleet, par=fleetID, parent = self.window_info_identifier, anchor=self.window_info_anchor)
-                  p = 0
-                  icon_pos = (label_pos[0]+label_size[0], label_pos[1])
-                  if (fleet['Fuel Capacity'] > 0):
-                    p = fleet['Fuel']/fleet['Fuel Capacity']
-
-                  if ('fuel2' in self.images_GUI):
-                    icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
-                                                                self.images_GUI['fuel2'], 
-                                                                icon_pos, 
-                                                                p, 
-                                                                color_unfilled = Utils.DARK_GRAY, 
-                                                                color = Utils.MED_YELLOW, 
-                                                                color_low = Utils.RED, 
-                                                                perc_low = 0.3, 
-                                                                color_high = Utils.LIGHT_GREEN, 
-                                                                perc_high = 0.7)
-
-                  icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
-                  p = 0
-                  if (fleet['Supplies Capacity'] > 0):
-                    p = fleet['Supplies']/fleet['Supplies Capacity']
-
-                  if ('supplies' in self.images_GUI):
-                    icon_rect = Utils.DrawPercentageFilledImage(self.window_info, 
-                                                                self.images_GUI['supplies'], 
-                                                                icon_pos, 
-                                                                p, 
-                                                                color_unfilled = Utils.DARK_GRAY, 
-                                                                color = Utils.MED_YELLOW, 
-                                                                color_low = Utils.RED, 
-                                                                perc_low = 0.3, 
-                                                                color_high = Utils.LIGHT_GREEN, 
-                                                                perc_high = 0.7)
-
-                #print((pad_y+lineNr*line_height), fleet['Name'])
-                lineNr +=1
-
-                if (fleetID in self.GUI_expanded_fleets2):
-                  shipClasses = {}
-                  for ship in fleet['Ships']:
-                    if (ship['ClassName'] not in shipClasses):
-                      shipClasses[ship['ClassName']] = 1
-                    else:
-                      shipClasses[ship['ClassName']] += 1
-                  for shipClass in shipClasses:
-                    label_pos = (expRect[0]+expRect[2]+5,(pad_y+lineNr*line_height))
-                    label_pos, label_size = Utils.DrawText2Surface(self.window_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
-                    lineNr +=1
-              else:
-                lineNr +=1
+                  lineNr +=1
 
       self.surface.blit(self.window_info,self.window_info_anchor)
       self.reDraw_InfoWindow = False
@@ -1689,7 +1739,8 @@ class Game():
     if (id in self.starSystems):
       self.currentSystem = id
       self.window_fleet_info_scoll_pos = 0
-      self.CleanFleetUpInfoWindow()
+      self.CleanUpInfoWindow(self.window_fleet_info_identifier)
+      self.CleanUpInfoWindow(self.window_info_identifier)
       self.GetNewData()
 
 
@@ -1716,7 +1767,7 @@ class Game():
       self.reDraw = True
 
 
-  def ToggleGUI(self, id, parent):
+  def ToggleGUI(self, id, parent = None):
 
     if (id in self.GUI_Elements):
       self.reDraw = True
@@ -1796,11 +1847,12 @@ class Game():
       self.showArtifactsBodies = not self.showArtifactsBodies
 
 
-  def CleanUpFleetInfoWindow(self, parent):
+  def CleanUpInfoWindow(self, parent):
     if (parent == self.window_fleet_info_identifier):
       self.GUI_expanded_fleets = []
     elif (parent == self.window_info_identifier):
       self.GUI_expanded_fleets2 = []
+
 
   def ExpandFleet(self, id, parent):
     if (id in self.fleets[self.currentSystem]):
@@ -1825,6 +1877,11 @@ class Game():
       self.info_cat_eco_expanded = not self.info_cat_eco_expanded
     elif (category == self.info_category_orbit):
       self.info_cat_orbit_expanded = not self.info_cat_orbit_expanded
+    elif (category == self.info_category_stockpile):
+      self.info_cat_stock_expanded = not self.info_cat_stock_expanded
+    elif (category == self.info_category_installations):
+      self.info_cat_inst_expanded = not self.info_cat_inst_expanded
+
     self.reDraw_InfoWindow = True
 
 
