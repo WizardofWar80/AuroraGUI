@@ -983,8 +983,8 @@ class Game():
     if (id in self.starSystems):
       self.currentSystem = id
       self.window_fleet_info_scoll_pos = 0
-      InfoWindow.CleanUp(game, self.window_fleet_info_identifier)
-      InfoWindow.CleanUp(game, self.window_info_identifier)
+      InfoWindow.CleanUp(self, self.window_fleet_info_identifier)
+      InfoWindow.CleanUp(self, self.window_info_identifier)
       self.GetNewData()
 
 

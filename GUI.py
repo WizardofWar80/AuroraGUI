@@ -43,6 +43,7 @@ class GUI():
       else:
         surface.blit(self.image_disabled,(self.rect[0],self.rect[1]))
 
+
   def AddChildren(self, child):
     self.children.append(child)
 
@@ -50,6 +51,7 @@ class GUI():
   def SetImages(self, image_enabled, image_disabled):
     self.image_enabled = image_enabled
     self.image_disabled = image_disabled
+
 
   def GetID(self):
     return self.ID
