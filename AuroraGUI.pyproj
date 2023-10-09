@@ -31,6 +31,9 @@
     <Compile Include="GUI.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="InfoWindow.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="logger.py" />
     <Compile Include="Clickable.py">
       <SubType>Code</SubType>
