@@ -151,6 +151,8 @@ class Game():
     self.info_cat_stock_expanded = True
     self.info_category_installations = 'Installations'
     self.info_cat_inst_expanded = True
+    self.info_category_deposits = 'Mineral Deposits'
+    self.info_cat_deposits_expanded = True
 
 
     self.window_map_anchor = (5,self.height-self.window_map_size[1]-5)#(self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
@@ -709,10 +711,11 @@ class Game():
     results = self.db.execute('''SELECT * from FCT_MineralDeposit WHERE GameID = %d and SystemID = %d;'''%(self.gameID, systemID)).fetchall()
 
     for deposit in results:
-      systemBodyID = deposit[2]
-      deposits[systemBodyID]={}
-      if (deposit[0] in Utils.MineralNames):
-        mineral = Utils.MineralNames[deposit[0]]
+      systemBodyID = deposit[3]
+      if (systemBodyID not in deposits):
+        deposits[systemBodyID]={}
+      if (deposit[1] in Utils.MineralNames):
+        mineral = Utils.MineralNames[deposit[1]]
         deposits[systemBodyID][mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
 
     return deposits
@@ -1105,6 +1108,8 @@ class Game():
       self.info_cat_stock_expanded = not self.info_cat_stock_expanded
     elif (category == self.info_category_installations):
       self.info_cat_inst_expanded = not self.info_cat_inst_expanded
+    elif (category == self.info_category_deposits):
+      self.info_cat_deposits_expanded = not self.info_cat_deposits_expanded
 
     self.reDraw_InfoWindow = True
 

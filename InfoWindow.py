@@ -52,6 +52,19 @@ def Draw(game):
         name = body['Class']+' '+body['Name']+(' (Unsurveyed)' if body['Unsurveyed'] else '')
       DrawLineOfText(game.window_info, name, 0, unscrollable = True)
 
+      if ('Deposits' in body):
+        # Mineral Deposits info
+        expRect = Utils.DrawExpander(game.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
+        game.MakeClickable(game.info_category_deposits, expRect, left_click_call_back = game.ExpandBodyInfo, par=game.info_category_deposits, parent = game.window_info_identifier, anchor=game.window_info_anchor)
+        DrawLineOfText(game.window_info, game.info_category_deposits, _indentLevel+1, unscrollable = True)
+
+        if (game.info_cat_deposits_expanded):
+          for mineral in body['Deposits']:
+            amount = int(round(body['Deposits'][mineral]['Amount'],0))
+            acc = round(body['Deposits'][mineral]['Accessibility'],1)
+            DrawTextWithTabs(game.window_info, mineral[:2]+':', _indentLevel+1, f"{amount:,}", 30, game.window_info_scoll_pos, text3 = '('+str(acc)+')', color3 = Utils.LIGHT_GREEN if acc >= 0.7 else Utils.RED if acc <= 0.3 else Utils.YELLOW, tab_dist2 = 110)
+        
+
       # Physical body info
       expRect = Utils.DrawExpander(game.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
       game.MakeClickable(game.info_category_physical, expRect, left_click_call_back = game.ExpandBodyInfo, par=game.info_category_physical, parent = game.window_info_identifier, anchor=game.window_info_anchor)
