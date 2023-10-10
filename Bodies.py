@@ -100,7 +100,7 @@ def DrawBodies(game):
 
   for bodyID in game.systemBodies:
     body = game.systemBodies[bodyID]
-
+    #screen_parent_size = 0
     body_draw_cond, draw_color_body, body_min_size, body_min_dist = GetDrawConditions(game, 'Body', body)
     if (body_draw_cond):
       screen_body_pos = game.WorldPos2ScreenPos(body['Pos'])
@@ -110,17 +110,21 @@ def DrawBodies(game):
 
       orbit_draw_cond, draw_color_orbit, void, min_orbit = GetDrawConditions(game, 'Orbit', body)
       orbitOnScreen = body['Orbit']*game.systemScale
+      parentID = body['ParentID']
 
-      if (orbit_draw_cond) and (orbitOnScreen > body_min_dist):
+      if parentID in system['Stars']:
+        screen_parent_pos = game.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
+        #screen_parent_size = 15
+      elif parentID in game.systemBodies:
+        screen_parent_pos = game.WorldPos2ScreenPos(game.systemBodies[parentID]['Pos'])
+        #screen_parent_size = 9
+      else:
+        screen_parent_pos = game.WorldPos2ScreenPos((0,0))
+        #screen_parent_size = 1
+
+      if (orbit_draw_cond) and (orbitOnScreen > min_orbit) and (orbitOnScreen > body_min_dist):
         E = body['Eccentricity']
-        parentID = body['ParentID']
-
-        if parentID in system['Stars']:
-          screen_parent_pos = game.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
-        elif parentID in game.systemBodies:
-          screen_parent_pos = game.WorldPos2ScreenPos(game.systemBodies[parentID]['Pos'])
-        else:
-          screen_parent_pos = game.WorldPos2ScreenPos((0,0))
+        
         Utils.DrawEllipticalOrbit(game.surface, draw_color_orbit, screen_parent_pos, orbitOnScreen, E, body['EccentricityAngle'],body['Bearing'], min_orbit)
         
       # check if we want to draw the object
@@ -130,6 +134,9 @@ def DrawBodies(game):
       else:
         body_draw_cond = False  
       if (body_draw_cond) and (orbitOnScreen > body_min_dist):
+        #if (orbitOnScreen < screen_parent_size):
+        #  screen_body_pos = Utils.SubTuples(screen_body_pos, screen_parent_size)
+
         # draw body
         if (body['Image'] is not None):
           if (screen_body_pos[0]-radius_on_screen < game.width and screen_body_pos[0]+radius_on_screen > 0 and 
@@ -178,31 +185,31 @@ def GetDrawConditions(game, thing2Draw, body):
         draw = True
         color = game.color_Moon
         min_size = game.minPixelSize_Moon
-        min_dist = 10
+        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 15
     elif (body['Class']  == 'Comet'):
       if (game.show_Comets or filter):
         draw = True
         color = game.color_Comet
         min_size = game.minPixelSize_Small
-        min_dist = 10
+        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 50
     elif (body['Class']  == 'Asteroid'):
       if (game.show_Asteroids or filter):
         draw = True
         color = game.color_Asteroid
         min_size = game.minPixelSize_Small
-        min_dist = 10
+        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 50
     elif (body['Type'] == 'Planet Small'):
       if (game.show_DwarfPlanets or filter):
         draw = True
         color = game.color_DwarfPlanet
         min_size = game.minPixelSize_Planet
-        min_dist = 10
+        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 50
     elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
       if (game.show_Planets or filter):
         draw = True
         color = game.color_Planet
         min_size = game.minPixelSize_Planet
-        min_dist = 10
+        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 15
   elif (thing2Draw == 'Orbit'):
     if (body['Class'] == 'Moon'):
       if (game.showOrbits_Moons and (game.show_Moons or filter)):
@@ -397,12 +404,12 @@ def GetSystemBodies(game):
     gHFactor = body[24]
     density = body[25]
     gravity = body[26]
-      
+    tidalMultiPlier = 1
+
     if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
       popCapacity = 0
     else:
       hydroMultiPlier = 1
-      tidalMultiPlier = 1
       if (hydro > 75):
         hydroMultiPlier = -0.0396*hydro+3.97
       if (tidalLock and bodyClass == 'Planet'):

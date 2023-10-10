@@ -553,6 +553,7 @@ def GetTimeScale(hours):
   else:
     return '%2.1f %s'%(round(timeframe,1), unit)
 
+
 def GetFormattedNumber(number):
   if (abs(number) > 0.99):
     fraction = abs(round(number,1)-number)

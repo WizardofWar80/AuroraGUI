@@ -36,10 +36,10 @@ class Game():
     self.systemScale = self.systemScaleStart
     self.mousePos = (0,0)
     self.radius_Sun = 696000
-    self.minPixelSize_Star = 10
-    self.minPixelSize_Planet = 6
-    self.minPixelSize_Moon = 4
-    self.minPixelSize_Small = 3
+    self.minPixelSize_Star = 15
+    self.minPixelSize_Planet = 9
+    self.minPixelSize_Moon = 5
+    self.minPixelSize_Small = 5
     self.mouseDragged = (0,0)
     self.refreshData = True
     self.screenCenterBeforeDrag = self.screenCenter
@@ -352,6 +352,14 @@ class Game():
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showArtifactsBodies)
     FilterBodiesGUI.AddChildren(idGUI)
+
+
+  def InitGases(self):
+    gases = {}
+    results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel from DIM_Gases;''').fetchall()
+    for result in results:
+      gases[result[0]] = {'Name':result[1], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000}
+    return gases
 
 
   def Draw(self):
@@ -1112,14 +1120,6 @@ class Game():
       self.info_cat_deposits_expanded = not self.info_cat_deposits_expanded
 
     self.reDraw_InfoWindow = True
-
-
-  def InitGases(self):
-    gases = {}
-    results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel from DIM_Gases;''').fetchall()
-    for result in results:
-      gases[result[0]] = {'Name':result[1], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000}
-    return gases
 
 
   def GetCCreduction(self):
