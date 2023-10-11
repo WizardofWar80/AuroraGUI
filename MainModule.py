@@ -77,6 +77,14 @@ class Game():
     self.showXenosBodies = True
     self.showArtifactsBodies = True
 
+    self.highlightColonizedBodies = True
+    self.highlightIndustrializedBodies = True
+    self.highlightUnsurveyedBodies = True
+    self.highlightEnemyBodies = True
+    self.highlightResourcefulBodies = True
+    self.highlightXenosBodies = True
+    self.highlightArtifactsBodies = True
+
     self.showOrbits_Planets = True
     self.showOrbits_DwarfPlanets = True
     self.showOrbits_Moons = True
@@ -214,6 +222,7 @@ class Game():
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
     showBodiesGUI = self.GUI_Elements[idGUI]
+    parentName = name
 
     idGUI += 1
     y += -size-5
@@ -257,6 +266,7 @@ class Game():
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
     showOrbitsGUI = self.GUI_Elements[idGUI]
+    parentName = name
 
     idGUI += 1
     y += -size-5
@@ -300,11 +310,12 @@ class Game():
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
     FilterBodiesGUI = self.GUI_Elements[idGUI]
+    parentName = name
 
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Colonies'
+    name = 'Filter Colonies'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showColonizedBodies)
     FilterBodiesGUI.AddChildren(idGUI)
@@ -312,7 +323,7 @@ class Game():
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Resources'
+    name = 'Filter Resources'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showResourcefulBodies)
     FilterBodiesGUI.AddChildren(idGUI)
@@ -320,7 +331,7 @@ class Game():
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Installations'
+    name = 'Filter Installations'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showIndustrializedBodies)
     FilterBodiesGUI.AddChildren(idGUI)
@@ -328,7 +339,7 @@ class Game():
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Unsurveyed'
+    name = 'Filter Unsurveyed'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showUnsurveyedBodies)
     FilterBodiesGUI.AddChildren(idGUI)
@@ -336,7 +347,7 @@ class Game():
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Enemies'
+    name = 'Filter Enemies'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showEnemyBodies)
     FilterBodiesGUI.AddChildren(idGUI)
@@ -344,7 +355,7 @@ class Game():
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Xenos'
+    name = 'Filter Xenos'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showXenosBodies)
     FilterBodiesGUI.AddChildren(idGUI)
@@ -352,10 +363,78 @@ class Game():
     idGUI += 1
     y += -size-5
     bb = (x,y,size,size)
-    name = 'Artifacts'
+    name = 'Filter Artifacts'
     gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showArtifactsBodies)
     FilterBodiesGUI.AddChildren(idGUI)
+
+    # Fourth Column
+    idGUI += 1
+    x += size+5
+    y = self.GUI_Bottom_Anchor[1]
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Highlight'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    HighlightGUI = self.GUI_Elements[idGUI]
+    parentName = name
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Highlight Colonies'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightColonizedBodies)
+    HighlightGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Highlight Resources'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightResourcefulBodies)
+    HighlightGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Highlight Installations'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightIndustrializedBodies)
+    HighlightGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Highlight Unsurveyed'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightUnsurveyedBodies)
+    HighlightGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Highlight Enemies'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightEnemyBodies)
+    HighlightGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Highlight Xenos'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightXenosBodies)
+    HighlightGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Highlight Artifacts'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightArtifactsBodies)
+    HighlightGUI.AddChildren(idGUI)
 
 
   def InitGases(self):
@@ -628,21 +707,34 @@ class Game():
       self.showOrbits_Comets = not self.showOrbits_Comets
     elif (name == 'Show Asteroid Orbits'):
       self.showOrbits_Asteroids = not self.showOrbits_Asteroids
-    elif (name == 'Colonies'):
+    elif (name == 'Filter Colonies'):
       self.showColonizedBodies = not self.showColonizedBodies
-    elif (name == 'Resources'):
+    elif (name == 'Filter Resources'):
       self.showResourcefulBodies = not self.showResourcefulBodies
-    elif (name == 'Installations'):
+    elif (name == 'Filter Installations'):
       self.showIndustrializedBodies = not self.showIndustrializedBodies
-    elif (name == 'Unsurveyed'):
+    elif (name == 'Filter Unsurveyed'):
       self.showUnsurveyedBodies = not self.showUnsurveyedBodies
-    elif (name == 'Enemies'):
+    elif (name == 'Filter Enemies'):
       self.showEnemyBodies = not self.showEnemyBodies
-    elif (name == 'Xenos'):
+    elif (name == 'Filter Xenos'):
       self.showXenosBodies = not self.showXenosBodies
-    elif (name == 'Artifacts'):
+    elif (name == 'Filter Artifacts'):
       self.showArtifactsBodies = not self.showArtifactsBodies
-
+    elif (name == 'Highlight Colonies'):
+      self.highlightColonizedBodies = not self.highlightColonizedBodies
+    elif (name == 'Highlight Resources'):
+      self.highlightResourcefulBodies = not self.highlightResourcefulBodies
+    elif (name == 'Highlight Installations'):
+      self.highlightIndustrializedBodies = not self.highlightIndustrializedBodies
+    elif (name == 'Highlight Unsurveyed'):
+      self.highlightUnsurveyedBodies = not self.highlightUnsurveyedBodies
+    elif (name == 'Highlight Enemies'):
+      self.highlightEnemyBodies = not self.highlightEnemyBodies
+    elif (name == 'Highlight Xenos'):
+      self.highlightXenosBodies = not self.highlightXenosBodies
+    elif (name == 'Highlight Artifacts'):
+      self.highlightArtifactsBodies = not self.highlightArtifactsBodies
 
   def ExpandFleet(self, id, parent):
     if (id in self.fleets[self.currentSystem]):

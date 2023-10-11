@@ -2,12 +2,13 @@ import pygame
 import Utils
 
 class GUI():
-  def __init__(self, gameClass, id, name, rect, clickable, parent = None, enabled = True):
+  def __init__(self, gameClass, id, name, rect, clickable, parent = None, enabled = True, parentName = ''):
     self.ID = id
     self.name = name
     self.rect = rect
     self.gameClass = gameClass
     self.parent = parent
+    self.parentName = parentName
     self.open = False
     self.enabled = enabled
     self.children = []

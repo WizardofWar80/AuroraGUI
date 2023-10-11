@@ -150,7 +150,9 @@ def DrawBodies(game):
             game.surface.blit(scaledSurface,image_offset)
         else:
           pygame.draw.circle(game.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
-          
+
+        HighlightBody(game, body, radius_on_screen*2)
+
         # Make object clickable
         bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
         if (game.CheckClickableNotBehindGUI(bb)):
@@ -541,3 +543,27 @@ def GetMineralDeposits(game, systemID):
 
   return deposits
 
+
+def HighlightBody(game, body, bodySize):
+  pos = game.WorldPos2ScreenPos(body['Pos'])
+
+  if (game.highlightResourcefulBodies and body['Resources']):
+    #calculate size and thickness we want to use
+    pygame.draw.circle(game.surface, Utils.GRAY, pos, 0.5*bodySize+10, 2)
+  if (game.highlightColonizedBodies and body['Colonized']):
+    pygame.draw.circle(game.surface, Utils.TEAL, pos, 0.5*bodySize+13, 2)
+    pass
+  if (game.highlightIndustrializedBodies and body['Industrialized']):
+    if (not body['Colonized']):
+      pygame.draw.circle(game.surface, Utils.BLUE, pos, 0.5*bodySize+13, 2)
+    pass
+  if (game.highlightUnsurveyedBodies and body['Unsurveyed']):
+    pygame.draw.circle(game.surface, Utils.PURPLE, pos, 0.5*bodySize+10, 2)
+    pass
+  if (game.highlightEnemyBodies and body['Enemies']):
+    Utils.DrawSizedTriangle(game.surface, pos, Utils.RED, bodySize, 3)
+  if (game.highlightXenosBodies and body['Xenos']):
+    Utils.DrawSizedTriangle(game.surface, pos, Utils.YELLOW, bodySize, 2)
+  if (game.highlightArtifactsBodies and body['Artifacts']):
+    width = 2*(0.5*bodySize+15)
+    pygame.draw.rect(game.surface, Utils.MED_GREEN,(pos[0]-0.5*width, pos[1]-0.5*width, width, width), 2)

@@ -11,8 +11,9 @@ DARK_GRAY = (100,100,100)
 SUPER_DARK_GRAY = (30,30,30)
 WHITE = (255, 255, 255)
 LIGHT_GREEN = (0, 255, 0)
-MED_GREEN = (186, 209, 198)
+MED_GREEN = (0, 209, 0)
 GREEN = (0, 100, 0)
+BLUE = (0, 0, 255)
 DARK_BLUE = (0, 0, 128)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -24,7 +25,7 @@ CYAN = (19, 211, 214)
 TEAL = (19, 214, 162)
 PURPLE = (128, 0, 128)
 GREENSCREEN = (255, 0, 255)
-BLUE = (0, 0, 255)
+
 
 I2R_Conv = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
             [ 100, 'C'], [ 90, 'XC'], [ 50, 'L'], [ 40, 'XL'],
@@ -195,6 +196,14 @@ def DrawTriangle(surface,position, color, heading=0):
   #pygame.draw.rect(surface,(255,255,255), ((position[0]-6,position[1]-6),(12,12)), 1)
 
 
+def DrawSizedTriangle(surface, pos, color, size, thickness):
+  points = [( pos[0]-size, pos[1]+size*0.5),
+            ( pos[0]+size, pos[1]+size*0.5),
+            ( pos[0]     , pos[1]-size*1.5)]
+  pygame.draw.polygon(surface,color, points, thickness)
+  #pygame.draw.rect(surface,(255,255,255), ((position[0]-6,position[1]-6),(12,12)), 1)
+
+
 def DrawArrow(surface,position, color, heading=0):
   heading_deg = -heading*RADIANS_TO_DEGREES
   position = (position[0],position[1]-0)
@@ -218,6 +227,7 @@ def DrawArrow(surface,position, color, heading=0):
   bounding_box = pygame.Rect(position[0]-r.center[0]+r[0]+offset_x ,position[1]-r.center[1]+r[1]-offset_y, r.size[0],r.size[1])
   return bounding_box
   #pygame.draw.rect(surface,RED,bounding_box,1)
+
 
 def AddTuples(t1,t2):
   if isinstance(t1, (list, tuple)):
@@ -344,6 +354,7 @@ def GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta):
   #pygame.draw.rect(surface,YELLOW, ((x_c+x,y_c+y),(1,1)), 1)
   #pygame.draw.rect(surface,YELLOW, ((x_c-x,y_c-y),(1,1)), 1)
 
+
 def DrawExpander(surface, position, textSize, color):
   bounding_box = pygame.Rect(position[0]+1,position[1]+1, textSize-2,textSize-2 )
   center = bounding_box.center
@@ -361,7 +372,6 @@ def DrawExpander(surface, position, textSize, color):
   pygame.draw.line(surface, color, (x1,y1), (x2,y2), 1)
   
   return bounding_box
-
 
 
 def DrawPercentageFilledImage(window, image, pos, percentage, color_unfilled = WHITE, color = LIGHT_GREEN, color_low = None, perc_low = None, color_high = None, perc_high = None):
@@ -389,6 +399,7 @@ def DrawPercentageFilledImage(window, image, pos, percentage, color_unfilled = W
   window.blit(image,pos)
 
   return (pos[0],pos[1],image_size[0], image_size[1])
+
 
 def IsOnScreen(screen, rect):
   return screen.get_rect().colliderect(rect)
