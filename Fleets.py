@@ -2,7 +2,7 @@ import Utils
 import pygame
 import math
 import random
-
+import Systems
 
 gameInstance = None
 
@@ -49,7 +49,7 @@ def GetFleets(game):
   for item in fleets_table:
     fleetId = item[0]
     systemID = item[9]
-    system_name = game.GetSystemName(systemID)
+    system_name = Systems.GetSystemName(game, systemID)
     if systemID not in fleets:
       fleets[systemID] = {}
     fleets[systemID][fleetId] = {}

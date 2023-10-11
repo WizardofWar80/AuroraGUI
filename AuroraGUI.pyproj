@@ -27,6 +27,9 @@
     <Compile Include="Bodies.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Colonies.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Events.py" />
     <Compile Include="Fleets.py">
       <SubType>Code</SubType>
@@ -42,6 +45,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MainModule.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Systems.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils.py" />

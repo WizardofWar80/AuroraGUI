@@ -9,6 +9,9 @@ import GUI
 import Bodies
 import InfoWindow
 import Fleets
+import Colonies
+import Systems
+
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -156,7 +159,6 @@ class Game():
     self.info_category_deposits = 'Mineral Deposits'
     self.info_cat_deposits_expanded = True
 
-
     self.window_map_anchor = (5,self.height-self.window_map_size[1]-5)#(self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
     self.window_map = pygame.Surface(self.window_map_size, pygame.SRCALPHA,32)
     self.window_map_rect = pygame.Rect(self.window_map_anchor, self.window_map_size)
@@ -187,16 +189,16 @@ class Game():
       self.myRaceID = self.db.execute('''SELECT RaceID from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
       self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
       self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
-      self.homeSystemID = self.GetHomeSystemID()
+      self.homeSystemID = Systems.GetHomeSystemID(self)
       self.currentSystem = self.homeSystemID
       #self.currentSystem = 8497 # Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
       #self.currentSystem = 8499 # Lalande
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
-      self.stellarTypes = self.GetStellarTypes()
+      self.stellarTypes = Bodies.GetStellarTypes(self)
       self.gases = self.InitGases()
-      self.installations = self.GetInstallationInfo()
-      self.cc_cost_reduction = self.GetCCreduction()
+      self.installations = Colonies.GetInstallationInfo(self)
+      self.cc_cost_reduction = Colonies.GetCCreduction(self)
 
       self.colonies = None
       self.GetNewData()
@@ -411,60 +413,12 @@ class Game():
 
 
   def DrawSystem(self):
-    #self.currentSystem = 8497 # Alpha Centauri
-    #self.currentSystem = 8499
-    t1 = pygame.time.get_ticks()
     Bodies.Draw(self)
-    t2 = pygame.time.get_ticks()
-    dt1 = t2-t1
-    t1=t2
-    self.DrawSystemJumpPoints()
-    t2 = pygame.time.get_ticks()
-    dt2 = t2-t1
-    t1=t2
-    self.DrawSurveyLocations()
-    t2 = pygame.time.get_ticks()
-    dt3 = t2-t1
-    t1=t2
+    Systems.DrawSystemJumpPoints(self)
+    Systems.DrawSurveyLocations(self)
     Fleets.DrawSystemFleets(self)
-    t2 = pygame.time.get_ticks()
-    dt4 = t2-t1
-    #print(dt1,dt2,dt3,dt4)
     return True
 
-
-  def DrawSystemJumpPoints(self):
-    for JP_ID in self.currentSystemJumpPoints:
-      JP = self.currentSystemJumpPoints[JP_ID]
-      heading = math.atan2(JP['Pos'][1],JP['Pos'][0])
-      screen_pos = self.WorldPos2ScreenPos(JP['Pos'])
-      if (JP['Explored']):
-        bb = Utils.DrawArrow(self.surface, screen_pos, Utils.GREEN,heading)
-        if (self.CheckClickableNotBehindGUI(bb)):
-          self.MakeClickable(JP['Destination'], bb, left_click_call_back = self.Follow_Jumppoint, par = JP['DestID'])
-
-      pygame.draw.circle(self.surface,self.color_JP,screen_pos,5,2)
-      screen_pos_label = Utils.AddTuples(screen_pos,10)
-      Utils.DrawText2Surface(self.surface,JP['Destination'],screen_pos_label,14,self.color_JP)
-      if (JP['Gate']):
-        gate_pos = Utils.SubTuples(screen_pos,7)
-        pygame.draw.rect(self.surface, self.color_Jumpgate, (gate_pos,(14,14)),1)
-
-
-  def DrawSurveyLocations(self):
-    for id in self.surveyLocations:
-      SL = self.surveyLocations[id]
-      screen_pos = self.WorldPos2ScreenPos(SL['Pos'])
-      screen_pos_label = Utils.AddTuples(screen_pos,(0,10))
-      if (SL['Surveyed']):
-        if (self.showSurveyedLocations):
-          pygame.draw.circle(self.surface,self.color_SurveyedLoc,screen_pos,5,1)
-          Utils.DrawText2Surface(self.surface,str(SL['Number']),screen_pos_label,14,self.color_SurveyedLoc)
-      else:
-        if (self.showUnsurveyedLocations):
-          pygame.draw.circle(self.surface,self.color_UnsurveyedLoc,screen_pos,5,1)
-          Utils.DrawText2Surface(self.surface,str(SL['Number']),screen_pos_label,14,self.color_UnsurveyedLoc)
- 
 
   def DrawMiniMap(self):
     if (self.reDraw_MapWindow):
@@ -489,243 +443,16 @@ class Game():
       return False
 
 
-  def GetHomeSystemID(self):
-    system_number = self.db.execute('''SELECT systemId from FCT_System WHERE GameID = %d AND SystemNumber = 0;'''%(self.gameID)).fetchone()[0]
-        
-    return system_number
-
-
-  def GetSystemName(self, systemID):
-    system_number = self.db.execute('''SELECT SystemNumber from FCT_System WHERE GameID = %d AND systemId = %d;'''%(self.gameID,systemID)).fetchone()[0]
-    if (system_number > -1):
-        system_name = self.db.execute('''SELECT ConstellationName from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0].strip()
-        if (not system_name):
-          system_name = self.db.execute('''SELECT Name from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
-    else:
-        system_name = 'Unknown'
-    return system_name
-
-
-  def GetSystems(self):
-    systems = {}
-
-    results = self.db.execute('''SELECT SystemID, SystemNumber from FCT_System WHERE GameID = %d;'''%(self.gameID)).fetchall()
-    
-    for (systemID, systemNumber) in results:
-      if (systemNumber != -1):
-        known_system = self.db.execute('''SELECT * from DIM_KnownSystems WHERE KnownSystemID = %d;'''%systemNumber).fetchone()
-        system = {}
-        system['Name'] = self.GetSystemName(systemID)
-        system['Stars'] = None
-        stars_table = self.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,systemID))
-        stars = {}
-        component2ID = {}
-        num_stars = 0
-        for x in stars_table:
-          num_stars += 1
-        # we moved the cursor so we have to run the query again
-        stars_table = self.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(self.gameID,systemID))
-        
-        #8497 Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
-        star_index = 0
-        for star in stars_table:
-          ID = star[0]
-          stars[ID] = {}
-          stars[ID]['Name'] = system['Name']
-          if (num_stars > 1):
-            stars[ID]['Name'] += '-'+Utils.star_suffixes[star_index]
-
-          stars[ID]['Component'] = star[8]
-          stars[ID]['StellarTypeID']=star[3]
-          stars[ID]['Radius']=self.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
-          stars[ID]['Mass'] = self.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
-          stars[ID]['Temp'] = self.stellarTypes[stars[ID]['StellarTypeID']]['Temperature']
-          stars[ID]['Luminosity'] = self.stellarTypes[stars[ID]['StellarTypeID']]['Luminosity']
-          stars[ID]['Black Hole']=False
-          spectralClass = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
-          spectralNumber = self.stellarTypes[stars[ID]['StellarTypeID']]['SpectralNumber']
-          sizeText = self.stellarTypes[stars[ID]['StellarTypeID']]['SizeText']
-          stars[ID]['Suffix'] = spectralClass + str(spectralNumber) +'-'+ sizeText
-          if (spectralClass == 'BH'):
-            # black holes should use Schwartzschildradius:
-            # r = M * 0.000004246 sunradii
-            m = self.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
-            stars[ID]['Radius'] = m * 0.000004246 * 6
-            stars[ID]['Black Hole']=True
-          component2ID[star[8]] = ID
-          stars[ID]['Parent'] = parentComponent = star[9]
-          if (stars[ID]['Parent'] == 0):
-            stars[ID]['ParentPos'] = (0,0)
-          else:
-            stars[ID]['ParentPos'] = stars[component2ID[parentComponent]]['Pos']
-          stars[ID]['Bearing'] = star[10]
-          stars[ID]['OrbitDistance'] = star[13]
-          stars[ID]['Eccentricity'] = star[15]
-          stars[ID]['EccentricityAngle'] = star[16]
-          stars[ID]['Pos'] = (star[6],star[7])
-          stars[ID]['Image'] = None
-          if (len(self.images_Body) > 0):
-            if (spectralClass in self.images_Body['Stars']):
-              stars[ID]['Image'] = self.images_Body['Stars'][spectralClass]
-          star_index += 1
-          stars[ID]['BodyClass']=spectralClass
-          stars[ID]['BodyType']='Stellar'
-        system['Stars'] = stars
-        systems[systemID] = system
-    return systems
-
-
-  def GetStellarTypes(self):
-    stellarTypes = {}
-
-    results = self.db.execute('''SELECT StellarTypeID, SpectralClass, SpectralNumber, SizeText, SizeID, Luminosity, Mass, Temperature, Radius, Red, Green, Blue from DIM_StellarType;''').fetchall()
-    
-    for stellarType in results:
-      #stellarType = results[stellarTypeID]
-      stellarTypeID = stellarType[0]
-      stellarTypes[stellarTypeID] = { 'SpectralClass':stellarType[1]
-                                     ,'SpectralNumber':stellarType[2]
-                                     ,'SizeText':stellarType[3]
-                                     ,'SizeID':stellarType[4]
-                                     ,'Luminosity':stellarType[5]
-                                     ,'Mass':stellarType[6]
-                                     ,'Temperature':stellarType[7]
-                                     ,'Radius':stellarType[8]
-                                     ,'RGB':(stellarType[9],stellarType[10],stellarType[11])
-                                    }
-        
-    return stellarTypes
-
-
-  def GetInstallationInfo(self):
-    installations = {}
-
-    results = self.db.execute('''SELECT PlanetaryInstallationID, Name from DIM_PlanetaryInstallation;''').fetchall()
-
-    for installation in results:
-      installationID = installation[0]
-      installationName = installation[1]
-      installations[installationID] = {'Name' : installationName}
-        
-    return installations
-
-
-  def GetMineralDeposits(self, systemID):
-    deposits = {}
-    # GameID	MaterialID	SystemID	SystemBodyID	Amount	Accessibility	HalfOriginalAmount	OriginalAcc
-    results = self.db.execute('''SELECT * from FCT_MineralDeposit WHERE GameID = %d and SystemID = %d;'''%(self.gameID, systemID)).fetchall()
-
-    for deposit in results:
-      systemBodyID = deposit[3]
-      if (systemBodyID not in deposits):
-        deposits[systemBodyID]={}
-      if (deposit[1] in Utils.MineralNames):
-        mineral = Utils.MineralNames[deposit[1]]
-        deposits[systemBodyID][mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
-
-    return deposits
-
-
-  def GetSystemJumpPoints(self):
-    jp_table = [list(x) for x in self.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(self.gameID, self.currentSystem))]
-    JPs = {}
-    index = 1
-    for JP in jp_table:
-      JP_ID = JP[0]
-      JP_fromSystemID = JP[2]
-      JP_toWP = JP[5]
-      JP_explored = (0 if JP_toWP==0 else 1)
-      JP_Gate = (0 if JP[8]==0 else 1)
-      pos = (JP[6],JP[7])
-      bearing = JP[4]
-      JP_fromSystem = self.GetSystemName(JP_fromSystemID)
-      if (JP_explored):
-        JP_toSystemID = self.db.execute('''SELECT SystemID from FCT_JumpPoint WHERE GameID = %d AND WarpPointID = %d;'''%(self.gameID,JP_toWP)).fetchone()[0]
-        JP_toSystem = self.GetSystemName(JP_toSystemID)
-      else:
-        JP_toSystemID = -1
-        JP_toSystem = 'JP '+str(index)
-        index+=1
-      if (JP_fromSystem != 'Unknown'):
-        JPs[JP_ID] = {'Destination': JP_toSystem, 'DestID': JP_toSystemID, 
-                      'Explored':JP_explored, 'Gate':JP_Gate, 'Pos': pos, 'Bearing':bearing, 
-                      'CurrentSystem':JP_fromSystem,'CurrentSystemID':JP_fromSystemID}
-    return JPs
-
-
-  def GetSurveyLocations(self, systemID):
-    # FCT_RaceSurveyLocation - holds all surveyed surveylocations
-    # RaceID	GameID	SystemID	LocationNumber
-    #   418	    95	    8496	      15
-
-    # FCT_RaceJumpPointSurvey - holds all Jumppoints weather discovered (charted) and explored or not
-    # GameID	RaceID	WarpPointID	Explored	Charted	AlienUnits	Hide	MilitaryRestricted	IgnoreForDistance
-    # 95      	418      	23417	0	0	0	0	0	0
-    # 95      	418      	23418	1	1	0	0	0	0
-    surveyLocations = {}
-    # FCT_RaceSurveyLocation - holds all surveyed surveylocations
-    # # RaceID	GameID	SystemID	LocationNumber
-    #   418	    95	    8496	      15
-    mySurveyedLocationsTable = [list(x) for x in self.db.execute('''SELECT LocationNumber from FCT_RaceSurveyLocation WHERE GameID = %d AND SystemID = %d AND RaceID = %d;'''%(self.gameID, systemID, self.myRaceID))]
-    mySurveyedLocations = []
-    for N in mySurveyedLocationsTable:
-      mySurveyedLocations.append(N[0])
-
-    # todo: check for single line returns
-    surveyLocationTable = [list(x) for x in self.db.execute('''SELECT * from FCT_SurveyLocation WHERE GameID = %d AND SystemID = %d;'''%(self.gameID, systemID))]
-    # FCT_SurveyLocation - holds all locations with their coordinates
-    # SurveyLocationID	GameID	SystemID	LocationNumber	          Xcor             	Ycor
-    #   244231           	90	   8144	        1	           -3.67381906146713e-07	-2000000000.0
-    for location in surveyLocationTable:
-      id = location[0]
-      nr = location[3]
-      pos = (location[4],location[5])
-      surveyed = True if nr in mySurveyedLocations else False
-      surveyLocations[id] = {'Number':nr, 'Pos':pos, 'Surveyed':surveyed}
-
-    return surveyLocations
-
-
   def GetNewData(self):
-    self.starSystems = self.GetSystems()
-    self.currentSystemJumpPoints = self.GetSystemJumpPoints()
-    self.surveyLocations = self.GetSurveyLocations(self.currentSystem)
+    self.starSystems = Systems.GetSystems(self)
+    self.currentSystemJumpPoints = Systems.GetSystemJumpPoints(self)
+    self.surveyLocations = Systems.GetSurveyLocations(self, self.currentSystem)
     self.fleets = Fleets.GetFleets(self)
-    self.colonies = self.GetColonies()
+    self.colonies = Colonies.GetColonies(self)
     self.systemBodies = Bodies.GetSystemBodies(self)
     self.reDraw = True
     self.reDraw_FleetInfoWindow = True
     self.reDraw_MapWindow = True
-
-
-  def GetColonies(self):
-    colonies = {}
-    colonies_table = [list(x) for x in self.db.execute('''SELECT * from FCT_Population WHERE GameID = %d AND RaceID = %d ORDER BY Population DESC;'''%(self.gameID,self.myRaceID))]
-    for colony in colonies_table:
-        system_name = self.GetSystemName(colony[29])
-        systemBodyID = colony[30]
-        stockpile_sum = 0
-        stockpile_minerals_sum = 0
-        colonies[systemBodyID] = {'Name':colony[4],'Pop':round(colony[24],2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colony[17], 'Stockpile':{'Fuel':int(round(colony[13])),'Supplies':int(round(colony[18]))}}
-        stockpile_sum = int(round(colony[13]) + round(colony[18]))
-        for mineralID in Utils.MineralNames:
-          amount = int(round(colony[34+mineralID-1],0))
-          colonies[systemBodyID]['Stockpile'][Utils.MineralNames[mineralID]] = amount
-          stockpile_minerals_sum += amount
-        colonies[systemBodyID]['Stockpile']['Sum of Minerals'] = stockpile_minerals_sum
-        colonies[systemBodyID]['Stockpile']['Sum'] = stockpile_sum
-
-        colonies[systemBodyID]['Installations'] = {}
-        industries_table = [list(x) for x in self.db.execute('''SELECT PlanetaryInstallationID, Amount from FCT_PopulationInstallations WHERE GameID = %d AND PopID = %d;'''%(self.gameID,colony[0]))]
-        for installation in industries_table:
-          id = installation[0]
-          amount = installation[1]
-          name = ''
-          if (id in self.installations):
-            name = self.installations[id]['Name']
-          colonies[systemBodyID]['Installations'][id] = {'Name':name, 'Amount':amount}
-
-    return colonies
 
 
   def WorldPos2ScreenPos(self, world_pos):
@@ -790,7 +517,7 @@ class Game():
             self.images_Body[sub_folder][-1].set_colorkey(self.bg_color)
 
     self.systemBodies = Bodies.GetSystemBodies(self)
-    self.starSystems = self.GetSystems()
+    self.starSystems = Systems.GetSystems(self)
 
 
   def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True ):
@@ -948,26 +675,3 @@ class Game():
       self.info_cat_deposits_expanded = not self.info_cat_deposits_expanded
 
     self.reDraw_InfoWindow = True
-
-
-  def GetCCreduction(self):
-    number = 0
-    searchString = 'Colonization Cost Reduction'
-    results = self.db.execute('''SELECT * from DIM_TechType;''').fetchall()
-    techTypeID = -1
-    for result in results:
-      if (result[1] == searchString):
-        techTypeID = result[0]
-        break
-    results = self.db.execute('''SELECT TechSystemID, Name from FCT_TechSystem WHERE TechTypeID = %d;'''%(techTypeID)).fetchall()
-    for result in results:
-      researchedTechs = self.db.execute('''SELECT * from FCT_RaceTech WHERE GameID = %d AND RaceID = %d AND TechID = %d;'''%(self.gameID, self.myRaceID, result[0])).fetchall()
-      if (researchedTechs):
-        percentage = result[1].replace(searchString,'')
-        try:
-          number = float(percentage[:-1])/100.
-        except:
-          number = 0
-      else:
-        break
-    return number

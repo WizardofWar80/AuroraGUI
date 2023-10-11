@@ -347,7 +347,7 @@ def GetSystemBodies(game):
   systemBodies = {}
   body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year
 , DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,game.currentSystem))]
-  deposits = game.GetMineralDeposits(game.currentSystem)
+  deposits = GetMineralDeposits(game, game.currentSystem)
           # Mass
       # Orbit
       # hours / day
@@ -503,4 +503,41 @@ def GetSystemBodies(game):
       systemBodies[body[0]]['Deposits'] = deposits[body[0]]
   return systemBodies
 
+
+def GetStellarTypes(game):
+  stellarTypes = {}
+
+  results = game.db.execute('''SELECT StellarTypeID, SpectralClass, SpectralNumber, SizeText, SizeID, Luminosity, Mass, Temperature, Radius, Red, Green, Blue from DIM_StellarType;''').fetchall()
+    
+  for stellarType in results:
+    #stellarType = results[stellarTypeID]
+    stellarTypeID = stellarType[0]
+    stellarTypes[stellarTypeID] = { 'SpectralClass':stellarType[1]
+                                    ,'SpectralNumber':stellarType[2]
+                                    ,'SizeText':stellarType[3]
+                                    ,'SizeID':stellarType[4]
+                                    ,'Luminosity':stellarType[5]
+                                    ,'Mass':stellarType[6]
+                                    ,'Temperature':stellarType[7]
+                                    ,'Radius':stellarType[8]
+                                    ,'RGB':(stellarType[9],stellarType[10],stellarType[11])
+                                  }
+        
+  return stellarTypes
+
+  
+def GetMineralDeposits(game, systemID):
+  deposits = {}
+  # GameID	MaterialID	SystemID	SystemBodyID	Amount	Accessibility	HalfOriginalAmount	OriginalAcc
+  results = game.db.execute('''SELECT * from FCT_MineralDeposit WHERE GameID = %d and SystemID = %d;'''%(game.gameID, systemID)).fetchall()
+
+  for deposit in results:
+    systemBodyID = deposit[3]
+    if (systemBodyID not in deposits):
+      deposits[systemBodyID]={}
+    if (deposit[1] in Utils.MineralNames):
+      mineral = Utils.MineralNames[deposit[1]]
+      deposits[systemBodyID][mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
+
+  return deposits
 
