@@ -29,7 +29,8 @@ def Draw(game):
     _indentLevel = 0
     if (game.highlighted_fleet_ID in game.fleets[game.currentSystem]):
       fleet = game.fleets[game.currentSystem][game.highlighted_fleet_ID]
-      DrawLineOfText(game.window_info, fleet['Name'], 0, True)
+      DrawFleet(game, fleet, _indentLevel)
+      #DrawLineOfText(game.window_info, fleet['Name'], 0, True)
     elif (game.highlighted_body_ID in game.starSystems[game.currentSystem]['Stars']):
       body = game.starSystems[game.currentSystem]['Stars'][game.highlighted_body_ID]
       prefix = Utils.GetStarDescription(body) + ' '
@@ -168,72 +169,14 @@ def Draw(game):
         cursorPos = (cursorPos[0], cursorPos[1])
         expRect = Utils.DrawExpander(game.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
         game.MakeClickable(game.info_category_orbit, expRect, left_click_call_back = game.ExpandBodyInfo, par=game.info_category_orbit, parent = game.window_info_identifier, anchor=game.window_info_anchor)
-        DrawLineOfText(game.window_info, game.info_category_orbit, _indentLevel+1, unscrollable = True)
+        DrawLineOfText(game.window_info, game.info_category_orbit, indentLevel+1, unscrollable = True)
         pygame.draw.line(game.window_info, Utils.WHITE, (cursorPos[0],cursorPos[1]-2),(cursorPos[0]+200,cursorPos[1]-2),1)
         if (game.info_cat_orbit_expanded):
           # orbiting fleets
           for fleetID in game.fleets[game.currentSystem]:
             fleet = game.fleets[game.currentSystem][fleetID]
             if (fleet['Orbit']['Body'] == game.highlighted_body_ID and fleet['Orbit']['Distance'] == 0):
-              if (lineNr >= unscrollableLineNr):
-                if (fleet['Ships'] != []):
-                  expRect = Utils.DrawExpander(game.window_info, (cursorPos[0]+indentWidth,cursorPos[1]+3), 15, textColor)
-                  game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.ExpandFleet, par=fleetID, parent = game.window_info_identifier, anchor=game.window_info_anchor)
-                else:
-                  expRect = pygame.draw.rect(game.window_info, textColor, (cursorPos[0]+indentWidth+1,cursorPos[1]+3+1, textSize-2, textSize-2), 1)
-                label_size = DrawLineOfText(game.window_info, fleet['Name']+ ' - ', _indentLevel+2)
-                if label_size:
-                  # decrement line because we still need to draw some icons in this line
-                  lineNr -=1
-                  p = 0
-                  icon_pos = (cursorPos[0]+label_size[0]+(_indentLevel+2)*indentWidth, (pad_y+lineNr*line_height))
-                  if (fleet['Fuel Capacity'] > 0):
-                    p = fleet['Fuel']/fleet['Fuel Capacity']
-
-                  if ('fuel2' in game.images_GUI):
-                    icon_rect = Utils.DrawPercentageFilledImage(game.window_info, 
-                                                                game.images_GUI['fuel2'], 
-                                                                icon_pos, 
-                                                                p, 
-                                                                color_unfilled = Utils.DARK_GRAY, 
-                                                                color = Utils.MED_YELLOW, 
-                                                                color_low = Utils.RED, 
-                                                                perc_low = 0.3, 
-                                                                color_high = Utils.LIGHT_GREEN, 
-                                                                perc_high = 0.7)
-
-                  icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
-                  p = 0
-                  if (fleet['Supplies Capacity'] > 0):
-                    p = fleet['Supplies']/fleet['Supplies Capacity']
-
-                  if ('supplies' in game.images_GUI):
-                    icon_rect = Utils.DrawPercentageFilledImage(game.window_info, 
-                                                                game.images_GUI['supplies'], 
-                                                                icon_pos, 
-                                                                p, 
-                                                                color_unfilled = Utils.DARK_GRAY, 
-                                                                color = Utils.MED_YELLOW, 
-                                                                color_low = Utils.RED, 
-                                                                perc_low = 0.3, 
-                                                                color_high = Utils.LIGHT_GREEN, 
-                                                                perc_high = 0.7)
-
-                  # increment line because decremented it before
-                #print((pad_y+lineNr*line_height), fleet['Name'])
-                lineNr +=1
-
-                if (fleetID in game.GUI_expanded_fleets2):
-                  shipClasses = {}
-                  for ship in fleet['Ships']:
-                    if (ship['ClassName'] not in shipClasses):
-                      shipClasses[ship['ClassName']] = 1
-                    else:
-                      shipClasses[ship['ClassName']] += 1
-                  for shipClass in shipClasses:
-                    DrawLineOfText(game.window_info, '%dx%s'%(shipClasses[ship['ClassName']],shipClass), _indentLevel+2)
-              else:
-                lineNr +=1
+              DrawFleet(game, fleet, _indentLevel)
 
     game.surface.blit(game.window_info,game.window_info_anchor)
     game.reDraw_InfoWindow = False
@@ -290,3 +233,66 @@ def CleanUp(game, parent):
   elif (parent == game.window_info_identifier):
     game.GUI_expanded_fleets2 = []
 
+
+def DrawFleet(game, fleet, indentLevel = 0):
+  global lineNr
+
+  if (lineNr >= unscrollableLineNr):
+    if (fleet['Ships'] != []):
+      expRect = Utils.DrawExpander(game.window_info, (cursorPos[0]+indentWidth,cursorPos[1]+3), 15, textColor)
+      game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.ExpandFleet, par=fleet['ID'], parent = game.window_info_identifier, anchor=game.window_info_anchor)
+    else:
+      expRect = pygame.draw.rect(game.window_info, textColor, (cursorPos[0]+indentWidth+1,cursorPos[1]+3+1, textSize-2, textSize-2), 1)
+    label_size = DrawLineOfText(game.window_info, fleet['Name']+ ' - ', indentLevel+2)
+    if label_size:
+      # decrement line because we still need to draw some icons in this line
+      lineNr -=1
+      p = 0
+      icon_pos = (cursorPos[0]+label_size[0]+(indentLevel+2)*indentWidth, (pad_y+lineNr*line_height))
+      if (fleet['Fuel Capacity'] > 0):
+        p = fleet['Fuel']/fleet['Fuel Capacity']
+
+      if ('fuel2' in game.images_GUI):
+        icon_rect = Utils.DrawPercentageFilledImage(game.window_info, 
+                                                    game.images_GUI['fuel2'], 
+                                                    icon_pos, 
+                                                    p, 
+                                                    color_unfilled = Utils.DARK_GRAY, 
+                                                    color = Utils.MED_YELLOW, 
+                                                    color_low = Utils.RED, 
+                                                    perc_low = 0.3, 
+                                                    color_high = Utils.LIGHT_GREEN, 
+                                                    perc_high = 0.7)
+
+      icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
+      p = 0
+      if (fleet['Supplies Capacity'] > 0):
+        p = fleet['Supplies']/fleet['Supplies Capacity']
+
+      if ('supplies' in game.images_GUI):
+        icon_rect = Utils.DrawPercentageFilledImage(game.window_info, 
+                                                    game.images_GUI['supplies'], 
+                                                    icon_pos, 
+                                                    p, 
+                                                    color_unfilled = Utils.DARK_GRAY, 
+                                                    color = Utils.MED_YELLOW, 
+                                                    color_low = Utils.RED, 
+                                                    perc_low = 0.3, 
+                                                    color_high = Utils.LIGHT_GREEN, 
+                                                    perc_high = 0.7)
+
+      # increment line because decremented it before
+    #print((pad_y+lineNr*line_height), fleet['Name'])
+    lineNr +=1
+
+    if (fleet['ID'] in game.GUI_expanded_fleets2):
+      shipClasses = {}
+      for ship in fleet['Ships']:
+        if (ship['ClassName'] not in shipClasses):
+          shipClasses[ship['ClassName']] = 1
+        else:
+          shipClasses[ship['ClassName']] += 1
+      for shipClass in shipClasses:
+        DrawLineOfText(game.window_info, '%dx%s'%(shipClasses[ship['ClassName']],shipClass), indentLevel+2)
+  else:
+    lineNr +=1

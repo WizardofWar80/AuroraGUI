@@ -53,6 +53,7 @@ def GetFleets(game):
     if systemID not in fleets:
       fleets[systemID] = {}
     fleets[systemID][fleetId] = {}
+    fleets[systemID][fleetId]['ID'] = fleetId
     fleets[systemID][fleetId]['Name'] = item[2]
     fleets[systemID][fleetId]['System_Name'] = system_name
     fleets[systemID][fleetId]['MaxSpeed'] = item[16]
@@ -81,12 +82,18 @@ def GetFleets(game):
       fuel = ship[16]
       supplies = ship[44]
       shipClassID = ship[33]
+      morale = ship[10]
+
       shipClass = game.db.execute('''SELECT * from FCT_ShipClass WHERE ShipClassID = %d;'''%(shipClassID)).fetchall()[0]
       shipClassName = shipClass[1]
       fuelCapacity = shipClass[27]
+      size = shipClass[66]*50
       suppliesCapacity = shipClass[84]
       magazineCapacity = shipClass[38]
-      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity})
+      plannedDeployment = shipClass[53]
+      deploymentTime = (ship[23]-game.gameTime)/3600/24/365.25*12
+      maintenanceLife = (ship[22]-game.gameTime)/3600/24/365.25
+      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife})
       fleetFuel += fuel
       fleetFuelCapacity += fuelCapacity
       fleetSupplies += supplies
