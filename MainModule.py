@@ -182,7 +182,8 @@ class Game():
     self.InitGUI()
     self.systemBodies = {}
 
-    db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
+    #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
+    db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB.db'
     try:
         db_connection = sqlite3.connect(db_filename)
         self.db = db_connection.cursor()

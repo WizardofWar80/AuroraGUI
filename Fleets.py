@@ -91,9 +91,13 @@ def GetFleets(game):
       suppliesCapacity = shipClass[84]
       magazineCapacity = shipClass[38]
       plannedDeployment = shipClass[53]
-      deploymentTime = (ship[23]-game.gameTime)/3600/24/365.25*12
-      maintenanceLife = (ship[22]-game.gameTime)/3600/24/365.25
-      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife})
+      deploymentTime = (game.gameTime-ship[23])/3600/24/365.25*12
+      maintenanceLife = (game.gameTime-ship[22])/3600/24/365.25
+      components = GetShipComponents(game, shipClassID)
+      avgMaintCost = GetAverageMaintCost(components)
+      AFR = GetAFR(size, components)
+      maintenanceLifeTime = GetMaintainanceLifetime(maintenanceLife, AFR, avgMaintCost)/12
+      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':avgMaintCost})
       fleetFuel += fuel
       fleetFuelCapacity += fuelCapacity
       fleetSupplies += supplies
@@ -189,3 +193,54 @@ def DrawFleetInfoWindow(game):
     return True
   else:
     return False
+
+
+def GetShipComponents(game, shipID):
+  results = {}
+  components = [list(x) for x in game.db.execute('''SELECT * from FCT_ClassComponent WHERE ClassID = %d;'''%(shipID))]
+  for comp in components:
+    compID = comp[2]
+    num = comp[3]
+    compDesign = game.db.execute('''SELECT * from FCT_ShipDesignComponents WHERE SDComponentID = %d;'''%(compID)).fetchall()[0]
+    name = compDesign[2]
+    size = compDesign[8]
+    cost = compDesign[9]
+    typeID = compDesign[10]
+    results[compID] = {'ID':compID, 'Name':name, 'ComponentTypeID':typeID, 'Num':num, 'Cost':cost, 'Size':size}
+  return results
+
+
+def GetAverageMaintCost(components):
+  if(len(components) > 0):
+    total_DAC = 0
+    total_cost = 0
+    for compID in components:
+      comp = components[compID]
+      if (comp['ComponentTypeID'] != 11 and comp['ComponentTypeID'] <= 70):
+        DAC = max([1.0,comp['Size'] * comp['Num']])
+        cost = DAC * comp['Cost']
+        total_DAC += DAC
+        total_cost += cost
+    if (total_DAC > 0):
+      return total_cost / total_DAC
+    else:
+      return 0
+  else:
+    return 0
+
+
+def GetMaintainanceLifetime(year, AFR, AMC):
+  return year*(year+1) * AFR * AMC / (2*100)
+
+
+def GetAFR(ShipSize, components):
+  if (len(components)>0):
+    engSize = 0
+    for compID in components:
+      comp = components[compID]
+      if (comp['ComponentTypeID'] == 47):
+        engSize += comp['Size']
+    if (engSize > 0):
+      return ShipSize*ShipSize*0.0004/(engSize*100)
+    else:
+      return ShipSize*0.2
