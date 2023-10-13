@@ -1,5 +1,6 @@
 import pygame
 import Utils
+import math
 
 cursorPos = (0,0)
 pad_x = 5
@@ -299,7 +300,7 @@ def DrawFleet(game, fleet, indentLevel = 0):
         for ship in fleet['Ships']:
           DrawLineOfText(game.window_info, 'Deployment: %3.2f (%d)'%(ship['DeploymentTime'], ship['PlannedDeployment']), indentLevel+3)
           DrawLineOfText(game.window_info, 'MaintClock: %3.2f (%3.2f)'%(ship['MaintenanceClock'],ship['Maintenance Life']), indentLevel+3)
-          DrawLineOfText(game.window_info, 'AFR: %3.2f'%(ship['AFR']), indentLevel+3)
-          DrawLineOfText(game.window_info, '1YR: %3.2f'%(ship['1YR']), indentLevel+3)
+          DrawLineOfText(game.window_info, 'AFR: %d%%'%(int(round(ship['AFR']*100,0))), indentLevel+3)
+          DrawLineOfText(game.window_info, '1YR: %d MSP'%int(round(ship['1YR'],0)), indentLevel+3)
   else:
     lineNr +=1

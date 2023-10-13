@@ -88,6 +88,7 @@ def GetFleets(game):
       shipClassName = shipClass[1]
       fuelCapacity = shipClass[27]
       size = shipClass[66]*50
+      cost = shipClass[17]
       suppliesCapacity = shipClass[84]
       magazineCapacity = shipClass[38]
       plannedDeployment = shipClass[53]
@@ -95,9 +96,13 @@ def GetFleets(game):
       maintenanceLife = (game.gameTime-ship[22])/3600/24/365.25
       components = GetShipComponents(game, shipClassID)
       avgMaintCost = GetAverageMaintCost(components)
-      AFR = GetAFR(size, components)
-      maintenanceLifeTime = GetMaintainanceLifetime(maintenanceLife, AFR, avgMaintCost)/12
-      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':avgMaintCost})
+      engSize = GetEngineeringSize(components)
+      AFR = GetAFR(size, engSize)
+      MSP = GetMSP(components, cost, size, engSize)
+      oneYearMSPCost = GetMaintainanceForYears(1,AFR,avgMaintCost)
+      fiveYearMSPCost = GetMaintainanceForYears(5,AFR,avgMaintCost)
+      maintenanceLifeTime = GetMaintenanceLifetime(MSP, oneYearMSPCost)
+      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost})
       fleetFuel += fuel
       fleetFuelCapacity += fuelCapacity
       fleetSupplies += supplies
@@ -206,7 +211,8 @@ def GetShipComponents(game, shipID):
     size = compDesign[8]
     cost = compDesign[9]
     typeID = compDesign[10]
-    results[compID] = {'ID':compID, 'Name':name, 'ComponentTypeID':typeID, 'Num':num, 'Cost':cost, 'Size':size}
+    value = compDesign[11]
+    results[compID] = {'ID':compID, 'Name':name, 'ComponentTypeID':typeID, 'Num':num, 'Cost':cost, 'Size':size, 'ComponentValue':value}
   return results
 
 
@@ -229,18 +235,34 @@ def GetAverageMaintCost(components):
     return 0
 
 
-def GetMaintainanceLifetime(year, AFR, AMC):
-  return year*(year+1) * AFR * AMC / (2*100)
+def GetMaintainanceForYears(year, AFR, AMC):
+  return year*(year+1) * AFR * round(AMC,2) / 2
 
 
-def GetAFR(ShipSize, components):
+def GetAFR(ShipSize, engSize):
+  if (engSize > 0):
+    return ShipSize*ShipSize*0.0004/(engSize*100)
+  else:
+    return ShipSize*0.2
+
+def GetEngineeringSize(components):
+  engSize = 0
   if (len(components)>0):
-    engSize = 0
+    for compID in components:
+      comp = components[compID]
+      if (comp['ComponentTypeID'] == 31):
+        engSize += comp['Size']*50*comp['Num']
+  return engSize
+
+def GetMSP(components, shipCost, shipSize, engSize):
+  if (len(components)>0):
+    MSPStorage = 0
     for compID in components:
       comp = components[compID]
       if (comp['ComponentTypeID'] == 47):
-        engSize += comp['Size']
-    if (engSize > 0):
-      return ShipSize*ShipSize*0.0004/(engSize*100)
-    else:
-      return ShipSize*0.2
+        MSPStorage += comp['ComponentValue']*comp['Num']
+  return MSPStorage + shipCost * 0.5 * engSize / shipSize / 0.04
+
+
+def GetMaintenanceLifetime(MSP, oneYearMSPCost):
+  return math.sqrt(0.25+2*MSP/oneYearMSPCost)-0.5
