@@ -87,6 +87,7 @@ def GetFleets(game):
       shipClass = game.db.execute('''SELECT * from FCT_ShipClass WHERE ShipClassID = %d;'''%(shipClassID)).fetchall()[0]
       shipClassName = shipClass[1]
       fuelCapacity = shipClass[27]
+      commercial = shipClass[26]
       size = shipClass[66]*50
       cost = shipClass[17]
       suppliesCapacity = shipClass[84]
@@ -102,7 +103,7 @@ def GetFleets(game):
       oneYearMSPCost = GetMaintainanceForYears(1,AFR,avgMaintCost)
       fiveYearMSPCost = GetMaintainanceForYears(5,AFR,avgMaintCost)
       maintenanceLifeTime = GetMaintenanceLifetime(MSP, oneYearMSPCost)
-      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost})
+      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost, 'Commercial':commercial, 'Military':not commercial})
       fleetFuel += fuel
       fleetFuelCapacity += fuelCapacity
       fleetSupplies += supplies

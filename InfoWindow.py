@@ -295,12 +295,16 @@ def DrawFleet(game, fleet, indentLevel = 0):
         else:
           shipClasses[ship['ClassName']] += 1
       for shipClass in shipClasses:
-        DrawLineOfText(game.window_info, '%dx%s'%(shipClasses[ship['ClassName']],shipClass), indentLevel+2)
-      if (shipClasses[ship['ClassName']] == 1):
-        for ship in fleet['Ships']:
-          DrawLineOfText(game.window_info, 'Deployment: %3.2f (%d)'%(ship['DeploymentTime'], ship['PlannedDeployment']), indentLevel+3)
-          DrawLineOfText(game.window_info, 'MaintClock: %3.2f (%3.2f)'%(ship['MaintenanceClock'],ship['Maintenance Life']), indentLevel+3)
-          DrawLineOfText(game.window_info, 'AFR: %d%%'%(int(round(ship['AFR']*100,0))), indentLevel+3)
-          DrawLineOfText(game.window_info, '1YR: %d MSP'%int(round(ship['1YR'],0)), indentLevel+3)
+        expRect = Utils.DrawExpander(game.window_info, (cursorPos[0]+indentWidth,cursorPos[1]+3), 15, textColor)
+        game.MakeClickable(shipClass, expRect, left_click_call_back = game.ExpandShipClasses, par=shipClass, parent = game.window_info_identifier, anchor=game.window_info_anchor)
+        DrawLineOfText(game.window_info, '%dx %s'%(shipClasses[ship['ClassName']],shipClass), indentLevel+2)
+      #if (shipClasses[ship['ClassName']] == 1):
+        if(shipClass in game.GUI_expanded_fleets3):
+          for ship in fleet['Ships']:
+            DrawLineOfText(game.window_info, 'Deployment: %3.2f (%d)'%(ship['DeploymentTime'], ship['PlannedDeployment']), indentLevel+3)
+            if (ship['Military']):
+              DrawLineOfText(game.window_info, 'MaintClock: %3.2f (%3.2f)'%(ship['MaintenanceClock'],ship['Maintenance Life']), indentLevel+3)
+              DrawLineOfText(game.window_info, 'AFR: %d%%'%(int(round(ship['AFR']*100,0))), indentLevel+3)
+              DrawLineOfText(game.window_info, '1YR: %d MSP'%int(round(ship['1YR'],0)), indentLevel+3)
   else:
     lineNr +=1

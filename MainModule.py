@@ -179,6 +179,7 @@ class Game():
     self.images_GUI = {}
     self.GUI_expanded_fleets = []
     self.GUI_expanded_fleets2 = []
+    self.GUI_expanded_fleets3 = []
     self.InitGUI()
     self.systemBodies = {}
 
@@ -737,6 +738,7 @@ class Game():
     elif (name == 'Highlight Artifacts'):
       self.highlightArtifactsBodies = not self.highlightArtifactsBodies
 
+
   def ExpandFleet(self, id, parent):
     if (id in self.fleets[self.currentSystem]):
       if (parent == self.window_fleet_info_identifier):
@@ -753,7 +755,7 @@ class Game():
         self.reDraw_InfoWindow = True
 
 
-  def ExpandBodyInfo(self, category, parent):
+  def ExpandBodyInfo(self, category):
     if (category == self.info_category_physical):
       self.info_cat_phys_expanded = not self.info_cat_phys_expanded
     elif (category == self.info_category_economical):
@@ -767,4 +769,12 @@ class Game():
     elif (category == self.info_category_deposits):
       self.info_cat_deposits_expanded = not self.info_cat_deposits_expanded
 
+    self.reDraw_InfoWindow = True
+
+
+  def ExpandShipClasses(self, shipClass, aprent):
+    if (shipClass in self.GUI_expanded_fleets3):
+      self.GUI_expanded_fleets3.remove(shipClass)
+    else:
+      self.GUI_expanded_fleets3.append(shipClass)
     self.reDraw_InfoWindow = True
