@@ -103,7 +103,7 @@ def GetFleets(game):
       oneYearMSPCost = GetMaintainanceForYears(1,AFR,avgMaintCost)
       fiveYearMSPCost = GetMaintainanceForYears(5,AFR,avgMaintCost)
       maintenanceLifeTime = GetMaintenanceLifetime(MSP, oneYearMSPCost)
-      fleets[systemID][fleetId]['Ships'].append({'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost, 'Commercial':commercial, 'Military':not commercial})
+      fleets[systemID][fleetId]['Ships'].append({'ID':ship[0], 'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost, 'Commercial':commercial, 'Military':not commercial})
       fleetFuel += fuel
       fleetFuelCapacity += fuelCapacity
       fleetSupplies += supplies
@@ -246,6 +246,7 @@ def GetAFR(ShipSize, engSize):
   else:
     return ShipSize*0.2
 
+
 def GetEngineeringSize(components):
   engSize = 0
   if (len(components)>0):
@@ -254,6 +255,7 @@ def GetEngineeringSize(components):
       if (comp['ComponentTypeID'] == 31):
         engSize += comp['Size']*50*comp['Num']
   return engSize
+
 
 def GetMSP(components, shipCost, shipSize, engSize):
   if (len(components)>0):
@@ -267,3 +269,35 @@ def GetMSP(components, shipCost, shipSize, engSize):
 
 def GetMaintenanceLifetime(MSP, oneYearMSPCost):
   return math.sqrt(0.25+2*MSP/oneYearMSPCost)-0.5
+
+
+def GetOrders(game, fleetID):
+  results = []
+  orders = [list(x) for x in game.db.execute('''SELECT Description from FCT_MoveOrders WHERE FleetID = %d;'''%(fleetID))]
+  for order in orders:
+    results.append(order[0])
+  return results
+
+def GetCargo(game, fleet):
+  #GameID	ShipID	CargoTypeID	CargoID	Amount	SpeciesID	StartingPop	Neutral
+  #   92	47169      	2         	7	    0.8     	0	      11001     	0
+
+  results = {}
+  for ship in fleet['Ships']:
+    cargoList = [list(x) for x in game.db.execute('''SELECT * from FCT_ShipCargo WHERE ShipID = %d;'''%(ship['ID']))]
+    for cargo in cargoList:
+      cargoID = cargo[3]
+      cargoType = cargo[2]
+      name = 'ID ' + str(cargoID)+', Type'+ str(cargo[2])
+      if (cargoType == 3):
+        if (cargoID in Utils.MineralNames):
+          name = Utils.MineralNames[cargoID]
+      elif (cargoType == 2):
+        if (cargoID in game.installations):
+          name = game.installations[cargoID]['Name']
+      cargoAmount = cargo[4]
+      if (cargoID not in results):
+        results[cargoID] = {'Amount': cargoAmount, 'Name': name}
+      else:
+        results[cargoID]['Amount'] += cargoAmount
+  return results

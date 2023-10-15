@@ -1,6 +1,7 @@
 import pygame
 import Utils
 import math
+import Fleets
 
 cursorPos = (0,0)
 pad_x = 5
@@ -272,6 +273,15 @@ def DrawFleet(game, fleet, indentLevel = 0):
       lineNr +=1
 
     if (fleet['ID'] in game.GUI_expanded_fleets2):
+      # Draw current order
+      orders = Fleets.GetOrders(game, fleet['ID'])
+      if(len(orders) > 0):
+        label_size = DrawLineOfText(game.window_info, orders[0], indentLevel+2)
+        label_size = DrawLineOfText(game.window_info, str(int(fleet['Speed'])) + 'km/s', indentLevel+2)
+      cargo = Fleets.GetCargo(game, fleet)
+      for cargoID in cargo:
+        label_size = DrawLineOfText(game.window_info, cargo[cargoID]['Name'] + ': '+str(cargo[cargoID]['Amount']), indentLevel+2)
+      # list ship classes
       shipClasses = {}
       for ship in fleet['Ships']:
         if (ship['ClassName'] not in shipClasses):
