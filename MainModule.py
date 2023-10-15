@@ -17,6 +17,7 @@ class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
     Bodies.SetGameInstance(self)
     Fleets.SetGameInstance(self)
+    InfoWindow.SetGameInstance(self)
     self.Events = eventsclass
     self.logger = lg.Logger(logfile= 'logMain.txt', module='MainModule.py', log_level = 1)
     self.name = name

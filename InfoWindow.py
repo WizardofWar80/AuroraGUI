@@ -11,6 +11,12 @@ textColor = Utils.WHITE
 textSize = 15
 indentWidth = 17
 unscrollableLineNr = 0
+gameInstance = None
+
+def SetGameInstance(game):
+  global gameInstance
+  gameInstance = game
+
 
 def Clear(game):
   global cursorPos, pad_x, pad_y, lineNr, unscrollableLineNr
@@ -250,61 +256,89 @@ def DrawFleet(game, fleet, indentLevel = 0):
       # decrement line because we still need to draw some icons in this line
       lineNr -=1
       p = 0
+      cursor_x_pos = 0
       icon_pos = (cursorPos[0]+label_size[0]+(indentLevel+2)*indentWidth, (pad_y+lineNr*line_height))
       if (fleet['Fuel Capacity'] > 0):
         p = fleet['Fuel']/fleet['Fuel Capacity']
+        cursor_x_pos = DrawIcon(game.window_info, 'fuel2', icon_pos, p)+pad_x
 
-      if ('fuel2' in game.images_GUI):
-        icon_rect = Utils.DrawPercentageFilledImage(game.window_info, 
-                                                    game.images_GUI['fuel2'], 
-                                                    icon_pos, 
-                                                    p, 
-                                                    color_unfilled = Utils.DARK_GRAY, 
-                                                    color = Utils.MED_YELLOW, 
-                                                    color_low = Utils.RED, 
-                                                    perc_low = 0.3, 
-                                                    color_high = Utils.LIGHT_GREEN, 
-                                                    perc_high = 0.7)
-
-      icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
+      icon_pos = (icon_pos[0]+cursor_x_pos,  (pad_y+lineNr*line_height))
       p = 0
       if (fleet['Supplies Capacity'] > 0):
         p = fleet['Supplies']/fleet['Supplies Capacity']
-
-      if ('supplies' in game.images_GUI):
-        icon_rect = Utils.DrawPercentageFilledImage(game.window_info, 
-                                                    game.images_GUI['supplies'], 
-                                                    icon_pos, 
-                                                    p, 
-                                                    color_unfilled = Utils.DARK_GRAY, 
-                                                    color = Utils.MED_YELLOW, 
-                                                    color_low = Utils.RED, 
-                                                    perc_low = 0.3, 
-                                                    color_high = Utils.LIGHT_GREEN, 
-                                                    perc_high = 0.7)
-
+        cursor_x_pos = DrawIcon(game.window_info, 'supplies', icon_pos, p)
       # increment line because decremented it before
-    #print((pad_y+lineNr*line_height), fleet['Name'])
-    lineNr +=1
+      #print((pad_y+lineNr*line_height), fleet['Name'])
+      lineNr +=1
 
     if (fleet['ID'] in game.GUI_expanded_fleets2):
       shipClasses = {}
       for ship in fleet['Ships']:
         if (ship['ClassName'] not in shipClasses):
-          shipClasses[ship['ClassName']] = 1
+          shipClasses[ship['ClassName']] = {'Num':1, 'Commercial':ship['Commercial'], 'Military':ship['Military']}
         else:
-          shipClasses[ship['ClassName']] += 1
+          shipClasses[ship['ClassName']]['Num'] += 1
       for shipClass in shipClasses:
         expRect = Utils.DrawExpander(game.window_info, (cursorPos[0]+indentWidth,cursorPos[1]+3), 15, textColor)
         game.MakeClickable(shipClass, expRect, left_click_call_back = game.ExpandShipClasses, par=shipClass, parent = game.window_info_identifier, anchor=game.window_info_anchor)
-        DrawLineOfText(game.window_info, '%dx %s'%(shipClasses[ship['ClassName']],shipClass), indentLevel+2)
+        DrawLineOfText(game.window_info, '%dx %s'%(shipClasses[ship['ClassName']]['Num'],shipClass), indentLevel+2)
+        #if (ship['Military']):
+        #  DrawLineOfText(game.window_info, 'AFR: %d%%'%(int(round(ship['AFR']*100,0))), indentLevel+3)
+        #  DrawLineOfText(game.window_info, '1YR: %d MSP'%int(round(ship['1YR'],0)), indentLevel+3)
+
       #if (shipClasses[ship['ClassName']] == 1):
         if(shipClass in game.GUI_expanded_fleets3):
           for ship in fleet['Ships']:
-            DrawLineOfText(game.window_info, 'Deployment: %3.2f (%d)'%(ship['DeploymentTime'], ship['PlannedDeployment']), indentLevel+3)
-            if (ship['Military']):
-              DrawLineOfText(game.window_info, 'MaintClock: %3.2f (%3.2f)'%(ship['MaintenanceClock'],ship['Maintenance Life']), indentLevel+3)
-              DrawLineOfText(game.window_info, 'AFR: %d%%'%(int(round(ship['AFR']*100,0))), indentLevel+3)
-              DrawLineOfText(game.window_info, '1YR: %d MSP'%int(round(ship['1YR'],0)), indentLevel+3)
+            label_size = DrawLineOfText(game.window_info, ship['Name'], indentLevel+3)
+            if label_size:
+              # decrement line because we still need to draw some icons in this line
+              lineNr -=1
+              p = 0
+              cursor_x_pos = 0
+              icon_pos = (cursorPos[0]+label_size[0]+(indentLevel+3)*indentWidth, (pad_y+lineNr*line_height))
+              if (ship['Fuel Capacity'] > 0):
+                p = ship['Fuel']/ship['Fuel Capacity']
+                cursor_x_pos = DrawIcon(game.window_info, 'fuel2', icon_pos, p)+pad_x
+
+              icon_pos = (icon_pos[0]+cursor_x_pos,  (pad_y+lineNr*line_height))
+              p = 0
+              if (ship['Supplies Capacity'] > 0):
+                p = ship['Supplies']/ship['Supplies Capacity']
+                cursor_x_pos = DrawIcon(game.window_info, 'supplies', icon_pos, p)+pad_x
+              icon_pos = (icon_pos[0]+cursor_x_pos,  (pad_y+lineNr*line_height))
+              p = 0
+              if (ship['PlannedDeployment'] > 0):
+                p = min(1,ship['DeploymentTime']/ship['PlannedDeployment'])
+              cursor_x_pos = DrawIcon(game.window_info, 'clock', icon_pos, p, True)+pad_x
+              icon_pos = (icon_pos[0]+cursor_x_pos,  (pad_y+lineNr*line_height))
+              p = 0
+              if (ship['Maintenance Life'] > 0):
+                p = min(1,ship['MaintenanceClock']/ship['Maintenance Life'])
+              cursor_x_pos = DrawIcon(game.window_info, 'clock', icon_pos, p, True)+pad_x
+              # increment line because decremented it before
+              #print((pad_y+lineNr*line_height), fleet['Name'])
+              lineNr +=1
+
+            #if (ship['DeploymentTime'] > 0):
+            #  DrawLineOfText(game.window_info, 'Deployment: %3.2f (%d)'%(ship['DeploymentTime'], ship['PlannedDeployment']), indentLevel+4)
+            #if (ship['Military']):
+            #  DrawLineOfText(game.window_info, 'MaintClock: %3.2f (%3.2f)'%(ship['MaintenanceClock'],ship['Maintenance Life']), indentLevel+4)
   else:
     lineNr +=1
+
+
+def DrawIcon(surface, image_name, icon_pos, perc, inverse = False):
+  if (image_name in gameInstance.images_GUI):
+    icon_rect = Utils.DrawPercentageFilledImage(surface, 
+                                                gameInstance.images_GUI[image_name], 
+                                                icon_pos, 
+                                                perc, 
+                                                color_unfilled = Utils.DARK_GRAY, 
+                                                color = Utils.MED_YELLOW, 
+                                                color_low = Utils.LIGHT_GREEN if inverse else Utils.RED, 
+                                                perc_low = 0.3, 
+                                                color_high = Utils.RED if inverse else Utils.LIGHT_GREEN, 
+                                                perc_high = 0.7)
+    return icon_rect[3]
+  else:
+    return 0
