@@ -60,6 +60,8 @@ class Game():
     # Options
     self.bg_color = Utils.BLACK
     self.showEmptyFleets = False
+    self.showMilitaryFleets = True
+    self.showCommercialFleets = True
     self.showStationaryFleets = False
     self.showUnsurveyedLocations = True
     self.showSurveyedLocations = False
@@ -177,6 +179,7 @@ class Game():
     self.GUI_identifier = 'GUI Elements'
     self.GUI_Elements = {}
     self.GUI_Bottom_Anchor = (500,self.height-50)
+    self.GUI_Left_Anchor = (15,self.window_fleet_info_rect[1]-50)
     self.images_GUI = {}
     self.GUI_expanded_fleets = []
     self.GUI_expanded_fleets2 = []
@@ -439,6 +442,40 @@ class Game():
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightArtifactsBodies)
     HighlightGUI.AddChildren(idGUI)
 
+    # Left GUI
+    idGUI += 1
+    x = self.GUI_Left_Anchor[0]
+    y = self.GUI_Left_Anchor[1]
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Show Empty Fleets'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showEmptyFleets)
+
+    idGUI += 1
+    x += size+5
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Show Military Fleets'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showMilitaryFleets)
+
+    idGUI += 1
+    x += size+5
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Show Commercial Fleets'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showCommercialFleets)
+
+    idGUI += 1
+    x += size+5
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Show Stationary Fleets'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showStationaryFleets)
+
 
   def InitGases(self):
     gases = {}
@@ -485,8 +522,8 @@ class Game():
       self.timestampLastSecond = currentTimestamp
     Utils.DrawText2Screen(self.screen,'%d FPS'%(self.FPS),(5,50),18,Utils.WHITE, False)
     # draw mouse position and scale
-    Utils.DrawText2Screen(self.screen,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE, False)
-    Utils.DrawText2Screen(self.screen,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE, False)
+    #Utils.DrawText2Screen(self.screen,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE, False)
+    #Utils.DrawText2Screen(self.screen,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE, False)
 
     pygame.display.update()
     self.reDraw = False
@@ -652,7 +689,7 @@ class Game():
       self.reDraw = True
       element = self.GUI_Elements[id]
       #print('Click '+element.name)
-      if (element.parent):
+      if (element.parent) or (len(element.children) == 0):
         element.enabled = not element.enabled
         self.ToggleGUI_Element_ByName(element.name)
         #element.clickable.enabled = not element.clickable.enabled
@@ -738,6 +775,14 @@ class Game():
       self.highlightXenosBodies = not self.highlightXenosBodies
     elif (name == 'Highlight Artifacts'):
       self.highlightArtifactsBodies = not self.highlightArtifactsBodies
+    elif (name == 'Show Empty Fleets'):
+      self.showEmptyFleets = not self.showEmptyFleets
+    elif (name == 'Show Military Fleets'):
+      self.showMilitaryFleets = not self.showMilitaryFleets
+    elif (name == 'Show Commercial Fleets'):
+      self.showCommercialFleets = not self.showCommercialFleets
+    elif (name == 'Show Stationary Fleets'):
+      self.showStationaryFleets = not self.showStationaryFleets
 
 
   def ExpandFleet(self, id, parent):
