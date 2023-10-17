@@ -276,37 +276,37 @@ class Events:
   def HandleMouseWheelEvents(self, event, game):
     # The button will be set to 4 when the wheel is rolled up, and to button 5 when the wheel is rolled down
     current_time = self.GetTimeinSeconds()
-    if (game.window_fleet_info_rect.collidepoint(event.pos)):
+    if (game.systemScreen.window_fleet_info_rect.collidepoint(event.pos)):
       # scrool the info window instead of zooming
       if (event.button == 4):
-        if (game.window_fleet_info_scoll_pos < 0):
-          game.window_fleet_info_scoll_pos+=1
+        if (game.systemScreen.window_fleet_info_scoll_pos < 0):
+          game.systemScreen.window_fleet_info_scoll_pos+=1
       else:
-        game.window_fleet_info_scoll_pos-=1
-      game.reDraw_FleetInfoWindow = True
-    elif (game.window_info_rect.collidepoint(event.pos)):
+        game.systemScreen.window_fleet_info_scoll_pos-=1
+      game.systemScreen.reDraw_FleetInfoWindow = True
+    elif (game.systemScreen.window_info_rect.collidepoint(event.pos)):
       # scrool the info window instead of zooming
       if (event.button == 4):
-        if (game.window_info_scoll_pos < 0):
-          game.window_info_scoll_pos+=1
+        if (game.systemScreen.window_info_scoll_pos < 0):
+          game.systemScreen.window_info_scoll_pos+=1
       else:
-        game.window_info_scoll_pos-=1
-      game.reDraw_InfoWindow = True
+        game.systemScreen.window_info_scoll_pos-=1
+      game.systemScreen.reDraw_InfoWindow = True
     else:
       if (event.button == 4):
-        if (game.systemScale < 1000000000):
-          game.systemScale *= 2
-          delta = Utils.SubTuples(game.screenCenter, event.pos)# game.cameraCenter)
+        if (game.systemScreen.systemScale < 1000000000):
+          game.systemScreen.systemScale *= 2
+          delta = Utils.SubTuples(game.systemScreen.screenCenter, event.pos)# game.cameraCenter)
           #zoomed_delta = Utils.MulTuples(delta, 2)
-          game.screenCenter=Utils.AddTuples(game.screenCenter, delta)
-          game.reDraw = True
+          game.systemScreen.screenCenter=Utils.AddTuples(game.systemScreen.screenCenter, delta)
+          game.systemScreen.reDraw = True
       else:
-        if (game.systemScale > 0.01):
-          game.systemScale /= 2
-          delta = Utils.SubTuples(game.screenCenter, event.pos)#, game.cameraCenter)
+        if (game.systemScreen.systemScale > 0.01):
+          game.systemScreen.systemScale /= 2
+          delta = Utils.SubTuples(game.systemScreen.screenCenter, event.pos)#, game.cameraCenter)
           zoomed_delta = Utils.DivTuples(delta, 2)
-          game.screenCenter=Utils.SubTuples(game.screenCenter, zoomed_delta)
-          game.reDraw = True
+          game.systemScreen.screenCenter=Utils.SubTuples(game.systemScreen.screenCenter, zoomed_delta)
+          game.systemScreen.reDraw = True
 
 
   def ProcessClickablesEvents(self, game):

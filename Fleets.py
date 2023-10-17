@@ -17,30 +17,31 @@ def Select_Fleet(id, parent):
       #print(gameInstance.fleets[game.currentSystem][id])
       gameInstance.highlighted_fleet_ID = id
       gameInstance.highlighted_body_ID=-1
-      gameInstance.reDraw = True
+      gameInstance.systemScreen.reDraw = True
       #gameInstance.GetNewData()
 
 
-def DrawSystemFleets(game):
+def DrawSystemFleets(context):
+  game = context.game
   if (game.currentSystem in game.fleets):
     for fleetID in game.fleets[game.currentSystem]:
       fleet = game.fleets[game.currentSystem][fleetID]
-      if (fleet['Ships'] != [] or game.showEmptyFleets or (game.highlighted_fleet_ID == fleetID)):
-        if (fleet['Speed'] > 1 or game.showStationaryFleets or (game.highlighted_fleet_ID == fleetID)):
-          pos = game.WorldPos2ScreenPos(fleet['Position'])
-          col = game.color_Fleet
+      if (fleet['Ships'] != [] or context.showEmptyFleets or (game.highlighted_fleet_ID == fleetID)):
+        if (fleet['Speed'] > 1 or context.showStationaryFleets or (game.highlighted_fleet_ID == fleetID)):
+          pos = context.WorldPos2ScreenPos(fleet['Position'])
+          col = context.color_Fleet
           if (game.highlighted_fleet_ID == fleetID):
             col = Utils.CYAN
-          if (game.show_FleetTraces):
-            prev_pos = game.WorldPos2ScreenPos(fleet['Position_prev'])
-            pygame.draw.line(game.surface, col, prev_pos, pos,1)
-          bb = Utils.DrawTriangle(game.surface,pos ,col, fleet['Heading'])
+          if (context.show_FleetTraces):
+            prev_pos = context.WorldPos2ScreenPos(fleet['Position_prev'])
+            pygame.draw.line(context.surface, col, prev_pos, pos,1)
+          bb = Utils.DrawTriangle(context.surface,pos ,col, fleet['Heading'])
           if (game.CheckClickableNotBehindGUI(bb)):
             game.MakeClickable(fleet['Name'], bb, left_click_call_back = Select_Fleet, par=fleetID)
           if (game.highlighted_fleet_ID == fleetID):
-            pygame.draw.rect(game.surface, col,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
+            pygame.draw.rect(context.surface, col,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
           #pygame.draw.circle(game.surface,col,(pos_x,pos_y),5,Utils.FILLED)
-          Utils.DrawText2Surface(game.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,col)
+          Utils.DrawText2Surface(context.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,col)
 
 
 def GetFleets(game):
@@ -118,18 +119,19 @@ def GetFleets(game):
   return fleets
 
 
-def DrawFleetInfoWindow(game):
-  if (game.reDraw_FleetInfoWindow):
-    game.Events.ClearClickables(parent=game.window_fleet_info_identifier)
+def DrawFleetInfoWindow(context):
+  game = context.game
+  if (context.reDraw_FleetInfoWindow):
+    game.Events.ClearClickables(parent=context.window_fleet_info_identifier)
     line_height = 20
     pad_x = pad_y = 5
-    lineNr = game.window_fleet_info_scoll_pos
-    game.window_fleet_info.fill(Utils.SUPER_DARK_GRAY)
-    #print(game.window_fleet_info_scoll_pos)
+    lineNr = context.window_fleet_info_scoll_pos
+    context.window_fleet_info.fill(Utils.SUPER_DARK_GRAY)
+    #print(context.window_fleet_info_scoll_pos)
     if (game.currentSystem in game.fleets):
       for fleetID in game.fleets[game.currentSystem]:
         fleet = game.fleets[game.currentSystem][fleetID]
-        if (fleet['Ships'] != [] or game.showEmptyFleets):
+        if (fleet['Ships'] != [] or context.showEmptyFleets):
           color = Utils.WHITE
           if (game.highlighted_fleet_ID == fleetID):
             color = Utils.CYAN
@@ -143,18 +145,18 @@ def DrawFleetInfoWindow(game):
               commercial = True
             if (commercial and military):
               break
-          if (military and game.showMilitaryFleets) or (commercial and game.showCommercialFleets):
+          if (military and context.showMilitaryFleets) or (commercial and context.showCommercialFleets):
             if (fleet['Ships'] != []):
-              expRect = Utils.DrawExpander(game.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
-              game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.ExpandFleet, par=fleetID, parent = game.window_fleet_info_identifier, anchor=game.window_fleet_info_anchor)
+              expRect = Utils.DrawExpander(context.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
+              game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.systemScreen.ExpandFleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
               label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
-            label_pos, label_size = Utils.DrawText2Surface(game.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
+            label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
             if (label_pos):
-              game.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = Select_Fleet, par=fleetID, parent = game.window_fleet_info_identifier, anchor=game.window_fleet_info_anchor)
+              game.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = Select_Fleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
             if (fleet['Speed'] > 1) and label_pos:
               speed = str(int(fleet['Speed'])) + 'km/s'
 
-              speed_label_pos, speed_label_size = Utils.DrawText2Surface(game.window_fleet_info,speed,(label_pos[0]+label_size[0],
+              speed_label_pos, speed_label_size = Utils.DrawText2Surface(context.window_fleet_info,speed,(label_pos[0]+label_size[0],
                                                                                                 label_pos[1]),15,color)
               icon_pos = (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1])
               p = 0
@@ -162,7 +164,7 @@ def DrawFleetInfoWindow(game):
                 p = fleet['Fuel']/fleet['Fuel Capacity']
 
               if ('fuel2' in game.images_GUI):
-                icon_rect = Utils.DrawPercentageFilledImage(game.window_fleet_info, 
+                icon_rect = Utils.DrawPercentageFilledImage(context.window_fleet_info, 
                                                             game.images_GUI['fuel2'], 
                                                             icon_pos, 
                                                             p, 
@@ -179,7 +181,7 @@ def DrawFleetInfoWindow(game):
                 p = fleet['Supplies']/fleet['Supplies Capacity']
 
               if ('supplies' in game.images_GUI):
-                icon_rect = Utils.DrawPercentageFilledImage(game.window_fleet_info, 
+                icon_rect = Utils.DrawPercentageFilledImage(context.window_fleet_info, 
                                                             game.images_GUI['supplies'], 
                                                             icon_pos, 
                                                             p, 
@@ -192,7 +194,7 @@ def DrawFleetInfoWindow(game):
 
             #print((pad_y+lineNr*line_height), fleet['Name'])
             lineNr +=1
-            if (fleetID in game.GUI_expanded_fleets):
+            if (fleetID in context.GUI_expanded_fleets):
               shipClasses = {}
               for ship in fleet['Ships']:
                 if (ship['ClassName'] not in shipClasses):
@@ -201,11 +203,11 @@ def DrawFleetInfoWindow(game):
                   shipClasses[ship['ClassName']] += 1
               for shipClass in shipClasses:
                 label_pos = (expRect[0]+expRect[2]+5,(pad_y+lineNr*line_height))
-                label_pos, label_size = Utils.DrawText2Surface(game.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
+                label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
                 lineNr +=1
 
-    game.surface.blit(game.window_fleet_info,game.window_fleet_info_anchor)
-    game.reDraw_FleetInfoWindow = False
+    context.surface.blit(context.window_fleet_info,context.window_fleet_info_anchor)
+    context.reDraw_FleetInfoWindow = False
     return True
   else:
     return False

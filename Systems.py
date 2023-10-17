@@ -148,35 +148,36 @@ def GetSurveyLocations(game, systemID):
   return surveyLocations
 
 
-def DrawSystemJumpPoints(game):
+def DrawSystemJumpPoints(context):
+  game = context.game
   for JP_ID in game.currentSystemJumpPoints:
     JP = game.currentSystemJumpPoints[JP_ID]
     heading = math.atan2(JP['Pos'][1],JP['Pos'][0])
-    screen_pos = game.WorldPos2ScreenPos(JP['Pos'])
+    screen_pos = context.WorldPos2ScreenPos(JP['Pos'])
     if (JP['Explored']):
-      bb = Utils.DrawArrow(game.surface, screen_pos, Utils.GREEN,heading)
+      bb = Utils.DrawArrow(context.surface, screen_pos, Utils.GREEN,heading)
       if (game.CheckClickableNotBehindGUI(bb)):
-        game.MakeClickable(JP['Destination'], bb, left_click_call_back = game.Follow_Jumppoint, par = JP['DestID'])
+        game.MakeClickable(JP['Destination'], bb, left_click_call_back = context.Follow_Jumppoint, par = JP['DestID'])
 
-    pygame.draw.circle(game.surface,game.color_JP,screen_pos,5,2)
+    pygame.draw.circle(context.surface,context.color_JP,screen_pos,5,2)
     screen_pos_label = Utils.AddTuples(screen_pos,10)
-    Utils.DrawText2Surface(game.surface,JP['Destination'],screen_pos_label,14,game.color_JP)
+    Utils.DrawText2Surface(context.surface,JP['Destination'],screen_pos_label,14,context.color_JP)
     if (JP['Gate']):
       gate_pos = Utils.SubTuples(screen_pos,7)
-      pygame.draw.rect(game.surface, game.color_Jumpgate, (gate_pos,(14,14)),1)
+      pygame.draw.rect(context.surface, context.color_Jumpgate, (gate_pos,(14,14)),1)
 
 
-def DrawSurveyLocations(game):
-  for id in game.surveyLocations:
-    SL = game.surveyLocations[id]
-    screen_pos = game.WorldPos2ScreenPos(SL['Pos'])
+def DrawSurveyLocations(context):
+  for id in context.game.surveyLocations:
+    SL = context.game.surveyLocations[id]
+    screen_pos = context.WorldPos2ScreenPos(SL['Pos'])
     screen_pos_label = Utils.AddTuples(screen_pos,(0,10))
     if (SL['Surveyed']):
-      if (game.showSurveyedLocations):
-        pygame.draw.circle(game.surface,game.color_SurveyedLoc,screen_pos,5,1)
-        Utils.DrawText2Surface(game.surface,str(SL['Number']),screen_pos_label,14,game.color_SurveyedLoc)
+      if (context.showSurveyedLocations):
+        pygame.draw.circle(context.surface,context.color_SurveyedLoc,screen_pos,5,1)
+        Utils.DrawText2Surface(game.surface,str(SL['Number']),screen_pos_label,14,context.color_SurveyedLoc)
     else:
-      if (game.showUnsurveyedLocations):
-        pygame.draw.circle(game.surface,game.color_UnsurveyedLoc,screen_pos,5,1)
-        Utils.DrawText2Surface(game.surface,str(SL['Number']),screen_pos_label,14,game.color_UnsurveyedLoc)
+      if (context.showUnsurveyedLocations):
+        pygame.draw.circle(context.surface,context.color_UnsurveyedLoc,screen_pos,5,1)
+        Utils.DrawText2Surface(context.surface,str(SL['Number']),screen_pos_label,14,context.color_UnsurveyedLoc)
  

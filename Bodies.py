@@ -15,43 +15,45 @@ def Select(id, parent):
     #print(gameInstance.starSystems[gameInstance.currentSystem]['Stars'][id])
     gameInstance.highlighted_fleet_ID = -1
     gameInstance.highlighted_body_ID=id
-    gameInstance.reDraw = True
+    gameInstance.systemScreen.reDraw = True
   elif (id in gameInstance.systemBodies):
     #print(gameInstance.systemBodies[id])
     gameInstance.highlighted_fleet_ID = -1
     gameInstance.highlighted_body_ID=id
-    gameInstance.reDraw = True
+    gameInstance.systemScreen.reDraw = True
 
 
-def Draw(game):
+def Draw(context):
+  game = context.game
   if game.currentSystem not in game.starSystems:
     return
 
   ###################
   # Draw Stars
   ###################
-  DrawStars(game)
+  DrawStars(context)
 
   # Draw other bodies
-  DrawBodies(game)
+  DrawBodies(context)
 
 
-def DrawStars(game):
+def DrawStars(context):
+  game = context.game
   system = game.starSystems[game.currentSystem]
 
   for starID in system['Stars']:
     star = system['Stars'][starID]
-    screen_star_pos = game.WorldPos2ScreenPos(star['Pos'])
+    screen_star_pos = context.WorldPos2ScreenPos(star['Pos'])
     star_name = star['Name'] + ' ' + star['Suffix']
     # draw star
       
     # draw orbit
     ############
-    screen_parent_pos = game.WorldPos2ScreenPos(star['ParentPos'])
-    if (game.showOrbits_Stars):
-      orbitRadiusOnScreen = star['OrbitDistance']*game.systemScale
+    screen_parent_pos = context.WorldPos2ScreenPos(star['ParentPos'])
+    if (context.showOrbits_Stars):
+      orbitRadiusOnScreen = star['OrbitDistance']*context.systemScale
       if (orbitRadiusOnScreen > 0):
-        Utils.DrawEllipticalOrbit(game.surface, game.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, star['Eccentricity'], star['EccentricityAngle'],star['Bearing'], 10)
+        Utils.DrawEllipticalOrbit(context.surface, context.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, star['Eccentricity'], star['EccentricityAngle'],star['Bearing'], 10)
         #if (orbitRadiusOnScreen < game.width):
         #  pygame.draw.circle(game.surface, game.color_Orbit_Star, screen_parent_pos, orbitRadiusOnScreen, 1)
         #else:
@@ -61,26 +63,26 @@ def DrawStars(game):
       
     # draw Star, either as image or as simple filled circle
     ####################
-    radius = (Utils.AU_INV*game.systemScale)*star['Radius']*game.radius_Sun
+    radius = (Utils.AU_INV*context.systemScale)*star['Radius']*context.radius_Sun
     star_color = game.stellarTypes[star['StellarTypeID']]['RGB']
-    if (radius < game.minPixelSize_Star):
-      radius = game.minPixelSize_Star
+    if (radius < context.minPixelSize_Star):
+      radius = context.minPixelSize_Star
 
     if (star['Image'] is not None):
-      if (screen_star_pos[0]-radius < game.width and screen_star_pos[0]+radius > 0 and 
-          screen_star_pos[1]-radius < game.height and screen_star_pos[1]+radius > 0 ):
+      if (screen_star_pos[0]-radius < context.width and screen_star_pos[0]+radius > 0 and 
+          screen_star_pos[1]-radius < context.height and screen_star_pos[1]+radius > 0 ):
         scale = (radius*2,radius*2)
-        if (scale[0] > 2*game.width):
+        if (scale[0] > 2*context.width):
           #todo: fix bug where the scaled surface moves when zooming in too much
-          scale = (2*game.width,2*game.width)
+          scale = (2*context.width,2*context.width)
         scaledSurface = pygame.transform.smoothscale(star['Image'],scale)
         image_offset = Utils.SubTuples(screen_star_pos,scaledSurface.get_rect().center)
-        game.surface.blit(scaledSurface,image_offset)
+        context.surface.blit(scaledSurface,image_offset)
     else:
       if (not star['Black Hole']):
-        pygame.draw.circle(game.surface,star_color,screen_star_pos,radius,Utils.FILLED)
+        pygame.draw.circle(context.surface,star_color,screen_star_pos,radius,Utils.FILLED)
       else:
-        pygame.draw.circle(game.surface,Utils.RED,screen_star_pos,radius,5)
+        pygame.draw.circle(context.surface,Utils.RED,screen_star_pos,radius,5)
     bb = (screen_star_pos[0]-radius,screen_star_pos[1]-radius,2*radius,2*radius)
     if (game.CheckClickableNotBehindGUI(bb)):
       game.MakeClickable(star_name, bb, left_click_call_back = Select, par=starID)
@@ -90,46 +92,47 @@ def DrawStars(game):
     if (game.highlighted_body_ID == starID):
       color = Utils.CYAN
     else:
-      color = game.color_Label_Star
+      color = context.color_Label_Star
     labelPos = Utils.AddTuples(screen_star_pos, (0,radius))
-    Utils.DrawText2Surface(game.surface,star_name,labelPos,14,color)
+    Utils.DrawText2Surface(context.surface,star_name,labelPos,14,color)
 
 
-def DrawBodies(game):
+def DrawBodies(context):
+  game = context.game
   system = game.starSystems[game.currentSystem]
 
   for bodyID in game.systemBodies:
     body = game.systemBodies[bodyID]
     #screen_parent_size = 0
-    body_draw_cond, draw_color_body, body_min_size, body_min_dist = GetDrawConditions(game, 'Body', body)
+    body_draw_cond, draw_color_body, body_min_size, body_min_dist = GetDrawConditions(context, 'Body', body)
     if (body_draw_cond):
-      screen_body_pos = game.WorldPos2ScreenPos(body['Pos'])
-      radius_on_screen = Utils.AU_INV * game.systemScale * body['RadiusBody']
+      screen_body_pos = context.WorldPos2ScreenPos(body['Pos'])
+      radius_on_screen = Utils.AU_INV * context.systemScale * body['RadiusBody']
       if (radius_on_screen < body_min_size):
         radius_on_screen = body_min_size
 
-      orbit_draw_cond, draw_color_orbit, void, min_orbit = GetDrawConditions(game, 'Orbit', body)
-      orbitOnScreen = body['Orbit']*game.systemScale
+      orbit_draw_cond, draw_color_orbit, void, min_orbit = GetDrawConditions(context, 'Orbit', body)
+      orbitOnScreen = body['Orbit']*context.systemScale
       parentID = body['ParentID']
 
       if parentID in system['Stars']:
-        screen_parent_pos = game.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
+        screen_parent_pos = context.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
         #screen_parent_size = 15
       elif parentID in game.systemBodies:
-        screen_parent_pos = game.WorldPos2ScreenPos(game.systemBodies[parentID]['Pos'])
+        screen_parent_pos = context.WorldPos2ScreenPos(game.systemBodies[parentID]['Pos'])
         #screen_parent_size = 9
       else:
-        screen_parent_pos = game.WorldPos2ScreenPos((0,0))
+        screen_parent_pos = context.WorldPos2ScreenPos((0,0))
         #screen_parent_size = 1
 
       if (orbit_draw_cond) and (orbitOnScreen > min_orbit) and (orbitOnScreen > body_min_dist):
         E = body['Eccentricity']
         
-        Utils.DrawEllipticalOrbit(game.surface, draw_color_orbit, screen_parent_pos, orbitOnScreen, E, body['EccentricityAngle'],body['Bearing'], min_orbit)
+        Utils.DrawEllipticalOrbit(context.surface, draw_color_orbit, screen_parent_pos, orbitOnScreen, E, body['EccentricityAngle'],body['Bearing'], min_orbit)
         
       # check if we want to draw the object
       ################
-      if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < game.width+50 and screen_body_pos[1] < game.height+50 ):
+      if (screen_body_pos[0] > -50 and screen_body_pos[1] > -50 and screen_body_pos[0] < context.width+50 and screen_body_pos[1] < context.height+50 ):
         pass
       else:
         body_draw_cond = False  
@@ -139,19 +142,19 @@ def DrawBodies(game):
 
         # draw body
         if (body['Image'] is not None):
-          if (screen_body_pos[0]-radius_on_screen < game.width and screen_body_pos[0]+radius_on_screen > 0 and 
-              screen_body_pos[1]-radius_on_screen < game.height and screen_body_pos[1]+radius_on_screen > 0 ):
+          if (screen_body_pos[0]-radius_on_screen < context.width and screen_body_pos[0]+radius_on_screen > 0 and 
+              screen_body_pos[1]-radius_on_screen < context.height and screen_body_pos[1]+radius_on_screen > 0 ):
             scale = (radius_on_screen*2,radius_on_screen*2)
-            if (scale[0] > 2*game.width):
+            if (scale[0] > 2*context.width):
               #todo: fix bug where the scaled surface moves when zooming in too much
-              scale = (2*game.width,2*game.width)
+              scale = (2*context.width,2*context.width)
             scaledSurface = pygame.transform.smoothscale(body['Image'],scale)
             image_offset = Utils.SubTuples(screen_body_pos,scaledSurface.get_rect().center)
-            game.surface.blit(scaledSurface,image_offset)
+            context.surface.blit(scaledSurface,image_offset)
         else:
-          pygame.draw.circle(game.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
+          pygame.draw.circle(context.surface,draw_color_body,screen_body_pos,radius_on_screen,Utils.FILLED)
 
-        HighlightBody(game, body, radius_on_screen*2)
+        HighlightBody(context, body, radius_on_screen*2)
 
         # Make object clickable
         bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
@@ -159,7 +162,7 @@ def DrawBodies(game):
           game.MakeClickable(body['Name'], bb, left_click_call_back = Select, par=bodyID)
 
         # Check if we want to draw the label
-        draw_cond, draw_color_label, void, min_dist = GetDrawConditions(game, 'Label', body)
+        draw_cond, draw_color_label, void, min_dist = GetDrawConditions(context, 'Label', body)
         if (draw_cond) and (orbitOnScreen > min_dist):
           labelPos = Utils.AddTuples(screen_body_pos, (0,radius_on_screen))
 
@@ -168,10 +171,10 @@ def DrawBodies(game):
           else:
             color = draw_color_label
           # draw the label
-          Utils.DrawText2Surface(game.surface, body['Name'], labelPos, 14, color)
+          Utils.DrawText2Surface(context.surface, body['Name'], labelPos, 14, color)
 
 
-def GetDrawConditions(game, thing2Draw, body):
+def GetDrawConditions(context, thing2Draw, body):
   draw = False
   color = (0,0,0)
   min_size = 5
@@ -179,90 +182,90 @@ def GetDrawConditions(game, thing2Draw, body):
   if (body['Type'] == 'Stellar'):
     filter = False
   else:
-    filter = (body['Colonized'] and game.showColonizedBodies) or (body['Resources'] and game.showResourcefulBodies) or (body['Industrialized'] and game.showIndustrializedBodies) or (body['Xenos'] and game.showXenosBodies)  or (body['Enemies'] and game.showEnemyBodies)  or (body['Unsurveyed'] and game.showUnsurveyedBodies) or (body['Artifacts'] and game.showArtifactsBodies)
+    filter = (body['Colonized'] and context.showColonizedBodies) or (body['Resources'] and context.showResourcefulBodies) or (body['Industrialized'] and context.showIndustrializedBodies) or (body['Xenos'] and context.showXenosBodies)  or (body['Enemies'] and context.showEnemyBodies)  or (body['Unsurveyed'] and context.showUnsurveyedBodies) or (body['Artifacts'] and context.showArtifactsBodies)
 
   if (thing2Draw == 'Body'):
     if (body['Class'] == 'Moon'):
-      if (game.show_Moons or filter):
+      if (context.show_Moons or filter):
         draw = True
-        color = game.color_Moon
-        min_size = game.minPixelSize_Moon
-        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 15
+        color = context.color_Moon
+        min_size = context.minPixelSize_Moon
+        min_dist = 0 if (body['Colonized'] and context.showColonizedBodies) else 15
     elif (body['Class']  == 'Comet'):
-      if (game.show_Comets or filter):
+      if (context.show_Comets or filter):
         draw = True
-        color = game.color_Comet
-        min_size = game.minPixelSize_Small
-        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 50
+        color = context.color_Comet
+        min_size = context.minPixelSize_Small
+        min_dist = 0 if (body['Colonized'] and context.showColonizedBodies) else 50
     elif (body['Class']  == 'Asteroid'):
-      if (game.show_Asteroids or filter):
+      if (context.show_Asteroids or filter):
         draw = True
-        color = game.color_Asteroid
-        min_size = game.minPixelSize_Small
-        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 50
+        color = context.color_Asteroid
+        min_size = context.minPixelSize_Small
+        min_dist = 0 if (body['Colonized'] and context.showColonizedBodies) else 50
     elif (body['Type'] == 'Planet Small'):
-      if (game.show_DwarfPlanets or filter):
+      if (context.show_DwarfPlanets or filter):
         draw = True
-        color = game.color_DwarfPlanet
-        min_size = game.minPixelSize_Planet
-        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 50
+        color = context.color_DwarfPlanet
+        min_size = context.minPixelSize_Planet
+        min_dist = 0 if (body['Colonized'] and context.showColonizedBodies) else 50
     elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
-      if (game.show_Planets or filter):
+      if (context.show_Planets or filter):
         draw = True
-        color = game.color_Planet
-        min_size = game.minPixelSize_Planet
-        min_dist = 0 if (body['Colonized'] and game.showColonizedBodies) else 15
+        color = context.color_Planet
+        min_size = context.minPixelSize_Planet
+        min_dist = 0 if (body['Colonized'] and context.showColonizedBodies) else 15
   elif (thing2Draw == 'Orbit'):
     if (body['Class'] == 'Moon'):
-      if (game.showOrbits_Moons and (game.show_Moons or filter)):
+      if (context.showOrbits_Moons and (context.show_Moons or filter)):
         draw = True
-        color = game.color_Orbit_Moon
+        color = context.color_Orbit_Moon
         min_dist = 10
     elif (body['Class']  == 'Comet'):
-      if (game.showOrbits_Comets and (game.show_Comets or filter)):
+      if (context.showOrbits_Comets and (context.show_Comets or filter)):
         draw = True
-        color = game.color_Orbit_Comet
+        color = context.color_Orbit_Comet
         min_dist = 10
     elif (body['Class']  == 'Asteroid'):
-      if (game.showOrbits_Asteroids and (game.show_Asteroids or filter)):
+      if (context.showOrbits_Asteroids and (context.show_Asteroids or filter)):
         draw = True
-        color = game.color_Orbit_Asteroid
+        color = context.color_Orbit_Asteroid
         min_dist = 10
     elif (body['Type'] == 'Planet Small'):
-      if (game.showOrbits_DwarfPlanets and (game.show_DwarfPlanets or filter)):
+      if (context.showOrbits_DwarfPlanets and (context.show_DwarfPlanets or filter)):
         draw = True
-        color = game.color_Orbit_DwarfPlanet
+        color = context.color_Orbit_DwarfPlanet
         min_dist = 10
     elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
-      if (game.showOrbits_Planets and (game.show_Planets or filter)):
+      if (context.showOrbits_Planets and (context.show_Planets or filter)):
         draw = True
-        color = game.color_Orbit_Planet
+        color = context.color_Orbit_Planet
         min_dist = 10
   elif (thing2Draw == 'Label'):
     if (body['Class'] == 'Moon'):
-      if (game.showLabels_Moons and (game.show_Moons or filter)):
+      if (context.showLabels_Moons and (context.show_Moons or filter)):
         draw = True
-        color = game.color_Label_Moon
+        color = context.color_Label_Moon
         min_dist = 50
     elif (body['Class']  == 'Comet'):
-      if (game.showLabels_Comets and (game.show_Comets or filter)):
+      if (context.showLabels_Comets and (context.show_Comets or filter)):
         draw = True
-        color = game.color_Label_Comet
+        color = context.color_Label_Comet
         min_dist = 200
     elif (body['Class']  == 'Asteroid'):
-      if (game.showLabels_Asteroids and (game.show_Asteroids or filter)):
+      if (context.showLabels_Asteroids and (context.show_Asteroids or filter)):
         draw = True
-        color = game.color_Label_Asteroid
+        color = context.color_Label_Asteroid
         min_dist = 200
     elif (body['Type'] == 'Planet Small'):
-      if (game.showLabels_DwarfPlanets and (game.show_DwarfPlanets or filter)):
+      if (context.showLabels_DwarfPlanets and (context.show_DwarfPlanets or filter)):
         draw = True
-        color = game.color_Label_DwarfPlanet
+        color = context.color_Label_DwarfPlanet
         min_dist = 5
     elif (body['Class'] == 'Planet' and body['Type'] != 'Planet Small' ):
-      if (game.showLabels_Planets and (game.show_Planets or filter)):
+      if (context.showLabels_Planets and (context.show_Planets or filter)):
         draw = True
-        color = game.color_Label_Planet
+        color = context.color_Label_Planet
         min_dist = 5
   return draw, color, min_size, min_dist
 

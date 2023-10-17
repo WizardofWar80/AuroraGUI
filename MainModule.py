@@ -11,13 +11,14 @@ import InfoWindow
 import Fleets
 import Colonies
 import Systems
-
+import SystemScreen
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
     Bodies.SetGameInstance(self)
     Fleets.SetGameInstance(self)
     InfoWindow.SetGameInstance(self)
+    
     self.Events = eventsclass
     self.logger = lg.Logger(logfile= 'logMain.txt', module='MainModule.py', log_level = 1)
     self.name = name
@@ -41,12 +42,12 @@ class Game():
     self.systemScaleStart = 50
     self.systemScale = self.systemScaleStart
     self.mousePos = (0,0)
-    self.radius_Sun = 696000
-    self.minPixelSize_Star = 15
-    self.minPixelSize_Planet = 9
-    self.minPixelSize_Moon = 5
-    self.minPixelSize_Small = 5
-    self.mouseDragged = (0,0)
+    #self.radius_Sun = 696000
+    #self.minPixelSize_Star = 15
+    #self.minPixelSize_Planet = 9
+    #self.minPixelSize_Moon = 5
+    #self.minPixelSize_Small = 5
+    #self.mouseDragged = (0,0)
     self.refreshData = True
     self.screenCenterBeforeDrag = self.screenCenter
     self.counter_FPS = 0
@@ -57,134 +58,15 @@ class Game():
     self.reDraw_GUI = True
     self.clickables = []
 
-    # Options
+    ## Options
     self.bg_color = Utils.BLACK
-    self.showEmptyFleets = False
-    self.showMilitaryFleets = True
-    self.showCommercialFleets = True
-    self.showStationaryFleets = False
-    self.showUnsurveyedLocations = True
-    self.showSurveyedLocations = False
-    self.show_FleetTraces = True
-    self.show_Planets = True
-    self.show_Moons = True
-    self.show_DwarfPlanets = True
-    self.show_Comets = True
-    self.show_Asteroids = False
 
-    self.showColonizedBodies = True
-    self.showIndustrializedBodies = True
-    self.showUnsurveyedBodies = True
-    self.showEnemyBodies = True
-    self.showResourcefulBodies = True
-    self.showXenosBodies = True
-    self.showArtifactsBodies = True
-
-    self.highlightColonizedBodies = True
-    self.highlightIndustrializedBodies = True
-    self.highlightUnsurveyedBodies = True
-    self.highlightEnemyBodies = True
-    self.highlightResourcefulBodies = True
-    self.highlightXenosBodies = True
-    self.highlightArtifactsBodies = True
-
-    self.showOrbits_Planets = True
-    self.showOrbits_DwarfPlanets = True
-    self.showOrbits_Moons = True
-    self.showOrbits_Comets = False
-    self.showOrbits_Asteroids = False
-    self.showOrbits_Stars = True
-
-    self.showLabels_Planets = True
-    self.showLabels_DwarfPlanets = True
-    self.showLabels_Moons = True
-    self.showLabels_Comets = True
-    self.showLabels_Asteroids = False
-    self.showLabels_Stars = True
-    self.minDist4Labels = 100
-    
-    # Colorscheme
-    self.color_JP = Utils.ORANGE
-    self.color_Jumpgate = Utils.ORANGE
-    self.color_SurveyedLoc = Utils.TEAL
-    self.color_UnsurveyedLoc = Utils.BLUE
-    self.color_Fleet = Utils.GREEN
-
-    # bodies
-    self.color_Star = Utils.YELLOW
-    self.color_Planet = Utils.MED_GREEN
-    self.color_DwarfPlanet = Utils.MED_GREEN
-    self.color_Moon = Utils.GREEN
-    self.color_Asteroid = Utils.GRAY
-    self.color_Comet = Utils.BLUE
-
-    # body labels
-    self.color_Label_Star = Utils.WHITE
-    self.color_Label_Planet = Utils.WHITE
-    self.color_Label_DwarfPlanet = Utils.WHITE
-    self.color_Label_Moon = Utils.WHITE
-    self.color_Label_Asteroid = Utils.WHITE
-    self.color_Label_Comet = Utils.WHITE
-
-    # body orbits
-    self.color_Orbit_Star = Utils.YELLOW
-    self.color_Orbit_Planet = Utils.DARK_GRAY
-    self.color_Orbit_DwarfPlanet = Utils.DARK_GRAY
-    self.color_Orbit_Moon = Utils.DARK_GRAY
-    self.color_Orbit_Asteroid = Utils.SUPER_DARK_GRAY
-    self.color_Orbit_Comet = Utils.SUPER_DARK_GRAY
     self.images_Body = {}
 
-    self.window_fleet_info_identifier = 'Fleet Info Window'
-    self.window_fleet_info_size = (300,600)
-    self.window_map_size = (self.window_fleet_info_size[0],self.window_fleet_info_size[0])
-
-    self.window_fleet_info_anchor = (5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
-    self.window_fleet_info = pygame.Surface(self.window_fleet_info_size, pygame.SRCALPHA,32)
-    self.window_fleet_info_rect = pygame.Rect(self.window_fleet_info_anchor, self.window_fleet_info_size)
-    self.window_fleet_info.set_colorkey(Utils.GREENSCREEN)
-    self.reDraw_FleetInfoWindow = True;
-    self.window_fleet_info_scoll_pos = 0
     self.highlighted_fleet_ID = -1
     self.highlighted_body_ID = -1
 
-
-    self.window_info_identifier = 'Info Window'
-    self.window_info_size = (300,600)
-    self.window_info_anchor = (self.width-self.window_info_size[0]-5,self.height-self.window_fleet_info_size[1]-5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
-    self.window_info = pygame.Surface(self.window_info_size, pygame.SRCALPHA,32)
-    self.window_info_rect = pygame.Rect(self.window_info_anchor, self.window_info_size)
-    self.window_info.set_colorkey(Utils.GREENSCREEN)
-    self.reDraw_InfoWindow = True;
-    self.window_info_scoll_pos = 0
-    self.info_category_physical = 'Physical Info'
-    self.info_cat_phys_expanded = True
-    self.info_category_economical = 'Economical Info'
-    self.info_cat_eco_expanded = False
-    self.info_category_orbit = 'Orbit Info'
-    self.info_cat_orbit_expanded = False
-    self.info_category_stockpile = 'Stockpile'
-    self.info_cat_stock_expanded = True
-    self.info_category_installations = 'Installations'
-    self.info_cat_inst_expanded = True
-    self.info_category_deposits = 'Mineral Deposits'
-    self.info_cat_deposits_expanded = True
-
-    self.window_map_anchor = (5,self.height-self.window_map_size[1]-5)#(self.width-self.window_map_size[0]-5,self.height-self.window_map_size[1]-5)
-    self.window_map = pygame.Surface(self.window_map_size, pygame.SRCALPHA,32)
-    self.window_map_rect = pygame.Rect(self.window_map_anchor, self.window_map_size)
-    self.window_map.set_colorkey(Utils.GREENSCREEN)
-    self.reDraw_MapWindow = True;
-
-    self.GUI_identifier = 'GUI Elements'
-    self.GUI_Elements = {}
-    self.GUI_Bottom_Anchor = (500,self.height-50)
-    self.GUI_Left_Anchor = (15,self.window_fleet_info_rect[1]-50)
     self.images_GUI = {}
-    self.GUI_expanded_fleets = []
-    self.GUI_expanded_fleets2 = []
-    self.GUI_expanded_fleets3 = []
-    self.InitGUI()
     self.systemBodies = {}
 
     #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
@@ -216,6 +98,8 @@ class Game():
 
       self.colonies = None
       self.GetNewData()
+
+    self.systemScreen = SystemScreen.SystemScreen(self, eventsclass)
       
 
   def InitGUI(self):
@@ -486,80 +370,9 @@ class Game():
 
 
   def Draw(self):
-    reblit = False
-    # clear screen
-    if (self.reDraw):
-      if (self.Events):
-        self.Events.ClearClickables(exclude=self.GUI_identifier)
-      self.reDraw_FleetInfoWindow = True
-      self.reDraw_InfoWindow = True
-      self.reDraw_MapWindow = True
-      self.reDraw_GUI = True
-      self.surface.fill(self.bg_color)
-
-      reblit |= self.DrawSystem()
-
-    reblit |= self.DrawMiniMap()
-
-    reblit |= Fleets.DrawFleetInfoWindow(self)
-
-    reblit |= InfoWindow.Draw(self)
-
-    reblit |= self.DrawGUI()
-
-    if (reblit):
-      self.DebugDrawClickables()
-      self.screen.blit(self.surface,(0,0))
-
-    self.counter_FPS += 1
-
-    currentTimestamp = pygame.time.get_ticks()
-    deltaTime = currentTimestamp - self.timestampLastSecond
-    if (deltaTime >= 1000):
-      #self.FPS = 1000*self.counter_FPS / deltaTime
-      self.FPS = self.counter_FPS 
-      self.counter_FPS = 0
-      self.timestampLastSecond = currentTimestamp
-    Utils.DrawText2Screen(self.screen,'%d FPS'%(self.FPS),(5,50),18,Utils.WHITE, False)
-    # draw mouse position and scale
-    #Utils.DrawText2Screen(self.screen,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE, False)
-    #Utils.DrawText2Screen(self.screen,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE, False)
-
-    pygame.display.update()
-    self.reDraw = False
-    
+    self.systemScreen.Draw()
+   
     return
-
-
-  def DrawSystem(self):
-    Bodies.Draw(self)
-    Systems.DrawSystemJumpPoints(self)
-    Systems.DrawSurveyLocations(self)
-    Fleets.DrawSystemFleets(self)
-    return True
-
-
-  def DrawMiniMap(self):
-    if (self.reDraw_MapWindow):
-      self.window_map.fill(Utils.SUPER_DARK_GRAY)
-
-      self.surface.blit(self.window_map,self.window_map_anchor)
-      self.reDraw_MapWindow = False
-      return True
-    else:
-      return False
-
-
-  def DrawGUI(self):
-    if (self.reDraw_GUI):
-      for GUI_ID in self.GUI_Elements:
-        element = self.GUI_Elements[GUI_ID]
-        if (element.visible):
-          element.Draw(self.surface)
-      self.reDraw_GUI = False
-      return True
-    else:
-      return False
 
 
   def GetNewData(self):
@@ -569,15 +382,6 @@ class Game():
     self.fleets = Fleets.GetFleets(self)
     self.colonies = Colonies.GetColonies(self)
     self.systemBodies = Bodies.GetSystemBodies(self)
-    self.reDraw = True
-    self.reDraw_FleetInfoWindow = True
-    self.reDraw_MapWindow = True
-
-
-  def WorldPos2ScreenPos(self, world_pos):
-    scaled_world_pos = Utils.MulTuples(world_pos,(Utils.AU_INV*self.systemScale))
-
-    return Utils.AddTuples(self.screenCenter ,scaled_world_pos)
 
 
   def LoadImages(self, list_of_image_files):
@@ -659,8 +463,8 @@ class Game():
 
   def CheckClickableNotBehindGUI(self, bb):
     rect = pygame.Rect(bb)
-    if (     (self.window_info_rect.colliderect(rect)) 
-         or ( self.window_map_rect.colliderect(rect) ) ):
+    if (     (self.systemScreen.window_info_rect.colliderect(rect)) 
+         or ( self.systemScreen.window_map_rect.colliderect(rect) ) ):
       return False
     else:
       return True
@@ -673,154 +477,3 @@ class Game():
           if (clickable.enabled):
             pygame.draw.rect(self.surface, Utils.RED, clickable.rect, 1)
 
-
-  def Follow_Jumppoint(self, id, parent):
-    if (id in self.starSystems):
-      self.currentSystem = id
-      self.window_fleet_info_scoll_pos = 0
-      InfoWindow.CleanUp(self, self.window_fleet_info_identifier)
-      InfoWindow.CleanUp(self, self.window_info_identifier)
-      self.GetNewData()
-
-
-  def ToggleGUI(self, id, parent = None):
-
-    if (id in self.GUI_Elements):
-      self.reDraw = True
-      element = self.GUI_Elements[id]
-      #print('Click '+element.name)
-      if (element.parent) or (len(element.children) == 0):
-        element.enabled = not element.enabled
-        self.ToggleGUI_Element_ByName(element.name)
-        #element.clickable.enabled = not element.clickable.enabled
-      else:
-        if (not element.open):
-          self.CloseMenus()
-        element.open = not element.open
-
-      for childID in element.children:
-        if (childID not in self.GUI_Elements):
-          print('Error, GUI child %d does not exist for parent %d (%s)'%(childID, id, element.name))
-        else:
-          child = self.GUI_Elements[childID]
-          child.visible = element.open
-          child.clickable.enabled = element.open
-
-
-  def CloseMenus(self):
-    for id in self.GUI_Elements:
-      element = self.GUI_Elements[id]
-      if (not element.parent):
-        if (element.open):
-          self.ToggleGUI(id)
-
-
-  def ToggleGUI_Element_ByName(self, name):
-    #self.showEmptyFleets = False
-    #self.showStationaryFleets = False
-    #self.showUnsurveyedLocations = True
-    #self.showSurveyedLocations = False
-    #self.showFleetTraces = True
-    #self.showDwarfPlanets = True
-    #self.showLabels_Planets = True
-    #self.showLabels_DwarfPlanets = True
-    #self.showLabels_Moons = True
-    #self.showLabels_Comets = True
-    #self.showLabels_Asteroids = False
-    #self.showLabels_Stars = True
-
-    if (name == 'Show Planets'):
-      self.show_Planets = not self.show_Planets
-      self.show_DwarfPlanets = self.show_Planets
-    elif (name == 'Show Moons'):
-      self.show_Moons = not self.show_Moons
-    elif (name == 'Show Comets'):
-      self.show_Comets = not self.show_Comets
-    elif (name == 'Show Asteroids'):
-      self.show_Asteroids = not self.show_Asteroids
-    elif (name == 'Show Planet Orbits'):
-      self.showOrbits_Planets = not self.showOrbits_Planets
-      self.showOrbits_DwarfPlanets = self.showOrbits_Planets
-    elif (name == 'Show Moon Orbits'):
-      self.showOrbits_Moons = not self.showOrbits_Moons
-    elif (name == 'Show Comet Orbits'):
-      self.showOrbits_Comets = not self.showOrbits_Comets
-    elif (name == 'Show Asteroid Orbits'):
-      self.showOrbits_Asteroids = not self.showOrbits_Asteroids
-    elif (name == 'Filter Colonies'):
-      self.showColonizedBodies = not self.showColonizedBodies
-    elif (name == 'Filter Resources'):
-      self.showResourcefulBodies = not self.showResourcefulBodies
-    elif (name == 'Filter Installations'):
-      self.showIndustrializedBodies = not self.showIndustrializedBodies
-    elif (name == 'Filter Unsurveyed'):
-      self.showUnsurveyedBodies = not self.showUnsurveyedBodies
-    elif (name == 'Filter Enemies'):
-      self.showEnemyBodies = not self.showEnemyBodies
-    elif (name == 'Filter Xenos'):
-      self.showXenosBodies = not self.showXenosBodies
-    elif (name == 'Filter Artifacts'):
-      self.showArtifactsBodies = not self.showArtifactsBodies
-    elif (name == 'Highlight Colonies'):
-      self.highlightColonizedBodies = not self.highlightColonizedBodies
-    elif (name == 'Highlight Resources'):
-      self.highlightResourcefulBodies = not self.highlightResourcefulBodies
-    elif (name == 'Highlight Installations'):
-      self.highlightIndustrializedBodies = not self.highlightIndustrializedBodies
-    elif (name == 'Highlight Unsurveyed'):
-      self.highlightUnsurveyedBodies = not self.highlightUnsurveyedBodies
-    elif (name == 'Highlight Enemies'):
-      self.highlightEnemyBodies = not self.highlightEnemyBodies
-    elif (name == 'Highlight Xenos'):
-      self.highlightXenosBodies = not self.highlightXenosBodies
-    elif (name == 'Highlight Artifacts'):
-      self.highlightArtifactsBodies = not self.highlightArtifactsBodies
-    elif (name == 'Show Empty Fleets'):
-      self.showEmptyFleets = not self.showEmptyFleets
-    elif (name == 'Show Military Fleets'):
-      self.showMilitaryFleets = not self.showMilitaryFleets
-    elif (name == 'Show Commercial Fleets'):
-      self.showCommercialFleets = not self.showCommercialFleets
-    elif (name == 'Show Stationary Fleets'):
-      self.showStationaryFleets = not self.showStationaryFleets
-
-
-  def ExpandFleet(self, id, parent):
-    if (id in self.fleets[self.currentSystem]):
-      if (parent == self.window_fleet_info_identifier):
-        if (id in self.GUI_expanded_fleets):
-          self.GUI_expanded_fleets.remove(id)
-        else:
-          self.GUI_expanded_fleets.append(id)
-        self.reDraw_FleetInfoWindow = True
-      elif (parent == self.window_info_identifier):
-        if (id in self.GUI_expanded_fleets2):
-          self.GUI_expanded_fleets2.remove(id)
-        else:
-          self.GUI_expanded_fleets2.append(id)
-        self.reDraw_InfoWindow = True
-
-
-  def ExpandBodyInfo(self, category):
-    if (category == self.info_category_physical):
-      self.info_cat_phys_expanded = not self.info_cat_phys_expanded
-    elif (category == self.info_category_economical):
-      self.info_cat_eco_expanded = not self.info_cat_eco_expanded
-    elif (category == self.info_category_orbit):
-      self.info_cat_orbit_expanded = not self.info_cat_orbit_expanded
-    elif (category == self.info_category_stockpile):
-      self.info_cat_stock_expanded = not self.info_cat_stock_expanded
-    elif (category == self.info_category_installations):
-      self.info_cat_inst_expanded = not self.info_cat_inst_expanded
-    elif (category == self.info_category_deposits):
-      self.info_cat_deposits_expanded = not self.info_cat_deposits_expanded
-
-    self.reDraw_InfoWindow = True
-
-
-  def ExpandShipClasses(self, shipClass, aprent):
-    if (shipClass in self.GUI_expanded_fleets3):
-      self.GUI_expanded_fleets3.remove(shipClass)
-    else:
-      self.GUI_expanded_fleets3.append(shipClass)
-    self.reDraw_InfoWindow = True

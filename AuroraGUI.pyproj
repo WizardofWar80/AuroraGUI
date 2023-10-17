@@ -50,6 +50,9 @@
     <Compile Include="Systems.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SystemScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Utils.py" />
   </ItemGroup>
   <ItemGroup>
