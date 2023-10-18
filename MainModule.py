@@ -12,6 +12,7 @@ import Fleets
 import Colonies
 import Systems
 import SystemScreen
+import BodiesScreen
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -57,7 +58,8 @@ class Game():
     self.reDraw = True
     self.reDraw_GUI = True
     self.clickables = []
-    self.currentSceen = 'System'
+    #self.currentSceen = 'System'
+    self.currentSceen = 'Bodies'
     self.GUI_identifier = 'Global GUI'
     self.GUI_Elements = {}
     self.GUI_Top_Anchor = (300,10)
@@ -105,6 +107,7 @@ class Game():
       self.GetNewData()
 
     self.systemScreen = SystemScreen.SystemScreen(self, eventsclass)
+    self.bodiesScreen = BodiesScreen.BodiesScreen(self, eventsclass)
     self.InitGUI()
 
 
@@ -234,6 +237,8 @@ class Game():
     reblit = False
     if (self.currentSceen == 'System'):
       reblit |= self.systemScreen.Draw()
+    elif (self.currentSceen == 'Bodies'):
+      reblit |= self.bodiesScreen.Draw()
     else:
       self.surface.fill(self.bg_color)
       reblit = True
@@ -244,6 +249,8 @@ class Game():
   def SetRedrawFlag(self, screen_name):
     if (screen_name == 'System'):
       self.systemScreen.reDraw = True
+    elif (screen_name == 'Bodies'):
+      self.bodiesScreen.reDraw = True
 
 
   def GetNewData(self):

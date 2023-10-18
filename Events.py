@@ -63,25 +63,26 @@ class Events:
 
 
   def ClearClickables(self, parent = None, exclude = None):
+    listOfElementsToDelete = []
     if(parent):
       listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent == parent):
           listOfElementsToDelete.append(clickable)
-
-      for cl in listOfElementsToDelete:
-        self.clickables.remove(cl)
     elif (exclude):
       listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent != exclude):
           if (clickable.parent != 'Global GUI'):
             listOfElementsToDelete.append(clickable)
-
-      for cl in listOfElementsToDelete:
-        self.clickables.remove(cl)
     else:
-      self.clickables = []
+      listOfElementsToDelete = []
+      for clickable in self.clickables:
+        if (clickable.parent != 'Global GUI'):
+          listOfElementsToDelete.append(clickable)
+
+    for cl in listOfElementsToDelete:
+        self.clickables.remove(cl)
     
 
   def Bind(self, clickable):

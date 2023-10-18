@@ -27,6 +27,9 @@
     <Compile Include="Bodies.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BodiesScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Colonies.py">
       <SubType>Code</SubType>
     </Compile>
@@ -51,6 +54,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SystemScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Table.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils.py" />
