@@ -126,7 +126,7 @@ class SystemScreen():
     self.bg_color = game.bg_color
 
     self.window_fleet_info_identifier = 'Fleet Info Window'
-    self.window_fleet_info_size = (300,600)
+    self.window_fleet_info_size = (300,545)
     self.window_map_size = (self.window_fleet_info_size[0],self.window_fleet_info_size[0])
 
     self.window_fleet_info_anchor = (5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)#(self.width-self.window_fleet_info_size[0]-5,self.height-self.window_map_size[1]-self.window_fleet_info_size[1]-2*5)
@@ -165,7 +165,7 @@ class SystemScreen():
     self.window_map_rect = pygame.Rect(self.window_map_anchor, self.window_map_size)
     self.window_map.set_colorkey(Utils.GREENSCREEN)
     self.reDraw_MapWindow = True;
-    self.GUI_identifier = 'GUI Elements'
+    self.GUI_identifier = 'System Screen GUI'
     self.GUI_Elements = {}
     self.GUI_Bottom_Anchor = (500,game.height-50)
     self.GUI_Left_Anchor = (15,self.window_fleet_info_rect[1]-50)
@@ -475,10 +475,9 @@ class SystemScreen():
     #Utils.DrawText2Screen(self.screen,'(%d,%d) Scale: %3.1f'%(self.mousePos[0], self.mousePos[1], self.systemScale),(5,5),18,Utils.WHITE, False)
     #Utils.DrawText2Screen(self.screen,'(%d,%d)'%(self.mouseDragged[0], self.mouseDragged[1]),(5,25),18,Utils.WHITE, False)
 
-    pygame.display.update()
     self.reDraw = False
     
-    return
+    return reblit
 
   
   def DrawMiniMap(self):

@@ -75,7 +75,8 @@ class Events:
       listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent != exclude):
-          listOfElementsToDelete.append(clickable)
+          if (clickable.parent != 'Global GUI'):
+            listOfElementsToDelete.append(clickable)
 
       for cl in listOfElementsToDelete:
         self.clickables.remove(cl)
