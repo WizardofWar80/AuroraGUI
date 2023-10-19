@@ -13,9 +13,12 @@ class BodiesScreen():
 
     self.reDraw = True
     self.reDraw_GUI = True
-    self.table = Table.Table(self, 10, 5, anchor = (20,50), col_widths = [20,150,50,200,200])
+    #['Name', 'Class','Colony Cost','Population Capacity']
+    self.table = Table.Table(self, 50, 20, anchor = (20,50), col_widths = [150,100,50,70,70,40])
     self.GUI_Elements = []
-      
+    self.currentSystem = game.currentSystem
+
+
   def InitGUI(self):
     pass
     #idGUI = 1
@@ -34,6 +37,7 @@ class BodiesScreen():
     reblit = False
     # clear screen
     if (self.reDraw):
+      self.UpdateTable()
       if (self.Events):
         self.Events.ClearClickables()
       self.reDraw_GUI = True
@@ -50,6 +54,38 @@ class BodiesScreen():
     self.reDraw = False
     
     return reblit
+
+  def UpdateTable(self):
+    self.table.cells[0]
+    system = self.game.starSystems[self.currentSystem]
+    row = 0
+    data = ['Name', 'Type','CC','Pop Cap', 'Colonizable']
+    for id in Utils.MineralNames:
+      data.append(Utils.MineralNames[id][:2])
+    self.table.AddRow(row, data)
+
+    row = 1
+    for bodyID in self.game.systemBodies:
+      body = self.game.systemBodies[bodyID]
+      data = [ body['Name'] 
+              ,body['Type'] 
+              ,round(body['ColonyCost'],1)
+              ,f"{round(body['Population Capacity'],2):,} M"
+              ,True if body['ColonyCost'] < 10000 else False
+             ]
+      index = 5
+      for id in Utils.MineralNames:
+        data.append(None)
+      if ('Deposits' in body):
+        for id in Utils.MineralNames:
+          if Utils.MineralNames[id] in body['Deposits']:
+            data[index] = Utils.ConvertNumber2kMGT(body['Deposits'][Utils.MineralNames[id]]['Amount'])
+          index += 1
+      self.table.AddRow(row, data)
+      row += 1
+    self.table.FormatColumnIfValuesBetween(2,0,3,text_color = Utils.GREEN)
+    self.table.FormatColumnIfValuesAbove(2,3,text_color = Utils.RED)
+    self.reDraw = True
 
 
   def DrawGUI(self):

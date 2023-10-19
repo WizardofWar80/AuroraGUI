@@ -413,6 +413,7 @@ def GetSystemBodies(game):
 
     if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
       popCapacity = 0
+      colonyCost = float('inf')
     else:
       hydroMultiPlier = 1
       if (hydro > 75):
@@ -429,7 +430,7 @@ def GetSystemBodies(game):
       if (popCapacity < 0.05):
         popCapacity = 0.05
 
-    colonyCost = CalculateColonyCost(game, body[0], temp, atm, hydro, gravity, tidalMultiPlier)
+      colonyCost = CalculateColonyCost(game, body[0], temp, atm, hydro, gravity, tidalMultiPlier)
 
     if (bodyClass == 'Moon'):
       orbit = orbit * Utils.AU_INV

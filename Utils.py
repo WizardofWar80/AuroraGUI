@@ -567,6 +567,8 @@ def GetTimeScale(hours):
 
 
 def GetFormattedNumber(number):
+  if number is None:
+    return '-'
   if (abs(number) > 0.99):
     fraction = abs(round(number,1)-number)
     if (abs(fraction) < 0.1):
@@ -574,6 +576,8 @@ def GetFormattedNumber(number):
     else:
       return '%2.1f'%(round(number,1))
   else:
+    if number == 0.0:
+      return '0'
     if (abs(number) < 0.001):
       return '{:.1e}'.format(number)
     elif (abs(number) < 0.01):
@@ -582,3 +586,23 @@ def GetFormattedNumber(number):
       return '%1.2f'%(round(number,2))
     else:
       return '%1.1f'%(round(number,1))
+
+
+def ConvertNumber2kMGT(value):
+  if (type(value) is int) or (type(value) is float):
+    if value > 999999999999.5:
+      return '%d T'%(int(round(value / 1000000000000,0)))
+    if value > 999999999.5:
+      return '%d G'%(int(round(value / 1000000000,0)))
+    if value > 999999.5:
+      return '%d M'%(round(value / 1000000,0))
+    elif value > 999.5:
+      return '%d k'%(round(value / 1000,0))
+    elif value > 9.99:
+      return '%d'%(int(round(value,0)))
+    elif value > 0.01:
+      return '%d'%(round(value,2))
+    else:
+      return '0'
+  else:
+    return value
