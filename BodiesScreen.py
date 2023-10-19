@@ -15,7 +15,7 @@ class BodiesScreen():
     self.reDraw = True
     self.reDraw_GUI = True
     #['Name', 'Class','Colony Cost','Population Capacity']
-    self.table = Table.Table(self, 50, 17, anchor = (20,50), col_widths = [150,120,50,70,70,55,40])
+    self.table = Table.Table(self, 50, 17, anchor = (20,50), col_widths = [10,150,120,50,50,70,40])
     self.GUI_Elements = []
     self.currentSystem = game.currentSystem
     self.showColonizedBodies = True
@@ -66,9 +66,9 @@ class BodiesScreen():
 
 
   def UpdateTable(self):
-    self.table.cells[0]
+    self.table.Clear()
     system = self.game.starSystems[self.currentSystem]
-    
+    text_widths = []
     unsortedIDs = []
     for bodyID in self.game.systemBodies:
       cond = self.GetDrawConditions(self.game.systemBodies[bodyID])
@@ -79,7 +79,7 @@ class BodiesScreen():
     sortedIDs = sorted(unsortedIDs, key=itemgetter(1), reverse=False)
       
     row = 0
-    data = ['Name', 'Type','CC','Pop Cap', 'Colonizable', 'Dist(AU)']
+    data = ['AU', 'Name', 'Type','CC','Pop Cap', 'Colonizable']
     for id in Utils.MineralNames:
       data.append(Utils.MineralNames[id][:2])
     self.table.AddRow(row, data)
@@ -88,15 +88,15 @@ class BodiesScreen():
     for bodyID, void in sortedIDs:
     #for bodyID in self.game.systemBodies:
       body = self.game.systemBodies[bodyID]
-      data = [ body['Name'] 
+      data = [ int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
+              ,body['Name'] 
               ,body['Type'] 
               ,round(body['ColonyCost'],1)
               ,f"{round(body['Population Capacity'],2):,}"
               ,True if body['ColonyCost'] < 10000 else False
               #,Utils.GetFormattedNumber(body['Distance2Center'])
-              ,int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
               ]
-      index =6
+      index = 6
       for id in Utils.MineralNames:
         data.append(None)
       if ('Deposits' in body):
@@ -110,6 +110,7 @@ class BodiesScreen():
         break
     self.table.FormatColumnIfValuesBetween(2,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
     self.table.FormatColumnIfValuesAbove(2,self.highColonyCostThreshold,text_color = Utils.RED)
+    self.table.Realign()
     self.reDraw = True
 
 

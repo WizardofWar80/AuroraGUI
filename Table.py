@@ -2,7 +2,7 @@ import Utils
 import pygame
 
 class Cell():
-  def __init__(self, pos, width, height, value = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 20, border_color = (120,120,120)):
+  def __init__(self, pos, width, height, value = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120)):
     self.value = value
     self.type = type
     self.x = x
@@ -16,11 +16,31 @@ class Cell():
     self.width = width
     self.height = height
     self.rect = (pos[0], pos[1], width, height)
-    self.default_text_color = text_color
-    self.default_border_color = border_color
-    self.default_bg_color = bg_color
-    self.default_text_size = text_size
-    self.default_font = pygame.font.SysFont("Times New Roman", text_size)
+    #self.default_text_color = text_color
+    #self.default_border_color = border_color
+    #self.default_bg_color = bg_color
+    #self.default_text_size = text_size
+    #self.default_font = pygame.font.SysFont("Times New Roman", text_size)
+    #self.surface = None
+    self.text_render = None
+    #self.surface.blit(label)
+    self.text_size = None
+    self.Render()
+
+
+  def Render(self):
+    self.text_render = self.font.render(str(self.value), 0, self.text_color)
+    self.text_size = self.text_render.get_rect().size
+
+
+  def SetWidth(self, width):
+    self.width = width
+    self.rect = (self.screenpos[0], self.screenpos[1], width, self.height)
+
+
+  def SetPos(self, pos):
+    self.screenpos = pos
+    self.rect = (self.screenpos[0], self.screenpos[1], self.width, self.height)
 
 
 class Table():
@@ -33,9 +53,10 @@ class Table():
     self.num_rows = rows
     self.num_cols = cols
     self.anchor = anchor
-    self.InitTable()
+    #self.InitTable()
     self.in_cell_pad_x = 4
     self.in_cell_pad_y = 3
+    self.max_cell_sizes = [0 for col in range(cols)]
 
 
   def InitTable(self):
@@ -48,6 +69,7 @@ class Table():
 
         self.cells[-1].append(Cell(screenpos, col_width, self.row_height, x = c, y = r))
         current_lat_pos += col_width
+
 
   def GetWidth(self, col_index):
     if(col_index < len(self.col_widths)):
@@ -70,6 +92,7 @@ class Table():
 
 
   def AddRow(self, row, data):
+    cell_text_sizes = []
     if (len(self.cells) <= row):
       self.cells.append([])
       index = -1
@@ -84,9 +107,35 @@ class Table():
         screenpos = Utils.AddTuples(self.anchor, (current_lat_pos, row * self.row_height))
 
         self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]) , x = c, y = row))
+        cell_text_sizes.append(self.cells[index][-1].text_size[0])
         current_lat_pos += col_width
 
-  def FormatCell(self, r, c, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
+    self.UpdateMaxCellWidths(cell_text_sizes)
+
+
+  def UpdateMaxCellWidths(self, cell_text_sizes):
+    for i in range(len(cell_text_sizes)):
+      if (i < len(self.max_cell_sizes)):
+        if (cell_text_sizes[i]+self.in_cell_pad_x*2 > self.max_cell_sizes[i]):
+          self.max_cell_sizes[i] = cell_text_sizes[i]+self.in_cell_pad_x*2
+      else:
+        self.max_cell_sizes.append(cell_text_sizes[i]+self.in_cell_pad_x*2)
+
+
+  def Realign(self):
+    offset = 0
+    if (self.num_rows > 0):
+      for col in range(self.num_cols):
+        col_width = self.cells[0][col].width
+        delta = self.max_cell_sizes[col] - col_width
+        if (delta < 0):
+          delta = 0
+        if (delta > 0) or (offset > 0):
+          self.FormatColumn(col, column_width=col_width+delta, latOffset = offset)
+          offset+=delta
+
+
+  def FormatCell(self, r, c, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
     if text_color:
       self.cells[r][c].text_color=text_color
     if bg_color:
@@ -95,41 +144,44 @@ class Table():
       self.cells[r][c].text_size=text_size
     if border_color:
       self.cells[r][c].border_color=border_color
+    if column_width:
+      self.cells[r][c].SetWidth(column_width)
+    if latOffset:
+      self.cells[r][c].SetPos((self.cells[r][c].screenpos[0]+latOffset, self.cells[r][c].screenpos[1]))
+    self.cells[r][c].Render()
 
 
-  def FormatColumn(self, column, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
-    for r in range(self.num_rows):
+  def FormatColumn(self, column, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+    for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
-        if (self.cells[r][column].value is not None):
-          if (self.cells[r][column].type is not 'string' ):
-            self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+        self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
 
 
-  def FormatColumnIfValuesAbove(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
-    for r in range(self.num_rows):
+  def FormatColumnIfValuesAbove(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+    for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
         if (self.cells[r][column].value is not None):
           if (self.cells[r][column].type is not 'string' ):
             if (self.cells[r][column].value > threshold):
-              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
 
 
-  def FormatColumnIfValuesBelow(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
-    for r in range(self.num_rows):
+  def FormatColumnIfValuesBelow(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+    for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
         if (self.cells[r][column].value is not None):
           if (self.cells[r][column].type is not 'string' ):
             if (self.cells[r][column].value < threshold):
-              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
 
 
-  def FormatColumnIfValuesBetween(self, column, threshold_low, threshold_high, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
-    for r in range(self.num_rows):
+  def FormatColumnIfValuesBetween(self, column, threshold_low, threshold_high, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+    for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
         if (self.cells[r][column].value is not None):
           if (self.cells[r][column].type is not 'string' ):
             if (self.cells[r][column].value > threshold_low and self.cells[r][column].value < threshold_high):
-              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
 
 
   def Draw(self):
@@ -140,9 +192,7 @@ class Table():
 
         if (cell.value is not None):
           textPos = Utils.AddTuples(cell.screenpos, (self.in_cell_pad_x, self.in_cell_pad_y))
-          Utils.DrawText2Surface(self.context.surface, str(cell.value), textPos, 12, cell.text_color)
-          
-
+          self.BlitRenderToSurface(cell, textPos)
     return True
     #if(len(self.col_widths) == self.num_cols):
     #  pass
@@ -152,3 +202,18 @@ class Table():
     #  for i in self.num_cols:
         
     
+  def BlitRenderToSurface(self, cell, textPos, transparent = True):
+    surface = self.context.surface
+    if (textPos[0] > 0 and textPos[1] > 0 and textPos[0] < surface.get_rect()[2] and textPos[1] < surface.get_rect()[3]):
+      if (transparent):
+        cell.text_render.set_alpha(255)
+        surface.blit(cell.text_render, textPos)
+      else:
+        sf = pygame.Surface(cell.text_size)
+        sf.fill(cell.bg_color)
+        sf.blit(cell.text_render, (0,0))
+        surface.blit(sf, textPos)
+  
+        
+  def Clear(self):
+    self.cells = []
