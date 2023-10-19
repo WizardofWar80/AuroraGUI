@@ -352,7 +352,7 @@ def GetSystemBodies(game):
   systemBodies = {}
   body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year
 , DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,game.currentSystem))]
-  deposits = GetMineralDeposits(game, game.currentSystem)
+  
           # Mass
       # Orbit
       # hours / day
@@ -363,6 +363,7 @@ def GetSystemBodies(game):
       # Tidal locked
 
   for body in body_table:
+    deposits, sum_minerals = GetMineralDeposits(game, game.currentSystem, body[0])
     body_name = body[1]
     planetNumber = body[2]
     orbitNumber = body[3]
@@ -497,16 +498,16 @@ def GetSystemBodies(game):
         colonized = True
       if (game.colonies[body[0]]['Installations']):
         industrialized = True
-      if (body[0] in deposits):
+      if (sum_minerals > 0):
         resources = True
+    colonizable = True if colonyCost < 10000 else False
     dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
-                            'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm, 'ColonyCost':colonyCost,
+                            'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm, 'ColonyCost':colonyCost, 'Colonizable':colonizable,
                             'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
                             'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
                             'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center}
-    if (resources):
-      systemBodies[body[0]]['Deposits'] = deposits[body[0]]
+    systemBodies[body[0]]['Deposits'] = deposits
   return systemBodies
 
 
@@ -532,20 +533,22 @@ def GetStellarTypes(game):
   return stellarTypes
 
   
-def GetMineralDeposits(game, systemID):
+def GetMineralDeposits(game, systemID, bodyID):
   deposits = {}
+  sum_deposits = 0
   # GameID	MaterialID	SystemID	SystemBodyID	Amount	Accessibility	HalfOriginalAmount	OriginalAcc
-  results = game.db.execute('''SELECT * from FCT_MineralDeposit WHERE GameID = %d and SystemID = %d;'''%(game.gameID, systemID)).fetchall()
+  results = game.db.execute('''SELECT * from FCT_MineralDeposit WHERE GameID = %d and SystemID = %d and SystemBodyID = %d;'''%(game.gameID, systemID, bodyID)).fetchall()
+  for id in Utils.MineralNames:
+    mineral = Utils.MineralNames[id]
+    deposits[mineral] = {'Amount':0, 'Accessibility':0}
 
   for deposit in results:
-    systemBodyID = deposit[3]
-    if (systemBodyID not in deposits):
-      deposits[systemBodyID]={}
     if (deposit[1] in Utils.MineralNames):
       mineral = Utils.MineralNames[deposit[1]]
-      deposits[systemBodyID][mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
+      deposits[mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
+      sum_deposits += deposit[4]
 
-  return deposits
+  return deposits, sum_deposits
 
 
 def HighlightBody(game, body, bodySize):

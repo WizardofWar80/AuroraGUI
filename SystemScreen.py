@@ -173,7 +173,7 @@ class SystemScreen():
     self.GUI_expanded_fleets = []
     self.GUI_expanded_fleets2 = []
     self.GUI_expanded_fleets3 = []
-    self.InitGUI()
+    #self.InitGUI()
 
       
   def InitGUI(self):

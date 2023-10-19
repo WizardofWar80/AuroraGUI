@@ -2,8 +2,9 @@ import Utils
 import pygame
 
 class Cell():
-  def __init__(self, pos, width, height, value = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120)):
+  def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120)):
     self.value = value
+    self.sortvalue = sortvalue
     self.type = type
     self.x = x
     self.y = y
@@ -108,6 +109,8 @@ class Table():
 
         self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]) , x = c, y = row))
         cell_text_sizes.append(self.cells[index][-1].text_size[0])
+        if (self.header and row == 0):
+          cell_text_sizes[-1] += 10
         current_lat_pos += col_width
 
     self.UpdateMaxCellWidths(cell_text_sizes)
@@ -185,6 +188,7 @@ class Table():
 
 
   def Draw(self):
+    t1 = pygame.time.get_ticks()
     # draw the grid:
     for row in self.cells:
       for cell in row:
@@ -193,6 +197,8 @@ class Table():
         if (cell.value is not None):
           textPos = Utils.AddTuples(cell.screenpos, (self.in_cell_pad_x, self.in_cell_pad_y))
           self.BlitRenderToSurface(cell, textPos)
+    t2 = pygame.time.get_ticks()
+    print(t2- t1)
     return True
     #if(len(self.col_widths) == self.num_cols):
     #  pass

@@ -2,7 +2,7 @@ import pygame
 import Utils
 
 class GUI():
-  def __init__(self, gameClass, id, name, rect, clickable, parent = None, enabled = True, parentName = '', textButton = False, radioButton = False, radioGroup = None):
+  def __init__(self, gameClass, id, name, rect, clickable, parent = None, enabled = True, parentName = '', textButton = False, radioButton = False, radioGroup = None, state = 0):
     self.ID = id
     self.name = name
     self.rect = rect
@@ -12,6 +12,7 @@ class GUI():
     self.open = False
     self.textButton = textButton
     self.enabled = enabled
+    self.state = state
     self.radioButton = radioButton
     self.radioGroup = radioGroup
     self.children = []

@@ -58,8 +58,8 @@ class Game():
     self.reDraw = True
     self.reDraw_GUI = True
     self.clickables = []
-    #self.currentSceen = 'System'
-    self.currentSceen = 'Bodies'
+    #self.currentScreen = 'System'
+    self.currentScreen = 'Bodies'
     self.GUI_identifier = 'Global GUI'
     self.GUI_Elements = {}
     self.GUI_Top_Anchor = (300,10)
@@ -188,8 +188,8 @@ class Game():
           thisElement.enabled = True
           self.reDraw = True
           self.reDraw_GUI = True
-          self.currentSceen = thisElement.name
-          self.SetRedrawFlag(self.currentSceen)
+          self.currentScreen = thisElement.name
+          self.SetRedrawFlag(self.currentScreen)
           for otherID in self.GUI_Elements:
             if (otherID != id):
               otherElement = self.GUI_Elements[otherID]
@@ -217,6 +217,16 @@ class Game():
       self.screen.blit(self.surface,(0,0))
 
     pygame.display.update()
+    self.counter_FPS += 1
+
+    currentTimestamp = pygame.time.get_ticks()
+    deltaTime = currentTimestamp - self.timestampLastSecond
+    if (deltaTime >= 1000):
+      #self.FPS = 1000*self.counter_FPS / deltaTime
+      self.FPS = self.counter_FPS 
+      self.counter_FPS = 0
+      self.timestampLastSecond = currentTimestamp
+    Utils.DrawText2Screen(self.screen,'%d FPS'%(self.FPS),(5,5),18,Utils.WHITE, False)
 
     return
 
@@ -235,14 +245,16 @@ class Game():
 
   def DrawCurrentScreen(self):
     reblit = False
-    if (self.currentSceen == 'System'):
+    if (self.currentScreen == 'System'):
+      self.systemScreen.InitGUI()
       reblit |= self.systemScreen.Draw()
-    elif (self.currentSceen == 'Bodies'):
+    elif (self.currentScreen == 'Bodies'):
+      #self.bodiesScreen.InitGUI()
       reblit |= self.bodiesScreen.Draw()
     else:
       self.surface.fill(self.bg_color)
       reblit = True
-      print('Draw screen %s'%self.currentSceen)
+      print('Draw screen %s'%self.currentScreen)
     return reblit
 
 
