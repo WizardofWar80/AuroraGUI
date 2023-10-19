@@ -14,7 +14,7 @@ class BodiesScreen():
     self.reDraw = True
     self.reDraw_GUI = True
     #['Name', 'Class','Colony Cost','Population Capacity']
-    self.table = Table.Table(self, 50, 20, anchor = (20,50), col_widths = [150,120,50,70,70,40])
+    self.table = Table.Table(self, 50, 17, anchor = (20,50), col_widths = [150,120,50,70,70,55,40])
     self.GUI_Elements = []
     self.currentSystem = game.currentSystem
     self.showColonizedBodies = True
@@ -22,6 +22,10 @@ class BodiesScreen():
     self.showUnsurveyedBodies = False
     self.showResourcelessComets = False
     self.showResourcelessAsteroids = False
+    self.showResourcelessSmallWorlds = False
+    self.showResourcelessLargeWorlds = False
+    self.showLowCCBodies = True
+    self.highColonyCostThreshold = 3
 
   def InitGUI(self):
     pass
@@ -64,7 +68,7 @@ class BodiesScreen():
     self.table.cells[0]
     system = self.game.starSystems[self.currentSystem]
     row = 0
-    data = ['Name', 'Type','CC','Pop Cap', 'Colonizable']
+    data = ['Name', 'Type','CC','Pop Cap', 'Colonizable', 'Dist(AU)']
     for id in Utils.MineralNames:
       data.append(Utils.MineralNames[id][:2])
     self.table.AddRow(row, data)
@@ -77,10 +81,12 @@ class BodiesScreen():
         data = [ body['Name'] 
                 ,body['Type'] 
                 ,round(body['ColonyCost'],1)
-                ,f"{round(body['Population Capacity'],2):,} M"
+                ,f"{round(body['Population Capacity'],2):,}"
                 ,True if body['ColonyCost'] < 10000 else False
+                #,Utils.GetFormattedNumber(body['Distance2Center'])
+                ,int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
                ]
-        index = 5
+        index =6
         for id in Utils.MineralNames:
           data.append(None)
         if ('Deposits' in body):
@@ -92,8 +98,8 @@ class BodiesScreen():
         row += 1
         if (row > self.table.num_rows):
           break
-    self.table.FormatColumnIfValuesBetween(2,0,3,text_color = Utils.GREEN)
-    self.table.FormatColumnIfValuesAbove(2,3,text_color = Utils.RED)
+    self.table.FormatColumnIfValuesBetween(2,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
+    self.table.FormatColumnIfValuesAbove(2,self.highColonyCostThreshold,text_color = Utils.RED)
     self.reDraw = True
 
 
@@ -114,6 +120,8 @@ class BodiesScreen():
       return True
     elif (body['Resources']):
       return True
+    elif (self.showLowCCBodies and body['ColonyCost'] < self.highColonyCostThreshold):
+      return True
     else:
       if (body['Class'] == 'Asteroid'):
         if (self.showResourcelessAsteroids):
@@ -121,7 +129,11 @@ class BodiesScreen():
       elif (body['Class'] == 'Comet'):
         if (self.showResourcelessComets):
           return True
-      else:
-        return True
+      elif (body['Type'] == 'Planet Small' or body['Class'] == 'Moon'):
+        if (self.showResourcelessSmallWorlds):
+          return True
+      elif (body['Class'] == 'Planet'):
+        if (self.showResourcelessLargeWorlds):
+          return True
     return False
 
