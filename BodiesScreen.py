@@ -14,10 +14,14 @@ class BodiesScreen():
     self.reDraw = True
     self.reDraw_GUI = True
     #['Name', 'Class','Colony Cost','Population Capacity']
-    self.table = Table.Table(self, 50, 20, anchor = (20,50), col_widths = [150,100,50,70,70,40])
+    self.table = Table.Table(self, 50, 20, anchor = (20,50), col_widths = [150,120,50,70,70,40])
     self.GUI_Elements = []
     self.currentSystem = game.currentSystem
-
+    self.showColonizedBodies = True
+    self.showIndustrializedBodies = True
+    self.showUnsurveyedBodies = False
+    self.showResourcelessComets = False
+    self.showResourcelessAsteroids = False
 
   def InitGUI(self):
     pass
@@ -55,6 +59,7 @@ class BodiesScreen():
     
     return reblit
 
+
   def UpdateTable(self):
     self.table.cells[0]
     system = self.game.starSystems[self.currentSystem]
@@ -67,22 +72,26 @@ class BodiesScreen():
     row = 1
     for bodyID in self.game.systemBodies:
       body = self.game.systemBodies[bodyID]
-      data = [ body['Name'] 
-              ,body['Type'] 
-              ,round(body['ColonyCost'],1)
-              ,f"{round(body['Population Capacity'],2):,} M"
-              ,True if body['ColonyCost'] < 10000 else False
-             ]
-      index = 5
-      for id in Utils.MineralNames:
-        data.append(None)
-      if ('Deposits' in body):
+      cond = self.GetDrawConditions(body)
+      if (cond):
+        data = [ body['Name'] 
+                ,body['Type'] 
+                ,round(body['ColonyCost'],1)
+                ,f"{round(body['Population Capacity'],2):,} M"
+                ,True if body['ColonyCost'] < 10000 else False
+               ]
+        index = 5
         for id in Utils.MineralNames:
-          if Utils.MineralNames[id] in body['Deposits']:
-            data[index] = Utils.ConvertNumber2kMGT(body['Deposits'][Utils.MineralNames[id]]['Amount'])
-          index += 1
-      self.table.AddRow(row, data)
-      row += 1
+          data.append(None)
+        if ('Deposits' in body):
+          for id in Utils.MineralNames:
+            if Utils.MineralNames[id] in body['Deposits']:
+              data[index] = Utils.ConvertNumber2kMGT(body['Deposits'][Utils.MineralNames[id]]['Amount'])
+            index += 1
+        self.table.AddRow(row, data)
+        row += 1
+        if (row > self.table.num_rows):
+          break
     self.table.FormatColumnIfValuesBetween(2,0,3,text_color = Utils.GREEN)
     self.table.FormatColumnIfValuesAbove(2,3,text_color = Utils.RED)
     self.reDraw = True
@@ -98,4 +107,21 @@ class BodiesScreen():
       return True
     else:
       return False
+
+
+  def GetDrawConditions(self, body):
+    if (body['Colonized'] and self.showColonizedBodies):
+      return True
+    elif (body['Resources']):
+      return True
+    else:
+      if (body['Class'] == 'Asteroid'):
+        if (self.showResourcelessAsteroids):
+          return True
+      elif (body['Class'] == 'Comet'):
+        if (self.showResourcelessComets):
+          return True
+      else:
+        return True
+    return False
 

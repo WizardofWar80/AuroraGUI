@@ -100,32 +100,36 @@ class Table():
   def FormatColumn(self, column, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
     for r in range(self.num_rows):
       if column < self.num_cols:
-        if (self.cells[r][column].type is not 'string' ):
-          self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+        if (self.cells[r][column].value is not None):
+          if (self.cells[r][column].type is not 'string' ):
+            self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
 
 
   def FormatColumnIfValuesAbove(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
     for r in range(self.num_rows):
       if column < self.num_cols:
-        if (self.cells[r][column].type is not 'string' ):
-          if (self.cells[r][column].value > threshold):
-            self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+        if (self.cells[r][column].value is not None):
+          if (self.cells[r][column].type is not 'string' ):
+            if (self.cells[r][column].value > threshold):
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
 
 
   def FormatColumnIfValuesBelow(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
     for r in range(self.num_rows):
       if column < self.num_cols:
-        if (self.cells[r][column].type is not 'string' ):
-          if (self.cells[r][column].value < threshold):
-            self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+        if (self.cells[r][column].value is not None):
+          if (self.cells[r][column].type is not 'string' ):
+            if (self.cells[r][column].value < threshold):
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
 
 
   def FormatColumnIfValuesBetween(self, column, threshold_low, threshold_high, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
     for r in range(self.num_rows):
       if column < self.num_cols:
-        if (self.cells[r][column].type is not 'string' ):
-          if (self.cells[r][column].value > threshold_low and self.cells[r][column].value < threshold_high):
-            self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
+        if (self.cells[r][column].value is not None):
+          if (self.cells[r][column].type is not 'string' ):
+            if (self.cells[r][column].value > threshold_low and self.cells[r][column].value < threshold_high):
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
 
 
   def Draw(self):
