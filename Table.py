@@ -2,7 +2,7 @@ import Utils
 import pygame
 
 class Cell():
-  def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120)):
+  def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120), align = 'left'):
     self.value = value
     self.sortvalue = sortvalue
     self.type = type
@@ -26,6 +26,7 @@ class Cell():
     self.text_render = None
     #self.surface.blit(label)
     self.text_size = None
+    self.align = align
     self.Render()
 
 
@@ -42,6 +43,9 @@ class Cell():
   def SetPos(self, pos):
     self.screenpos = pos
     self.rect = (self.screenpos[0], self.screenpos[1], self.width, self.height)
+
+  def SetAlignment(self, align):
+    self.align = align
 
 
 class Table():
@@ -138,26 +142,37 @@ class Table():
           offset+=delta
 
 
-  def FormatCell(self, r, c, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+  def FormatCell(self, r, c, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None, align = None):
+    rerender = False
     if text_color:
       self.cells[r][c].text_color=text_color
+      rerender = True
     if bg_color:
       self.cells[r][c].bg_color=bg_color
+      rerender = True
     if text_size:
       self.cells[r][c].text_size=text_size
+      rerender = True
     if border_color:
       self.cells[r][c].border_color=border_color
+      rerender = True
     if column_width:
       self.cells[r][c].SetWidth(column_width)
+      rerender = True
     if latOffset:
       self.cells[r][c].SetPos((self.cells[r][c].screenpos[0]+latOffset, self.cells[r][c].screenpos[1]))
-    self.cells[r][c].Render()
+      rerender = True
+    if align:
+      if (not self.header or r > 0):
+        self.cells[r][c].SetAlignment(align = align)      
+    if (rerender):
+      self.cells[r][c].Render()
 
 
-  def FormatColumn(self, column, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+  def FormatColumn(self, column, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None, align = None):
     for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
-        self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
+        self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset, align)
 
 
   def FormatColumnIfValuesAbove(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
@@ -196,6 +211,10 @@ class Table():
 
         if (cell.value is not None):
           textPos = Utils.AddTuples(cell.screenpos, (self.in_cell_pad_x, self.in_cell_pad_y))
+          if (cell.align == 'right'):
+            textPos = (cell.screenpos[0] + cell.width - cell.text_size[0] - self.in_cell_pad_x, textPos[1])
+          elif (cell.align == 'center'):
+            textPos = (cell.screenpos[0] + cell.width/2 - cell.text_size[0]/2 , textPos[1])
           self.BlitRenderToSurface(cell, textPos)
     t2 = pygame.time.get_ticks()
     print(t2- t1)

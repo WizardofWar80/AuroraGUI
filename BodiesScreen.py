@@ -16,7 +16,7 @@ class BodiesScreen():
     self.reDraw = True
     self.reDraw_GUI = True
     #['Name', 'Class','Colony Cost','Population Capacity']
-    self.table = Table.Table(self, 50, 17, anchor = (20,50), col_widths = [10,150,120,50,50,70,40])
+    self.table = Table.Table(self, 50, 17, anchor = (20,50), col_widths = [10,150,120,30,50,70,40])
     self.GUI_Elements = {}
     self.currentSystem = game.currentSystem
     self.showColonizedBodies = True
@@ -151,7 +151,7 @@ class BodiesScreen():
         for id in Utils.MineralNames:
           if Utils.MineralNames[id] in body['Deposits']:
             val = body['Deposits'][Utils.MineralNames[id]]['Amount']
-            data[index] = '' if val == 0 else Utils.ConvertNumber2kMGT(val)
+            data[index] = '' if val == 0 else Utils.ConvertNumber2kMGT(val) + '  (' + str(body['Deposits'][Utils.MineralNames[id]]['Accessibility']) + ')'
           index += 1
       self.table.AddRow(row, data)
       row += 1
@@ -160,6 +160,11 @@ class BodiesScreen():
     self.table.FormatColumnIfValuesBetween(3,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
     self.table.FormatColumnIfValuesAbove(3,self.highColonyCostThreshold,text_color = Utils.RED)
     self.table.Realign()
+    self.table.FormatColumn(0,align = 'center')
+    self.table.FormatColumn(3,align = 'right')
+    self.table.FormatColumn(4,align = 'right')
+    self.table.FormatColumn(5,align = 'center')
+    
     if (self.GUI_Elements == {}):
       self.InitGUI()
     else:
