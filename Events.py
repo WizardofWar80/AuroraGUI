@@ -239,6 +239,7 @@ class Events:
     self.RightMouseButtonClicked = False
     index = 0
     rightClickProcessed = False
+    print(self.LeftMouseClickPosition)
     for clickable in self.clickables:
       if (clickable.rect) and (clickable.enabled):
         if (clickable.LeftClickCallBack is not None and button == 1):
@@ -259,7 +260,8 @@ class Events:
             clickable.RightClick()
       index += 1
     if (button == 3 and rightClickProcessed == False):
-      game.CloseMenus()
+      if (game.currentScreen == 'System'):
+        game.systemScreen.CloseMenus()
 
 
   def HandleDoubleClickEvents(self):

@@ -64,6 +64,7 @@ class Game():
     self.GUI_Elements = {}
     self.GUI_Top_Anchor = (300,10)
     self.GUI_Top_Button_Size = (130,30)
+    self.lastScreen = None
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -118,63 +119,63 @@ class Game():
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'System'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Bodies'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Colonies'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Economy'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Research'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Galaxy'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Survey'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Terraforming'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Xenos'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
 
   def SwitchScreens(self, id, parent = None):
@@ -245,16 +246,21 @@ class Game():
 
   def DrawCurrentScreen(self):
     reblit = False
+    if (self.lastScreen != self.currentScreen):
+      self.Events.ClearClickables()
     if (self.currentScreen == 'System'):
-      self.systemScreen.InitGUI()
+      if (self.lastScreen != self.currentScreen):
+        self.systemScreen.InitGUI()
       reblit |= self.systemScreen.Draw()
     elif (self.currentScreen == 'Bodies'):
-      #self.bodiesScreen.InitGUI()
+      if (self.lastScreen != self.currentScreen):
+        self.bodiesScreen.GUI_Elements={}
       reblit |= self.bodiesScreen.Draw()
     else:
       self.surface.fill(self.bg_color)
       reblit = True
       print('Draw screen %s'%self.currentScreen)
+    self.lastScreen = self.currentScreen
     return reblit
 
 

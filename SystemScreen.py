@@ -440,7 +440,7 @@ class SystemScreen():
     # clear screen
     if (self.reDraw):
       if (self.Events):
-        self.Events.ClearClickables(exclude=self.GUI_identifier)
+        self.Events.ClearClickables(exclude = self.GUI_identifier)
       self.reDraw_FleetInfoWindow = True
       self.reDraw_InfoWindow = True
       self.reDraw_MapWindow = True
