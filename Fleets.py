@@ -47,6 +47,9 @@ def DrawSystemFleets(context):
 def GetFleets(game):
   fleets = {}
   fleets_table = [list(x) for x in game.db.execute('''SELECT * from FCT_Fleet WHERE GameID = %d AND CivilianFunction = 0 AND RaceID = %d;'''%(game.gameID,game.myRaceID))]
+  total_num_ships = 0
+  total_num_stations = 0
+
   for item in fleets_table:
     fleetId = item[0]
     systemID = item[9]
@@ -94,6 +97,7 @@ def GetFleets(game):
       suppliesCapacity = shipClass[84]
       magazineCapacity = shipClass[38]
       plannedDeployment = shipClass[53]
+      enginePower = shipClass[23]
       deploymentTime = (game.gameTime-ship[23])/3600/24/365.25*12
       maintenanceLife = (game.gameTime-ship[22])/3600/24/365.25
       components = GetShipComponents(game, shipClassID)
@@ -104,17 +108,24 @@ def GetFleets(game):
       oneYearMSPCost = GetMaintainanceForYears(1,AFR,avgMaintCost)
       fiveYearMSPCost = GetMaintainanceForYears(5,AFR,avgMaintCost)
       maintenanceLifeTime = GetMaintenanceLifetime(MSP, oneYearMSPCost)
-      fleets[systemID][fleetId]['Ships'].append({'ID':ship[0], 'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost, 'Commercial':commercial, 'Military':not commercial})
+      fleets[systemID][fleetId]['Ships'].append({'ID':ship[0], 'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost, 'Commercial':commercial, 'Military':not commercial, 'Station':True if enginePower==0 else False})
       fleetFuel += fuel
       fleetFuelCapacity += fuelCapacity
       fleetSupplies += supplies
       fleetSuppliesCapacity += suppliesCapacity
       fleetMagazineCapacity +=magazineCapacity
+      if (enginePower > 0):
+        total_num_ships += 1
+      else:
+        total_num_stations += 1
     fleets[systemID][fleetId]['Fuel'] = fleetFuel
     fleets[systemID][fleetId]['Fuel Capacity'] = fleetFuelCapacity
     fleets[systemID][fleetId]['Supplies'] = fleetSupplies
     fleets[systemID][fleetId]['Supplies Capacity'] = fleetSuppliesCapacity
     fleets[systemID][fleetId]['Magazine Capacity'] = fleetMagazineCapacity
+
+  self.statisticsShips[str(int(game.gameTime))] = total_num_ships
+  self.statisticsStations[str(int(game.gameTime))] = total_num_stations
 
   return fleets
 

@@ -58,6 +58,14 @@ class EconomyScreen(Screen):
       self.plot.AddData(name, self.history)
 
 
+  def GetShipData(self):
+    for name in self.game.statisticsShips:
+      self.history = []
+      for timestamp in self.game.statisticsShips:
+        self.history.append([int(timestamp), self.game.statisticsShips[timestamp]])
+      self.plot.AddData(name, self.history)
+
+
   def Draw(self):
     reblit = False
     # clear screen

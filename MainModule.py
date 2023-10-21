@@ -69,6 +69,8 @@ class Game():
     self.lastScreen = None
     self.statisticsPopulation = {}
     self.statisticsStockpile = {}
+    self.statisticsShips = {}
+    self.statisticsGroundUnits = {}
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -217,6 +219,28 @@ class Game():
     except:
       print('File %s not found'%filename)
 
+    filename = 'statistics_ships_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.statisticsShips = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
+    filename = 'statistics_units_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.statisticsGroundUnits = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
+    filename = 'statistics_stations_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.statisticsStations = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
+
 
   def SaveStatistics(self):
     filename = 'statistics_pop_game_%d.json'%self.gameID
@@ -232,6 +256,28 @@ class Game():
         json.dump(self.statisticsStockpile, f)
     except:
       print('File %s not writeable'%filename)
+
+    filename = 'statistics_ships_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.statisticsShips, f)
+    except:
+      print('File %s not writeable'%filename)
+
+    filename = 'statistics_units_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.statisticsGroundUnits, f)
+    except:
+      print('File %s not writeable'%filename)
+
+    filename = 'statistics_stations_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.statisticsStations, f)
+    except:
+      print('File %s not writeable'%filename)
+
 
 
   def InitGases(self):
