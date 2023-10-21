@@ -88,8 +88,8 @@ def GetSystems(game):
   return systems
 
 
-def GetSystemJumpPoints(game):
-  jp_table = [list(x) for x in game.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(game.gameID, game.currentSystem))]
+def GetSystemJumpPoints(game, currentSystem):
+  jp_table = [list(x) for x in game.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(game.gameID, currentSystem))]
   JPs = {}
   index = 1
   for JP in jp_table:

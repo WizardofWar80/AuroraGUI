@@ -17,6 +17,7 @@ class Clickable():
     self.DoubleClickCallBack = DoubleClickCallBack
     self.parameter = parameter
 
+
   def Process(self):
     if (self.enabled):
       self.toBeProcessed = False
@@ -30,15 +31,18 @@ class Clickable():
         self.DoubleClickCallBack(self.parameter, self.parent)
         self.doubleClicked = False
 
+
   def LeftClick(self):
     if (self.enabled):
       self.leftClicked = True
       self.toBeProcessed = True
 
+
   def RightClick(self):
     if (self.enabled):
       self.rightClicked = True
       self.toBeProcessed = True
+
 
   def DoubleClick(self):
     if (self.enabled):

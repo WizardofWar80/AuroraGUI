@@ -17,9 +17,22 @@ screen_height = 1000
 
 logger = lg.Logger(logfile= 'log.txt', module='AuroraGUI.py', log_level = 1)
 img_path = "Images"
+lastTimestamp = pygame.time.get_ticks()
+
 
 def CheckReDrawFramerate():
   return True
+
+
+def CheckReFreshRate():
+  global lastTimestamp
+  currentTimestamp = pygame.time.get_ticks()
+  if (currentTimestamp - lastTimestamp > 1000):
+    lastTimestamp = currentTimestamp
+    return True
+  else:
+    return False
+
 
 def main():
   # initialize the pygame module
@@ -52,12 +65,13 @@ def main():
       myEvents.ProcessClickablesEvents(game)
       # only do something if the event is of type QUIT
       if event.type == pygame.QUIT:
-        # change the value to False, to exit the main loop
         running = False
 
-    #recalc = False
+
+    if CheckReFreshRate():
+      game.CheckForNewDBData()
+
     if CheckReDrawFramerate():
-    #  data.SetCurrentPricing()
       game.Draw()
       
       # push the data to the display for displaying

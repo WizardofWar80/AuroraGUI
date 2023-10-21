@@ -348,10 +348,10 @@ def CalculateColonyCost(game, bodyID, currentTemp, atm, hydro, gravity, tidalMul
   return cc * (1-game.cc_cost_reduction)
 
 
-def GetSystemBodies(game):
+def GetSystemBodies(game, currentSystem):
   systemBodies = {}
   body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year
-, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,game.currentSystem))]
+, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
   
           # Mass
       # Orbit
@@ -363,7 +363,7 @@ def GetSystemBodies(game):
       # Tidal locked
 
   for body in body_table:
-    deposits, sum_minerals = GetMineralDeposits(game, game.currentSystem, body[0])
+    deposits, sum_minerals = GetMineralDeposits(game, currentSystem, body[0])
     body_name = body[1]
     planetNumber = body[2]
     orbitNumber = body[3]
@@ -376,12 +376,12 @@ def GetSystemBodies(game):
       bodyClass = Utils.BodyClasses[body[12]]
 
     if (body_name == ''):
-      body_name = game.db.execute('''SELECT Name from FCT_SystemBodyName WHERE GameID = %d AND RaceID = %d AND SystemID = %d AND SystemBodyID = %d ;'''%(game.gameID,game.myRaceID, game.currentSystem, body[0])).fetchone()
+      body_name = game.db.execute('''SELECT Name from FCT_SystemBodyName WHERE GameID = %d AND RaceID = %d AND SystemID = %d AND SystemBodyID = %d ;'''%(game.gameID,game.myRaceID, currentSystem, body[0])).fetchone()
       if (not body_name):
         if (parentID in systemBodies):
           parentName = systemBodies[parentID]['Name']
-        elif(parentID in game.starSystems[game.currentSystem]['Stars']):
-          parentName = game.starSystems[game.currentSystem]['Stars'][parentID]['Name']
+        elif(parentID in game.starSystems[currentSystem]['Stars']):
+          parentName = game.starSystems[currentSystem]['Stars'][parentID]['Name']
 
         if (bodyClass == 'Moon'):
           hyphen_pos = parentName.rfind('-')

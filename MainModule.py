@@ -18,6 +18,7 @@ import EconomyScreen
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
+    self.Debug = False
     Bodies.SetGameInstance(self)
     Fleets.SetGameInstance(self)
     InfoWindow.SetGameInstance(self)
@@ -31,8 +32,7 @@ class Game():
     self.screen = pygame.display.set_mode((self.width,self.height))
     self.surface = pygame.Surface((self.width,self.height), pygame.SRCALPHA,32)
     self.surface.set_colorkey(Utils.GREENSCREEN)
-    self.Debug = False
-
+    
     self.db = None
     self.gameID = -1
     self.myRaceID = -1
@@ -51,7 +51,6 @@ class Game():
     #self.minPixelSize_Moon = 5
     #self.minPixelSize_Small = 5
     #self.mouseDragged = (0,0)
-    self.refreshData = True
     self.screenCenterBeforeDrag = self.screenCenter
     self.counter_FPS = 0
     self.timestampLastSecond = pygame.time.get_ticks()
@@ -79,7 +78,7 @@ class Game():
     self.images_GUI = {}
     self.systemBodies = {}
 
-    db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
+    #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB_.db'
     try:
         db_connection = sqlite3.connect(db_filename)
@@ -101,12 +100,10 @@ class Game():
       #self.currentSystem = 8499 # Lalande
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
-      self.stellarTypes = Bodies.GetStellarTypes(self)
-      self.gases = self.InitGases()
-      self.installations = Colonies.GetInstallationInfo(self)
-      self.cc_cost_reduction = Colonies.GetCCreduction(self)
 
       self.colonies = None
+      self.stellarTypes = Bodies.GetStellarTypes(self)  
+      self.gases = self.InitGases()
       self.GetNewData()
 
     self.systemScreen = SystemScreen.SystemScreen(self, eventsclass)
@@ -281,13 +278,30 @@ class Game():
       self.economyScreen.GetWealthData()
 
 
+  def CheckForNewDBData(self):
+    gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
+    if (gameTime != self.gameTime):
+      self.GetNewData()
+      self.SetRedrawFlag(self.currentScreen)
+
+
   def GetNewData(self):
+    self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
+    self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
     self.starSystems = Systems.GetSystems(self)
-    self.currentSystemJumpPoints = Systems.GetSystemJumpPoints(self)
-    self.surveyLocations = Systems.GetSurveyLocations(self, self.currentSystem)
+    self.cc_cost_reduction = Colonies.GetCCreduction(self)
     self.fleets = Fleets.GetFleets(self)
+    self.installations = Colonies.GetInstallationInfo(self)
     self.colonies = Colonies.GetColonies(self)
-    self.systemBodies = Bodies.GetSystemBodies(self)
+
+    self.GetNewLocalData(self.currentSystem)
+
+
+
+  def GetNewLocalData(self, currentSystem):
+    self.surveyLocations = Systems.GetSurveyLocations(self, currentSystem)
+    self.systemBodies = Bodies.GetSystemBodies(self, currentSystem)
+    self.currentSystemJumpPoints = Systems.GetSystemJumpPoints(self, currentSystem)
 
 
   def LoadImages(self, list_of_image_files):
@@ -345,7 +359,7 @@ class Game():
             self.images_Body[sub_folder].append(pygame.image.load(filename))
             self.images_Body[sub_folder][-1].set_colorkey(self.bg_color)
 
-    self.systemBodies = Bodies.GetSystemBodies(self)
+    self.systemBodies = Bodies.GetSystemBodies(self, self.currentSystem)
     self.starSystems = Systems.GetSystems(self)
 
 

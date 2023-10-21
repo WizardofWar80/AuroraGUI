@@ -151,37 +151,6 @@ class BodiesScreen(Screen):
             if (otherElement.radioButton):
               if (otherElement.radioGroup == thisGroup):
                 otherElement.enabled = False
-     
-                
-  #def ToggleGUI(self, id, parent = None):
-  #  if (id in self.GUI_Elements):
-  #    self.reDraw = True
-  #    element = self.GUI_Elements[id]
-  #    #print('Click '+element.name)
-  #    if (element.parent) or (len(element.children) == 0):
-  #      element.enabled = not element.enabled
-  #      self.ToggleGUI_Element_ByName(element.name)
-  #      #element.clickable.enabled = not element.clickable.enabled
-  #    else:
-  #      if (not element.open):
-  #        self.CloseMenus()
-  #      element.open = not element.open
-
-  #    for childID in element.children:
-  #      if (childID not in self.GUI_Elements):
-  #        print('Error, GUI child %d does not exist for parent %d (%s)'%(childID, id, element.name))
-  #      else:
-  #        child = self.GUI_Elements[childID]
-  #        child.visible = element.open
-  #        child.clickable.enabled = element.open
-
-
-  #def CloseMenus(self):
-  #  for id in self.GUI_Elements:
-  #    element = self.GUI_Elements[id]
-  #    if (not element.parent):
-  #      if (element.open):
-  #        self.ToggleGUI(id)
 
 
   def ToggleGUI_Element_ByName(self, name):

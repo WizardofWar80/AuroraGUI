@@ -634,7 +634,7 @@ class SystemScreen(Screen):
       self.window_fleet_info_scoll_pos = 0
       InfoWindow.CleanUp(self, self.window_fleet_info_identifier)
       InfoWindow.CleanUp(self, self.window_info_identifier)
-      self.game.GetNewData()
+      self.game.GetNewLocalData(id)
       self.reDraw = True
 
 
