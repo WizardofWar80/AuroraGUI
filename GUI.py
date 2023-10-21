@@ -35,6 +35,8 @@ class GUI():
         pygame.draw.rect(surface, Utils.SUPER_DARK_GRAY, self.rect, 0)
         pygame.draw.rect(surface, Utils.GRAY, self.rect, 3)
         Utils.DrawText2Surface(surface, self.label, (self.rect[0]+10,self.rect[1]+5),20,Utils.GRAY)
+        if self.children:
+          Utils.DrawSizedTriangle(surface, (self.rect[0]+25,self.rect[1]+7), Utils.GRAY, 4, 1)
       else:
         surface.blit(self.image_disabled,(self.rect[0],self.rect[1]))
     else:
@@ -42,6 +44,7 @@ class GUI():
         pygame.draw.rect(surface, Utils.SUPER_DARK_GRAY, self.rect, 0)
         pygame.draw.rect(surface, Utils.LIGHT_BLUE, self.rect, 3)
         Utils.DrawText2Surface(surface, self.label, (self.rect[0]+10,self.rect[1]+5),20,Utils.LIGHT_BLUE)
+        
       else:
         surface.blit(self.image_enabled,(self.rect[0],self.rect[1]))
 

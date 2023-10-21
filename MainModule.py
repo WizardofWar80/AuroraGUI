@@ -5,6 +5,7 @@ import Utils
 import math
 import random
 import Clickable
+import Screen
 import GUI
 import Bodies
 import InfoWindow
@@ -13,6 +14,7 @@ import Colonies
 import Systems
 import SystemScreen
 import BodiesScreen
+import EconomyScreen
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -109,6 +111,7 @@ class Game():
 
     self.systemScreen = SystemScreen.SystemScreen(self, eventsclass)
     self.bodiesScreen = BodiesScreen.BodiesScreen(self, eventsclass)
+    self.economyScreen = EconomyScreen.Screen(self, eventsclass)
     self.InitGUI()
 
 
@@ -254,8 +257,12 @@ class Game():
       reblit |= self.systemScreen.Draw()
     elif (self.currentScreen == 'Bodies'):
       if (self.lastScreen != self.currentScreen):
-        self.bodiesScreen.GUI_Elements={}
+        self.bodiesScreen.ResetGUI()
       reblit |= self.bodiesScreen.Draw()
+    elif (self.currentScreen == 'Economy'):
+      if (self.lastScreen != self.currentScreen):
+        self.economyScreen.ResetGUI()
+      reblit |= self.economyScreen.Draw()
     else:
       self.surface.fill(self.bg_color)
       reblit = True
@@ -269,6 +276,8 @@ class Game():
       self.systemScreen.reDraw = True
     elif (screen_name == 'Bodies'):
       self.bodiesScreen.reDraw = True
+    elif (screen_name == 'Economy'):
+      self.economyScreen.reDraw = True
 
 
   def GetNewData(self):

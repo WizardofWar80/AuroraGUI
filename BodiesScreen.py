@@ -32,6 +32,12 @@ class BodiesScreen():
     self.GUI_Table_Header_Anchor = self.table.anchor
     self.GUI_Table_identifier = 'Bodies Table'
     self.GUI_Table_radioGroup = 1
+    self.GUI_identifier = 'Bodies Screen'
+    self.GUI_Bottom_Anchor = (500,game.height-50)
+
+
+  def ResetGUI(self):
+    self.GUI_Elements = {}
 
 
   def InitGUI(self):
@@ -40,6 +46,69 @@ class BodiesScreen():
       gui_cl = self.game.MakeClickable(cell.value, cell.rect, self.SortTableGUI, par=idGUI, parent=self.GUI_Table_identifier)
       self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, cell.value, cell.rect, gui_cl, enabled = True if idGUI == 0 else False, radioButton = True, radioGroup = self.GUI_Table_radioGroup, state = 0)
       idGUI += 1
+    
+    size = 32
+    x = self.GUI_Bottom_Anchor[0]
+    y = self.GUI_Bottom_Anchor[1]
+    bb = (x,y,size,size)
+    name = 'Show Colonies'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showColonizedBodies)
+
+    idGUI += 1
+    x += size+5
+    bb = (x,y,size,size)
+    name = 'Filter Resources'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    showBodiesGUI = self.GUI_Elements[idGUI]
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'LargeWorlds'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessLargeWorlds)
+    showBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'SmallWorlds'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessSmallWorlds)
+    showBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Comets'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessComets)
+    showBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    y += -size-5
+    bb = (x,y,size,size)
+    name = 'Asteroids'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessAsteroids)
+    showBodiesGUI.AddChildren(idGUI)
+
+    idGUI += 1
+    x += size+5
+    y = self.GUI_Bottom_Anchor[1]
+    bb = (x,y,size,size)
+    name = 'Show Installations'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showIndustrializedBodies)
+
+    idGUI += 1
+    x += size+5
+    bb = (x,y,size,size)
+    name = 'Show Unsurveyed'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showUnsurveyedBodies)
 
 
   def UpdateGUI(self):
@@ -68,7 +137,55 @@ class BodiesScreen():
             if (otherElement.radioButton):
               if (otherElement.radioGroup == thisGroup):
                 otherElement.enabled = False
-        
+     
+                
+  def ToggleGUI(self, id, parent = None):
+    if (id in self.GUI_Elements):
+      self.reDraw = True
+      element = self.GUI_Elements[id]
+      #print('Click '+element.name)
+      if (element.parent) or (len(element.children) == 0):
+        element.enabled = not element.enabled
+        self.ToggleGUI_Element_ByName(element.name)
+        #element.clickable.enabled = not element.clickable.enabled
+      else:
+        if (not element.open):
+          self.CloseMenus()
+        element.open = not element.open
+
+      for childID in element.children:
+        if (childID not in self.GUI_Elements):
+          print('Error, GUI child %d does not exist for parent %d (%s)'%(childID, id, element.name))
+        else:
+          child = self.GUI_Elements[childID]
+          child.visible = element.open
+          child.clickable.enabled = element.open
+
+
+  def CloseMenus(self):
+    for id in self.GUI_Elements:
+      element = self.GUI_Elements[id]
+      if (not element.parent):
+        if (element.open):
+          self.ToggleGUI(id)
+
+
+  def ToggleGUI_Element_ByName(self, name):
+    if (name == 'Show Colonies'):
+      self.showColonizedBodies = not self.showColonizedBodies
+    elif (name == 'LargeWorlds'):
+      self.showResourcelessLargeWorlds = not self.showResourcelessLargeWorlds
+    elif (name == 'SmallWorlds'):
+      self.showResourcelessSmallWorlds = not self.showResourcelessSmallWorlds
+    elif (name == 'Asteroids'):
+      self.showResourcelessAsteroids = not self.showResourcelessAsteroids
+    elif (name == 'Comets'):
+      self.showResourcelessComets = not self.showResourcelessComets
+    elif (name == 'Show Installations'):
+      self.showIndustrializedBodies = not self.showIndustrializedBodies
+    elif (name == 'Show Unsurveyed'):
+      self.showUnsurveyedBodies = not self.showUnsurveyedBodies
+
 
   def Draw(self):
     reblit = False
@@ -116,7 +233,12 @@ class BodiesScreen():
     for bodyID in self.game.systemBodies:
       cond = self.GetDrawConditions(self.game.systemBodies[bodyID])
       if (cond):
-        unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['Distance2Center'], self.game.systemBodies[bodyID]['Name'], self.game.systemBodies[bodyID]['Type'] , self.game.systemBodies[bodyID]['ColonyCost'], self.game.systemBodies[bodyID]['Population Capacity'], self.game.systemBodies[bodyID]['Colonizable']])
+        pop = 0
+        if (bodyID in self.game.colonies):
+          colony = self.game.colonies[bodyID]
+          pop = colony['Pop']
+
+        unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['Distance2Center'], self.game.systemBodies[bodyID]['Name'], self.game.systemBodies[bodyID]['Type'] , self.game.systemBodies[bodyID]['ColonyCost'], pop, self.game.systemBodies[bodyID]['Population Capacity'], self.game.systemBodies[bodyID]['Colonizable']])
         for id in Utils.MineralNames:
           unsortedIDs[-1].append(self.game.systemBodies[bodyID]['Deposits'][Utils.MineralNames[id]]['Amount'])
         #unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['Population Capacity']])
@@ -126,7 +248,7 @@ class BodiesScreen():
     sortedIDs = sorted(unsortedIDs, key=itemgetter(id+1), reverse=rev)
       
     row = 0
-    header = ['AU', 'Name', 'Type','CC','Pop Cap', 'Colonizable']
+    header = ['AU', 'Name', 'Type','CC', 'Pop','Pop Cap', 'Colonizable']
     for id in Utils.MineralNames:
       header.append(Utils.MineralNames[id][:2])
     self.table.AddRow(row, header)
@@ -136,15 +258,20 @@ class BodiesScreen():
       bodyID = row_sorted[0]
     #for bodyID in self.game.systemBodies:
       body = self.game.systemBodies[bodyID]
+      pop = 0
+      if (bodyID in self.game.colonies):
+        colony = self.game.colonies[bodyID]
+        pop = colony['Pop']
+
       data = [ int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
               ,body['Name'] 
               ,body['Type'] 
               ,round(body['ColonyCost'],1)
+              ,f"{round(pop,2):,}" if pop > 0 else ''
               ,f"{round(body['Population Capacity'],2):,}"
               ,body['Colonizable']
-              #,Utils.GetFormattedNumber(body['Distance2Center'])
               ]
-      index = 6
+      index = len(data)
       for id in Utils.MineralNames:
         data.append(None)
       if ('Deposits' in body):
@@ -163,7 +290,8 @@ class BodiesScreen():
     self.table.FormatColumn(0,align = 'center')
     self.table.FormatColumn(3,align = 'right')
     self.table.FormatColumn(4,align = 'right')
-    self.table.FormatColumn(5,align = 'center')
+    self.table.FormatColumn(5,align = 'right')
+    self.table.FormatColumn(6,align = 'center')
     
     if (self.GUI_Elements == {}):
       self.InitGUI()
@@ -180,15 +308,18 @@ class BodiesScreen():
       for GUI_ID in self.GUI_Elements:
         element = self.GUI_Elements[GUI_ID]
         if (element.visible):
-          if (element.enabled):
-            color = Utils.TEAL
+          if (element.clickable.parent == self.GUI_Table_identifier):
+            if (element.enabled):
+              color = Utils.TEAL
+            else:
+              color = Utils.DARK_GRAY
+            if (element.state == 0):
+              heading = 270
+            else:
+              heading = 90
+            Utils.DrawTriangle(self.surface,(element.rect[0]+element.rect[2]-7,element.rect[1]+0.5*element.rect[3]), color, heading)
           else:
-            color = Utils.DARK_GRAY
-          if (element.state == 0):
-            heading = 270
-          else:
-            heading = 90
-          Utils.DrawTriangle(self.surface,(element.rect[0]+element.rect[2]-7,element.rect[1]+0.5*element.rect[3]), color, heading)
+            element.Draw(self.surface)
       self.reDraw_GUI = False
       return True
     else:

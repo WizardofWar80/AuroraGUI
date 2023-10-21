@@ -20,7 +20,6 @@ class SystemScreen():
     self.reDraw_FleetInfoWindow = True
     self.reDraw_InfoWindow = True
     self.reDraw_MapWindow = True
-    self.reDraw_GUI = True
     self.game = game
     self.width = game.width
     self.height = game.height
@@ -627,7 +626,6 @@ class SystemScreen():
       self.showCommercialFleets = not self.showCommercialFleets
     elif (name == 'Show Stationary Fleets'):
       self.showStationaryFleets = not self.showStationaryFleets
-
 
 
   def Follow_Jumppoint(self, id, parent):

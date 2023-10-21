@@ -262,6 +262,8 @@ class Events:
     if (button == 3 and rightClickProcessed == False):
       if (game.currentScreen == 'System'):
         game.systemScreen.CloseMenus()
+      if (game.currentScreen == 'Bodies'):
+        game.bodiesScreen.CloseMenus()
 
 
   def HandleDoubleClickEvents(self):

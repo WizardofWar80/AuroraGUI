@@ -33,6 +33,9 @@
     <Compile Include="Colonies.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="EconomyScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Events.py" />
     <Compile Include="Fleets.py">
       <SubType>Code</SubType>
@@ -48,6 +51,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MainModule.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Plot.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Screen.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Systems.py">
