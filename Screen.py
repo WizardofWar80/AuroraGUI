@@ -26,12 +26,6 @@ class Screen():
 
     self.GUI_Elements = {}
     self.images_GUI = {}
-    #self.InitGUI()
-    self.Init(game, events)
-
-
-  def Init(self, game, events):
-    pass
 
 
   def InitGUI(self):

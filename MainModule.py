@@ -79,8 +79,8 @@ class Game():
     self.images_GUI = {}
     self.systemBodies = {}
 
-    #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
-    db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB.db'
+    db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
+    db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB_.db'
     try:
         db_connection = sqlite3.connect(db_filename)
         self.db = db_connection.cursor()
@@ -111,7 +111,7 @@ class Game():
 
     self.systemScreen = SystemScreen.SystemScreen(self, eventsclass)
     self.bodiesScreen = BodiesScreen.BodiesScreen(self, eventsclass)
-    self.economyScreen = EconomyScreen.Screen(self, eventsclass)
+    self.economyScreen = EconomyScreen.EconomyScreen(self, eventsclass)
     self.InitGUI()
 
 
@@ -278,6 +278,7 @@ class Game():
       self.bodiesScreen.reDraw = True
     elif (screen_name == 'Economy'):
       self.economyScreen.reDraw = True
+      self.economyScreen.GetWealthData()
 
 
   def GetNewData(self):

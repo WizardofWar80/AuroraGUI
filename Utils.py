@@ -195,7 +195,7 @@ def DrawTriangle(surface,position, color, heading=0):
   bounding_box = pygame.Rect(position[0]-r.center[0]+r[0],position[1]-r.center[1]+r[1], r.size[0],r.size[1])
   return bounding_box
   #pygame.draw.rect(surface,(255,255,255), ((position[0]-6,position[1]-6),(12,12)), 1)
-
+    
 
 def DrawSizedTriangle(surface, pos, color, size, thickness):
   points = [( pos[0]-size, pos[1]+size*0.5),

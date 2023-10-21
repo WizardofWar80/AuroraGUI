@@ -1,4 +1,61 @@
 from Screen import Screen
+import sqlite3
+import pygame
+import Plot
 
-class Economy(Screen):
-  pass
+class EconomyScreen(Screen):
+  def __init__(self, game, events):
+    self.reDraw = True
+    self.reDraw_GUI = True
+    self.game = game
+    self.width = game.width
+    self.height = game.height
+
+    self.screenCenterBeforeDrag = self.game.screenCenter
+    self.FPS = 0
+    self.counter_FPS = 0
+    self.timestampLastSecond = pygame.time.get_ticks()
+    self.timestampLast = pygame.time.get_ticks()
+    
+    self.cameraCenter = (self.width/2,self.height/2)
+    self.screenCenter = (self.width/2,self.height/2)
+
+    self.mouseDragged = (0,0)
+    # Options
+    self.Events = events
+    self.surface = game.surface
+    self.screen = game.screen
+    self.bg_color = game.bg_color
+
+    self.GUI_Elements = {}
+    self.images_GUI = {}
+    self.plot = Plot.Plot(self.game, self.Events, self, (1000,500), (50,100))
+    self.GetWealthData()
+
+  
+  def GetWealthData(self):
+    results = self.game.db.execute('''SELECT IncrementTime, WealthAmount from FCT_WealthHistory WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
+    self.wealthHistory = []
+    for tuple in results:
+      self.wealthHistory.append([tuple[0], tuple[1]])
+    self.plot.AddData('Wealth', self.wealthHistory)
+
+  def Draw(self):
+    reblit = False
+    # clear screen
+    if (self.reDraw):
+      #if (self.Events):
+      #  self.Events.ClearClickables()
+      self.reDraw_GUI = True
+      self.surface.fill(self.bg_color)
+      self.plot.Draw(self.surface)
+
+    reblit |= self.DrawGUI()
+
+    if (reblit):
+      #self.DebugDrawClickables()
+      self.screen.blit(self.surface,(0,0))
+
+    self.reDraw = False
+    
+    return reblit
