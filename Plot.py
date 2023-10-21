@@ -22,6 +22,7 @@ class Plot():
     self.y_axis_end = (pad[0], pad[1])
     self.y_axis_length = abs(self.y_axis_start[1]-self.y_axis_end[1])
     self.data = {}
+    self.colors = [Utils.BLUE, Utils.GREEN, Utils.RED, Utils.YELLOW, Utils.CYAN, Utils.LIGHT_GREEN, Utils.PURPLE, Utils.ORANGE, Utils.TEAL]
 
 
   def AddData(self, name, data):
@@ -64,7 +65,9 @@ class Plot():
 
 
   def DrawData(self):
+    colorIndex = 0
     for dataName in self.data:
+      color = self.colors[colorIndex]
       data = self.data[dataName]
       min_x = 1000000000000000000000000
       min_y = 1000000000000000000000000
@@ -78,16 +81,18 @@ class Plot():
       x_start = data[0][0]
       y_start = data[0][1]
       sorted_data = sorted(data, key=itemgetter(0), reverse=False)
-      x_spread = max_x-min_x
-      y_spread = max_y-min_y
+      x_spread = max(max_x-min_x,1)
+      y_spread = max(max_y-min_y,1)
       x_scale = self.x_axis_length/x_spread
       y_scale = self.y_axis_length/y_spread
       points = []
       for datapoint in sorted_data:
         points.append(((datapoint[0]-min_x)*x_scale+self.x_axis_start[0],self.y_axis_start[1]-(datapoint[1]-min_y)*y_scale))
-      pygame.draw.lines(self.surface, Utils.BLUE, False, points, 1)
-      self.DrawAxisTicks(min_x, min_y, max_x, max_y, x_scale, y_scale)
-
+        pygame.draw.circle(self.surface, color, (points[-1][0],points[-1][1]),2)
+      if (len(points)>1):
+        pygame.draw.lines(self.surface, color, False, points, 1)
+        self.DrawAxisTicks(min_x, min_y, max_x, max_y, x_scale, y_scale)
+        colorIndex += 1
 
 
   def GetAxisTickMarks(self, min, max):

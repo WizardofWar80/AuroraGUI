@@ -15,6 +15,7 @@ import Systems
 import SystemScreen
 import BodiesScreen
 import EconomyScreen
+import json
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -66,6 +67,8 @@ class Game():
     self.GUI_Top_Anchor = (300,10)
     self.GUI_Top_Button_Size = (130,30)
     self.lastScreen = None
+    self.statisticsPopulation = {}
+    self.statisticsStockpile = {}
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -100,7 +103,7 @@ class Game():
       #self.currentSystem = 8499 # Lalande
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
-
+      self.LoadStatistics()
       self.colonies = None
       self.stellarTypes = Bodies.GetStellarTypes(self)  
       self.gases = self.InitGases()
@@ -199,6 +202,38 @@ class Game():
                   otherElement.enabled = False
           
 
+  def LoadStatistics(self):
+    filename = 'statistics_pop_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.statisticsPopulation = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
+    filename = 'statistics_stockpile_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.statisticsStockpile = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
+
+  def SaveStatistics(self):
+    filename = 'statistics_pop_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.statisticsPopulation, f)
+    except:
+      print('File %s not writeable'%filename)
+
+    filename = 'statistics_stockpile_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.statisticsStockpile, f)
+    except:
+      print('File %s not writeable'%filename)
+
+
   def InitGases(self):
     gases = {}
     results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel from DIM_Gases;''').fetchall()
@@ -293,9 +328,8 @@ class Game():
     self.fleets = Fleets.GetFleets(self)
     self.installations = Colonies.GetInstallationInfo(self)
     self.colonies = Colonies.GetColonies(self)
-
+    self.SaveStatistics()
     self.GetNewLocalData(self.currentSystem)
-
 
 
   def GetNewLocalData(self, currentSystem):

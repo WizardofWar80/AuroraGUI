@@ -29,8 +29,10 @@ class EconomyScreen(Screen):
 
     self.GUI_Elements = {}
     self.images_GUI = {}
-    self.plot = Plot.Plot(self.game, self.Events, self, (1000,500), (50,100))
+    self.plot = Plot.Plot(self.game, self.Events, self, (game.width-100,game.height-game.GUI_Top_Anchor[1]-100), (50,100))
     self.GetWealthData()
+    self.GetPopulationData()
+    self.GetStockpileData()
 
   
   def GetWealthData(self):
@@ -39,6 +41,22 @@ class EconomyScreen(Screen):
     for tuple in results:
       self.wealthHistory.append([tuple[0], tuple[1]])
     self.plot.AddData('Wealth', self.wealthHistory)
+
+
+  def GetPopulationData(self):
+    self.history = []
+    for timestamp in self.game.statisticsPopulation:
+      self.history.append([int(timestamp), self.game.statisticsPopulation[timestamp]])
+    self.plot.AddData('Population', self.history)
+
+
+  def GetStockpileData(self):
+    for name in self.game.statisticsStockpile:
+      self.history = []
+      for timestamp in self.game.statisticsStockpile[name]:
+        self.history.append([int(timestamp), self.game.statisticsStockpile[name][timestamp]])
+      self.plot.AddData(name, self.history)
+
 
   def Draw(self):
     reblit = False
