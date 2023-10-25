@@ -8,6 +8,12 @@ def GetHomeSystemID(game):
   return system_number
 
 
+def GetHomeWorldID(game):
+  homeworld_id = game.db.execute('''SELECT HomeworldID from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(game.gameID)).fetchone()[0]
+        
+  return homeworld_id
+
+
 def GetSystemName(game, systemID):
   system_number = game.db.execute('''SELECT SystemNumber from FCT_System WHERE GameID = %d AND systemId = %d;'''%(game.gameID,systemID)).fetchone()[0]
   if (system_number > -1):

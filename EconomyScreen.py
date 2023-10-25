@@ -33,6 +33,8 @@ class EconomyScreen(Screen):
     self.GetWealthData()
     self.GetPopulationData()
     self.GetStockpileData()
+    self.GetShipData()
+    self.GetStationData()
 
   
   def GetWealthData(self):
@@ -59,11 +61,17 @@ class EconomyScreen(Screen):
 
 
   def GetShipData(self):
-    for name in self.game.statisticsShips:
-      self.history = []
-      for timestamp in self.game.statisticsShips:
-        self.history.append([int(timestamp), self.game.statisticsShips[timestamp]])
-      self.plot.AddData(name, self.history)
+    self.history = []
+    for timestamp in self.game.statisticsShips:
+      self.history.append([int(timestamp), self.game.statisticsShips[timestamp]])
+    self.plot.AddData('Ships', self.history)
+
+
+  def GetStationData(self):
+    self.history = []
+    for timestamp in self.game.statisticsShips:
+      self.history.append([int(timestamp), self.game.statisticsStations[timestamp]])
+    self.plot.AddData('Stations', self.history)
 
 
   def Draw(self):

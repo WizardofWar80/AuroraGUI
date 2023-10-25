@@ -33,7 +33,9 @@ class Game():
     self.screen = pygame.display.set_mode((self.width,self.height))
     self.surface = pygame.Surface((self.width,self.height), pygame.SRCALPHA,32)
     self.surface.set_colorkey(Utils.GREENSCREEN)
-    
+    self.drawStationImages = False
+    self.drawShipImages = False
+
     self.db = None
     self.gameID = -1
     self.myRaceID = -1
@@ -71,6 +73,7 @@ class Game():
     self.statisticsStockpile = {}
     self.statisticsShips = {}
     self.statisticsGroundUnits = {}
+    self.statisticsStations = {}
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -84,7 +87,8 @@ class Game():
     self.systemBodies = {}
 
     #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
-    db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB_.db'
+    self.aurora_folder = 'D:\\Spiele\\Aurora4x\\'
+    db_filename = self.aurora_folder+'AuroraDB_.db'
     try:
         db_connection = sqlite3.connect(db_filename)
         self.db = db_connection.cursor()
@@ -97,9 +101,13 @@ class Game():
       print(game_table[5],': ID', game_table[0])
       self.gameID = game_table[0]
       self.myRaceID = self.db.execute('''SELECT RaceID from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
+      self.myRaceStationPicFilename = self.db.execute('''SELECT SpaceStationPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
+      self.myRaceHullPicFilename = self.db.execute('''SELECT HullPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
+      self.myRaceFlagPicFilename = self.db.execute('''SELECT FlagPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
       self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
       self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
       self.homeSystemID = Systems.GetHomeSystemID(self)
+      self.GetMySpecies()
       self.currentSystem = self.homeSystemID
       #self.currentSystem = 8497 # Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
       #self.currentSystem = 8499 # Lalande
@@ -442,6 +450,15 @@ class Game():
     self.systemBodies = Bodies.GetSystemBodies(self, self.currentSystem)
     self.starSystems = Systems.GetSystems(self)
 
+    if (self.myRacePicFilename):
+      self.myRacePic = pygame.image.load(self.aurora_folder+'Races\\'+self.myRacePicFilename)
+    if (self.myRaceStationPicFilename):
+      self.myRaceStationPic = pygame.image.load(self.aurora_folder+'StationIcons\\'+self.myRaceStationPicFilename)
+    if (self.myRaceHullPicFilename):
+      self.myRaceHullPic = pygame.image.load(self.aurora_folder+'ShipIcons\\'+self.myRaceHullPicFilename)
+    if (self.myRaceFlagPicFilename):
+      self.myRaceFlagPic = pygame.image.load(self.aurora_folder+'Flags\\'+self.myRaceFlagPicFilename)
+
 
   def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True ):
     if (anchor is not None):
@@ -477,3 +494,7 @@ class Game():
           if (clickable.enabled):
             pygame.draw.rect(self.surface, Utils.RED, clickable.rect, 1)
 
+  
+  def GetMySpecies(self):
+    self.myRaceSpecies = self.db.execute('''SELECT SpeciesID from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
+    self.myRacePicFilename = self.db.execute('''SELECT RacePic from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]

@@ -27,8 +27,8 @@ def DrawSystemFleets(context):
     for fleetID in game.fleets[game.currentSystem]:
       fleet = game.fleets[game.currentSystem][fleetID]
       if (fleet['Ships'] != [] or context.showEmptyFleets or (game.highlighted_fleet_ID == fleetID)):
+        pos = context.WorldPos2ScreenPos(fleet['Position'])
         if (fleet['Speed'] > 1 or context.showStationaryFleets or (game.highlighted_fleet_ID == fleetID)):
-          pos = context.WorldPos2ScreenPos(fleet['Position'])
           col = context.color_Fleet
           if (game.highlighted_fleet_ID == fleetID):
             col = Utils.CYAN
@@ -42,6 +42,30 @@ def DrawSystemFleets(context):
             pygame.draw.rect(context.surface, col,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
           #pygame.draw.circle(game.surface,col,(pos_x,pos_y),5,Utils.FILLED)
           Utils.DrawText2Surface(context.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,col)
+          if (game.drawShipImages):
+            size = game.myRaceHullPic.get_size()
+            if (size[0]>size[1]):
+              ratio = size[1]/size[0]
+              scale = (50, 50*ratio)
+            else:
+              ratio = size[0]/size[1]
+              scale = (50, 50*ratio)
+            scaledSurface = pygame.transform.smoothscale(game.myRaceHullPic,scale)
+            image_offset = Utils.SubTuples(pos,scaledSurface.get_rect().center)
+            context.surface.blit(scaledSurface,image_offset)
+
+        if(fleet['Station']):
+          if (game.drawStationImages):
+            size = game.myRaceStationPic.get_size()
+            if (size[0]>size[1]):
+              ratio = size[1]/size[0]
+              scale = (50, 50*ratio)
+            else:
+              ratio = size[0]/size[1]
+              scale = (50, 50*ratio)
+            scaledSurface = pygame.transform.smoothscale(game.myRaceStationPic,scale)
+            image_offset = Utils.SubTuples(pos,scaledSurface.get_rect().center)
+            context.surface.blit(scaledSurface,image_offset)
 
 
 def GetFleets(game):
@@ -81,6 +105,7 @@ def GetFleets(game):
     fleetSupplies = 0
     fleetSuppliesCapacity = 0
     fleetMagazineCapacity = 0
+    fleetIsStation = True
     for ship in ships_table:
       name = ship[3]
       fuel = ship[16]
@@ -118,14 +143,16 @@ def GetFleets(game):
         total_num_ships += 1
       else:
         total_num_stations += 1
+      fleetIsStation &= (enginePower==0)
     fleets[systemID][fleetId]['Fuel'] = fleetFuel
     fleets[systemID][fleetId]['Fuel Capacity'] = fleetFuelCapacity
     fleets[systemID][fleetId]['Supplies'] = fleetSupplies
     fleets[systemID][fleetId]['Supplies Capacity'] = fleetSuppliesCapacity
     fleets[systemID][fleetId]['Magazine Capacity'] = fleetMagazineCapacity
+    fleets[systemID][fleetId]['Station'] = fleetIsStation
 
-  self.statisticsShips[str(int(game.gameTime))] = total_num_ships
-  self.statisticsStations[str(int(game.gameTime))] = total_num_stations
+  game.statisticsShips[str(int(game.gameTime))] = total_num_ships
+  game.statisticsStations[str(int(game.gameTime))] = total_num_stations
 
   return fleets
 
