@@ -40,38 +40,95 @@ class EconomyScreen(Screen):
   def GetWealthData(self):
     results = self.game.db.execute('''SELECT IncrementTime, WealthAmount from FCT_WealthHistory WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
     self.wealthHistory = []
+    min_x = 10000000000000000000000000000
+    min_y = 10000000000000000000000000000
+    max_x = -10000000000000000000000000000
+    max_y = -10000000000000000000000000000
     for tuple in results:
-      self.wealthHistory.append([tuple[0], tuple[1]])
-    self.plot.AddData('Wealth', self.wealthHistory)
+      value = tuple[1]
+      ts = int(tuple[0])
+      min_x = min([min_x, tuple[0]])
+      min_y = min([min_y, tuple[1]])
+      max_x = max([max_x, tuple[0]])
+      max_y = max([max_y, tuple[1]])
+      self.wealthHistory.append([ts, value])
+    self.plot.AddData('Wealth', self.wealthHistory, ((min_x,min_y),(max_x,max_y)), axis = 1)
 
 
   def GetPopulationData(self):
-    self.history = []
+    history = []
+    min_x = 10000000000000000000000000000
+    min_y = 10000000000000000000000000000
+    max_x = -10000000000000000000000000000
+    max_y = -10000000000000000000000000000
+    unit = 'k'
     for timestamp in self.game.statisticsPopulation:
-      self.history.append([int(timestamp), self.game.statisticsPopulation[timestamp]])
-    self.plot.AddData('Population', self.history)
+      value = self.game.statisticsPopulation[timestamp]*1000
+      ts = int(timestamp)
+      min_x = min([min_x, ts])
+      min_y = min([min_y, value])
+      max_x = max([max_x, ts])
+      max_y = max([max_y, value])
+      history.append([ts, value])
+    self.plot.AddData('Population', history, ((min_x,min_y),(max_x,max_y)), unit=unit)
 
 
   def GetStockpileData(self):
     for name in self.game.statisticsStockpile:
-      self.history = []
+      unit = ''
+      min_x = 10000000000000000000000000000
+      min_y = 10000000000000000000000000000
+      max_x = -10000000000000000000000000000
+      max_y = -10000000000000000000000000000
+      history = []
       for timestamp in self.game.statisticsStockpile[name]:
-        self.history.append([int(timestamp), self.game.statisticsStockpile[name][timestamp]])
-      self.plot.AddData(name, self.history)
+        value = self.game.statisticsStockpile[name][timestamp]
+        ts = int(timestamp)
+        min_x = min([min_x, ts])
+        min_y = min([min_y, value])
+        max_x = max([max_x, ts])
+        max_y = max([max_y, value])
+        history.append([ts, value])
+      if (max_y > 1000000):
+        for i in range(len(history)):
+          history[i][1]*=0.001
+        min_y *= 0.001
+        max_y *= 0.001
+      self.plot.AddData(name, history, ((min_x,min_y),(max_x,max_y)), unit=unit)
 
 
   def GetShipData(self):
-    self.history = []
+    min_x = 10000000000000000000000000000
+    min_y = 10000000000000000000000000000
+    max_x = -10000000000000000000000000000
+    max_y = -10000000000000000000000000000
+    history = []
     for timestamp in self.game.statisticsShips:
-      self.history.append([int(timestamp), self.game.statisticsShips[timestamp]])
-    self.plot.AddData('Ships', self.history)
+      value = self.game.statisticsShips[timestamp]
+      ts = int(timestamp)
+      min_x = min([min_x, ts])
+      min_y = min([min_y, value])
+      max_x = max([max_x, ts])
+      max_y = max([max_y, value])
+      history.append([ts, value])
+    self.plot.AddData('Ships', history, ((min_x,min_y),(max_x,max_y)))
 
 
   def GetStationData(self):
-    self.history = []
-    for timestamp in self.game.statisticsShips:
-      self.history.append([int(timestamp), self.game.statisticsStations[timestamp]])
-    self.plot.AddData('Stations', self.history)
+    min_x = 10000000000000000000000000000
+    min_y = 10000000000000000000000000000
+    max_x = -10000000000000000000000000000
+    max_y = -10000000000000000000000000000
+    history = []
+    for timestamp in self.game.statisticsStations:
+      value = self.game.statisticsStations[timestamp]
+      ts = int(timestamp)
+      min_x = min([min_x, ts])
+      min_y = min([min_y, value])
+      max_x = max([max_x, ts])
+      max_y = max([max_y, value])
+      history.append([ts, value])
+    self.plot.AddData('Stations', history, ((min_x,min_y),(max_x,max_y)))
 
 
   def Draw(self):

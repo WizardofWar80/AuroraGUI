@@ -16,6 +16,7 @@ import SystemScreen
 import BodiesScreen
 import EconomyScreen
 import json
+from datetime import datetime
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -88,7 +89,7 @@ class Game():
 
     #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     self.aurora_folder = 'D:\\Spiele\\Aurora4x\\'
-    db_filename = self.aurora_folder+'AuroraDB_.db'
+    db_filename = self.aurora_folder+'AuroraDB.db'
     try:
         db_connection = sqlite3.connect(db_filename)
         self.db = db_connection.cursor()
@@ -372,6 +373,8 @@ class Game():
     if (gameTime != self.gameTime):
       self.GetNewData()
       self.SetRedrawFlag(self.currentScreen)
+      date_time = datetime.fromtimestamp(self.gameTime)
+      print('New game data! %s'%date_time.strftime("%b %d %Y"))
 
 
   def GetNewData(self):
