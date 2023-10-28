@@ -83,6 +83,7 @@ def GetSystems(game):
         stars[ID]['EccentricityAngle'] = star[16]
         stars[ID]['Pos'] = (star[6],star[7])
         stars[ID]['Image'] = None
+        stars[ID]['Visible orbit'] = 0
         if (len(game.images_Body) > 0):
           if (spectralClass in game.images_Body['Stars']):
             stars[ID]['Image'] = game.images_Body['Stars'][spectralClass]

@@ -45,6 +45,7 @@ def DrawStars(context):
     star = system['Stars'][starID]
     screen_star_pos = context.WorldPos2ScreenPos(star['Pos'])
     star_name = star['Name'] + ' ' + star['Suffix']
+    star['Visible orbit'] = 0
     # draw star
       
     # draw orbit
@@ -67,7 +68,7 @@ def DrawStars(context):
     star_color = game.stellarTypes[star['StellarTypeID']]['RGB']
     if (radius < context.minPixelSize_Star):
       radius = context.minPixelSize_Star
-
+    star['Visible orbit'] = radius
     if (star['Image'] is not None):
       if (screen_star_pos[0]-radius < context.width and screen_star_pos[0]+radius > 0 and 
           screen_star_pos[1]-radius < context.height and screen_star_pos[1]+radius > 0 ):
@@ -103,6 +104,7 @@ def DrawBodies(context):
 
   for bodyID in game.systemBodies:
     body = game.systemBodies[bodyID]
+    body['Visible orbit'] = 0
     #screen_parent_size = 0
     body_draw_cond, draw_color_body, body_min_size, body_min_dist = GetDrawConditions(context, 'Body', body)
     if (body_draw_cond):
@@ -110,7 +112,7 @@ def DrawBodies(context):
       radius_on_screen = Utils.AU_INV * context.systemScale * body['RadiusBody']
       if (radius_on_screen < body_min_size):
         radius_on_screen = body_min_size
-
+      body['Visible orbit'] = radius_on_screen
       orbit_draw_cond, draw_color_orbit, void, min_orbit = GetDrawConditions(context, 'Orbit', body)
       orbitOnScreen = body['Orbit']*context.systemScale
       parentID = body['ParentID']
@@ -506,7 +508,7 @@ def GetSystemBodies(game, currentSystem):
                             'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm, 'ColonyCost':colonyCost, 'Colonizable':colonizable,
                             'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
                             'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
-                            'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center}
+                            'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center, 'Visible orbit': 0}
     systemBodies[body[0]]['Deposits'] = deposits
   return systemBodies
 

@@ -26,12 +26,12 @@ def DrawSystemFleets(context):
   if (game.currentSystem in game.fleets):
     for fleetID in game.fleets[game.currentSystem]:
       fleet = game.fleets[game.currentSystem][fleetID]
+      col = context.color_Fleet
+      if (game.highlighted_fleet_ID == fleetID):
+        col = Utils.CYAN
       if (fleet['Ships'] != [] or context.showEmptyFleets or (game.highlighted_fleet_ID == fleetID)):
         pos = context.WorldPos2ScreenPos(fleet['Position'])
-        if (fleet['Speed'] > 1 or context.showStationaryFleets or (game.highlighted_fleet_ID == fleetID)):
-          col = context.color_Fleet
-          if (game.highlighted_fleet_ID == fleetID):
-            col = Utils.CYAN
+        if (fleet['Speed'] > 1 or context.showStationaryFleets or ((game.highlighted_fleet_ID == fleetID) and not fleet['Station'])):
           if (context.show_FleetTraces):
             prev_pos = context.WorldPos2ScreenPos(fleet['Position_prev'])
             pygame.draw.line(context.surface, col, prev_pos, pos,1)
@@ -55,17 +55,37 @@ def DrawSystemFleets(context):
             context.surface.blit(scaledSurface,image_offset)
 
         if(fleet['Station']):
+          orbitingBody = fleet['Orbit']['Body']
+          orbitDistance = fleet['Orbit']['Distance']
+          orbitBearing = fleet['Orbit']['Bearing']
+          visible_orbit = 0
+          if orbitingBody in game.starSystems[game.currentSystem]['Stars']:
+            body = game.starSystems[game.currentSystem][orbitingBody]
+            visible_orbit = body['Visible orbit']
+          elif orbitingBody in game.systemBodies:
+            body = game.systemBodies[orbitingBody]
+            visible_orbit = body['Visible orbit']
+            
+
           if (game.drawStationImages):
-            size = game.myRaceStationPic.get_size()
-            if (size[0]>size[1]):
-              ratio = size[1]/size[0]
-              scale = (50, 50*ratio)
-            else:
-              ratio = size[0]/size[1]
-              scale = (50, 50*ratio)
-            scaledSurface = pygame.transform.smoothscale(game.myRaceStationPic,scale)
-            image_offset = Utils.SubTuples(pos,scaledSurface.get_rect().center)
-            context.surface.blit(scaledSurface,image_offset)
+            if ('station' in game.images_GUI):
+              size = game.images_GUI['station'].get_size()
+              image_offset = Utils.SubTuples(pos,game.images_GUI['station'].get_rect().center)
+              image_offset = (image_offset[0]+visible_orbit+size[0]/2, image_offset[1])
+              context.surface.blit(game.images_GUI['station'],image_offset)
+              Utils.DrawText2Surface(context.surface,fleet['Name'],(image_offset[0]+size[0],image_offset[1]+10),12,col)
+              if (game.CheckClickableNotBehindGUI((image_offset, size))):
+                game.MakeClickable(fleet['Name'], (image_offset, size), left_click_call_back = Select_Fleet, par=fleetID)
+            #size = game.myRaceStationPic.get_size()
+            #if (size[0]>size[1]):
+            #  ratio = size[1]/size[0]
+            #  scale = (50, 50*ratio)
+            #else:
+            #  ratio = size[0]/size[1]
+            #  scale = (50, 50*ratio)
+            #scaledSurface = pygame.transform.smoothscale(game.myRaceStationPic,scale)
+            #image_offset = Utils.SubTuples(pos,scaledSurface.get_rect().center)
+            #context.surface.blit(scaledSurface,image_offset)
 
 
 def GetFleets(game):

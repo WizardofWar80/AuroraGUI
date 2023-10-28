@@ -34,7 +34,7 @@ class Game():
     self.screen = pygame.display.set_mode((self.width,self.height))
     self.surface = pygame.Surface((self.width,self.height), pygame.SRCALPHA,32)
     self.surface.set_colorkey(Utils.GREENSCREEN)
-    self.drawStationImages = False
+    self.drawStationImages = True
     self.drawShipImages = False
 
     self.db = None
