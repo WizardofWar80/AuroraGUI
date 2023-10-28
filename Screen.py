@@ -34,6 +34,7 @@ class Screen():
 
   def ResetGUI(self):
     self.GUI_Elements = {}
+    
 
 
   def Draw(self):

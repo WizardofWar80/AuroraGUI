@@ -250,7 +250,6 @@ class Game():
       print('File %s not found'%filename)
 
 
-
   def SaveStatistics(self):
     filename = 'statistics_pop_game_%d.json'%self.gameID
     try:
@@ -286,7 +285,6 @@ class Game():
         json.dump(self.statisticsStations, f)
     except:
       print('File %s not writeable'%filename)
-
 
 
   def InitGases(self):
@@ -349,6 +347,7 @@ class Game():
     elif (self.currentScreen == 'Economy'):
       if (self.lastScreen != self.currentScreen):
         self.economyScreen.ResetGUI()
+        self.economyScreen.UpdateEconomyData()
       reblit |= self.economyScreen.Draw()
     else:
       self.surface.fill(self.bg_color)
@@ -365,7 +364,6 @@ class Game():
       self.bodiesScreen.reDraw = True
     elif (screen_name == 'Economy'):
       self.economyScreen.reDraw = True
-      self.economyScreen.GetWealthData()
 
 
   def CheckForNewDBData(self):
@@ -464,6 +462,10 @@ class Game():
 
 
   def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True ):
+    if (len(bounding_box) == 2):
+      if (len(bounding_box[0]) == 2 and len(bounding_box[1]) == 2):
+        bounding_box = (bounding_box[0][0],bounding_box[0][1],bounding_box[1][0],bounding_box[1][1])
+
     if (anchor is not None):
       bounding_box = (bounding_box[0]+anchor[0],bounding_box[1]+anchor[1],bounding_box[2],bounding_box[3])
 
