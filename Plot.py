@@ -175,6 +175,7 @@ class Plot():
       self.events.ClearClickables(exclude='EconomyTabs')
       self.reDraw_GUI = True
       self.surface.fill(self.bg_color)
+      pygame.draw.rect(self.surface, Utils.GRAY, ((0,0),(self.size)),3)
       self.DrawAxis()
       self.DrawData()
       self.DrawLegend()
