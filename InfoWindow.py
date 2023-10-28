@@ -273,6 +273,10 @@ def DrawFleet(context, fleet, indentLevel = 0):
       # increment line because decremented it before
       #print((pad_y+lineNr*line_height), fleet['Name'])
       lineNr +=1
+      if (fleet['Station'] and fleet['Fuel Capacity'] > 0):
+        capa = Utils.ConvertNumber2kMGT(fleet['Fuel Capacity'])
+        fuel = Utils.ConvertNumber2kMGT(fleet['Fuel'])
+        label_size = DrawLineOfText(context.window_info, 'Fuel (l): %s /  %s'%(fuel,capa), indentLevel+2)
 
     if (fleet['ID'] in context.GUI_expanded_fleets2):
       # Draw current order

@@ -589,7 +589,7 @@ def GetFormattedNumber(number):
       return '%1.1f'%(round(number,1))
 
 
-def ConvertNumber2kMGT(value):
+def ConvertNumber2kMGT(value, coarse = False):
   if (type(value) is int) or (type(value) is float):
     if value > 999999999999.5:
       return '%d T'%(int(round(value / 1000000000000,0)))
