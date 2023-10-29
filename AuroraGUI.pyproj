@@ -33,11 +33,23 @@
     <Compile Include="Colonies.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ColoniesScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ColonyDetailsScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="EconomyScreen.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Events.py" />
+    <Compile Include="EventsScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Fleets.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GalaxyScreen.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="GUI.py">
@@ -56,7 +68,13 @@
     <Compile Include="Plot.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ResearchScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Screen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SurveyScreen.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Systems.py">
@@ -68,7 +86,13 @@
     <Compile Include="Table.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TerraformingScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Utils.py" />
+    <Compile Include="XenosScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda37-64" />

@@ -7,7 +7,7 @@ class Screen():
     self.game = game
     self.width = game.width
     self.height = game.height
-
+    self.surface = game.surface
     self.screenCenterBeforeDrag = self.game.screenCenter
     self.FPS = 0
     self.counter_FPS = 0
@@ -35,7 +35,6 @@ class Screen():
   def ResetGUI(self):
     self.GUI_Elements = {}
     
-
 
   def Draw(self):
     reblit = False

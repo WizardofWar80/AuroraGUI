@@ -17,6 +17,14 @@ import BodiesScreen
 import EconomyScreen
 import json
 from datetime import datetime
+import ColonyDetailsScreen
+import ColoniesScreen
+import SurveyScreen
+import ResearchScreen
+import TerraformingScreen
+import GalaxyScreen
+import XenosScreen
+import EventsScreen
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -120,9 +128,17 @@ class Game():
       self.gases = self.InitGases()
       self.GetNewData()
 
-    self.systemScreen = SystemScreen.SystemScreen(self, eventsclass)
-    self.bodiesScreen = BodiesScreen.BodiesScreen(self, eventsclass)
-    self.economyScreen = EconomyScreen.EconomyScreen(self, eventsclass)
+    self.systemScreen       = SystemScreen.SystemScreen(self, eventsclass)
+    self.bodiesScreen       = BodiesScreen.BodiesScreen(self, eventsclass)
+    self.economyScreen      = EconomyScreen.EconomyScreen(self, eventsclass)
+    self.colonyDetailsScreen= ColonyDetailsScreen.ColonyDetailsScreen(self, eventsclass)
+    self.coloniesScreen     = ColoniesScreen.ColoniesScreen(self, eventsclass)
+    self.surveyScreen       = SurveyScreen.SurveyScreen(self, eventsclass)
+    self.researchScreen     = ResearchScreen.ResearchScreen(self, eventsclass)
+    self.terraformingScreen = TerraformingScreen.TerraformingScreen(self, eventsclass)
+    self.galaxyScreen       = GalaxyScreen.GalaxyScreen(self, eventsclass)
+    self.xenosScreen        = XenosScreen.XenosScreen(self, eventsclass)
+    self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass)
     self.InitGUI()
 
 
@@ -349,6 +365,41 @@ class Game():
         self.economyScreen.ResetGUI()
         self.economyScreen.UpdateEconomyData()
       reblit |= self.economyScreen.Draw()
+    elif (self.currentScreen == 'Colonies'):
+      if (self.lastScreen != self.currentScreen):
+        self.coloniesScreen.ResetGUI()
+        #self.coloniesScreen.UpdateData()
+      reblit |= self.coloniesScreen.Draw()
+    elif (self.currentScreen == 'Colony'):
+      if (self.lastScreen != self.currentScreen):
+        self.colonyDetailsScreen.ResetGUI()
+        #self.colonyDetailsScreen.UpdateData()
+      reblit |= self.colonyDetailsScreen.Draw()
+    elif (self.currentScreen == 'Xenos'):
+      if (self.lastScreen != self.currentScreen):
+        self.xenosScreen.ResetGUI()
+        #self.xenosScreen.UpdateData()
+      reblit |= self.xenosScreen.Draw()
+    elif (self.currentScreen == 'Survey'):
+      if (self.lastScreen != self.currentScreen):
+        self.surveyScreen.ResetGUI()
+        #self.surveyScreen.UpdateData()
+      reblit |= self.surveyScreen.Draw()
+    elif (self.currentScreen == 'Research'):
+      if (self.lastScreen != self.currentScreen):
+        self.researchScreen.ResetGUI()
+        #self.researchScreen.UpdateData()
+      reblit |= self.researchScreen.Draw()
+    elif (self.currentScreen == 'Galaxy'):
+      if (self.lastScreen != self.currentScreen):
+        self.galaxyScreen.ResetGUI()
+        #self.galaxyScreen.UpdateData()
+      reblit |= self.galaxyScreen.Draw()
+    elif (self.currentScreen == 'Terraforming'):
+      if (self.lastScreen != self.currentScreen):
+        self.terraformingScreen.ResetGUI()
+        #self.terraformingScreen.UpdateData()
+      reblit |= self.terraformingScreen.Draw()
     else:
       self.surface.fill(self.bg_color)
       reblit = True
@@ -364,6 +415,20 @@ class Game():
       self.bodiesScreen.reDraw = True
     elif (screen_name == 'Economy'):
       self.economyScreen.reDraw = True
+    elif (screen_name == 'Survey'):
+      self.surveyScreen.reDraw = True
+    elif (screen_name == 'Colony'):
+      self.colonyDetailsScreen.reDraw = True
+    elif (screen_name == 'Colonies'):
+      self.coloniesScreen.reDraw = True
+    elif (screen_name == 'Xenos'):
+      self.xenosScreen.reDraw = True
+    elif (screen_name == 'Research'):
+      self.researchScreen.reDraw = True
+    elif (screen_name == 'Terraforming'):
+      self.terraformingScreen.reDraw = True
+    elif (screen_name == 'Galaxy'):
+      self.galaxyScreen.reDraw = True
 
 
   def CheckForNewDBData(self):

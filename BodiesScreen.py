@@ -131,6 +131,7 @@ class BodiesScreen(Screen):
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showLowCCBodies)
 
+
   def UpdateGUI(self):
     for i in range(len(self.table.cells[0])):
       self.GUI_Elements[i].rect = self.table.cells[0][i].rect
@@ -176,6 +177,7 @@ class BodiesScreen(Screen):
       self.showUnsurveyedBodies = not self.showUnsurveyedBodies
     elif (name == 'Show LowColonyCost'):
       self.showLowCCBodies = not self.showLowCCBodies
+
 
   def Draw(self):
     reblit = False
