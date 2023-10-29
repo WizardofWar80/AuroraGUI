@@ -73,7 +73,8 @@ def Draw(context):
             for mineral in body['Deposits']:
               amount = int(round(body['Deposits'][mineral]['Amount'],0))
               acc = round(body['Deposits'][mineral]['Accessibility'],1)
-              DrawTextWithTabs(context.window_info, mineral[:2]+':', _indentLevel+1, f"{amount:,}", 30, context.window_info_scoll_pos, text3 = '('+str(acc)+')', color3 = Utils.LIGHT_GREEN if acc >= 0.7 else Utils.RED if acc <= 0.3 else Utils.YELLOW, tab_dist2 = 110)
+              if (amount > 0):
+                DrawTextWithTabs(context.window_info, mineral[:2]+':', _indentLevel+1, f"{amount:,}", 30, context.window_info_scoll_pos, text3 = '('+str(acc)+')', color3 = Utils.LIGHT_GREEN if acc >= 0.7 else Utils.RED if acc <= 0.3 else Utils.YELLOW, tab_dist2 = 110)
         
 
         # Physical body info

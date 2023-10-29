@@ -16,16 +16,19 @@ class Plot():
     self.bg_color = Utils.SUPER_DARK_GRAY
     self.size = size
     self.anchor = anchor
-    pad = (100,30)
+    pad = (75,30)
     self.legend_width = 100
-    self.x_axis_start = (pad[0], self.size[1]-pad[1])
+    self.x_axis_start = (pad[0]+self.legend_width, self.size[1]-pad[1])
     self.x_axis_end = (self.size[0]-pad[0]-self.legend_width, self.size[1]-pad[1])
     self.x_axis_length = abs(self.x_axis_start[0]-self.x_axis_end[0])
-    self.y_axis_start = (pad[0], self.size[1]-pad[1])
-    self.y_axis_end = (pad[0], pad[1])
+    self.y_axis_start = (pad[0]+self.legend_width, self.size[1]-pad[1])
+    self.y_axis_end = (pad[0]+self.legend_width, pad[1])
     self.y_axis_length = abs(self.y_axis_start[1]-self.y_axis_end[1])
     self.data = {}
-    self.colors = [Utils.BLUE, Utils.GREEN, Utils.RED, Utils.YELLOW, Utils.CYAN, Utils.LIGHT_GREEN, Utils.PURPLE, Utils.ORANGE, Utils.TEAL]
+    self.colors = [Utils.BLUE, Utils.GREEN, Utils.RED, Utils.YELLOW, Utils.CYAN, Utils.LIGHT_GREEN, Utils.PURPLE2, Utils.ORANGE, Utils.AUQA_MARINE,
+                   Utils.PINK, Utils.BROWN, Utils.OLIVE, Utils.BISQUE
+                   #, Utils.TEAL, Utils.MED_GREEN, Utils.MED_YELLOW, Utils.LIGHT_CYAN
+                   ]
 
     self.min_x = 10000000000000000000000000000
     self.max_x = -10000000000000000000000000000
@@ -40,7 +43,7 @@ class Plot():
   def DrawAxis(self):
     axisColor = (255,255,255)
     pygame.draw.line(self.surface, axisColor, self.x_axis_start, self.x_axis_end)
-    Utils.DrawTriangle(self.surface, self.x_axis_end, axisColor, heading=0)
+    #Utils.DrawTriangle(self.surface, self.x_axis_end, axisColor, heading=0)
     pygame.draw.line(self.surface, axisColor, self.y_axis_start, self.y_axis_end)
     Utils.DrawTriangle(self.surface, self.y_axis_end, axisColor, heading=270)
     x2 = self.x_axis_end[0]
@@ -69,14 +72,15 @@ class Plot():
         if (y_pos >= 0) and (y_pos <= self.y_axis_length):
           start = (self.y_axis_start[0]-5, self.y_axis_start[1]-y_pos)
           end = (self.y_axis_start[0]+5, self.y_axis_start[1]-y_pos)
-          labeloffset = 40
+          labeloffset = 50
           if (axisname[1] == '2'):
             start = (start[0]+self.x_axis_length, start[1])
             end = (end[0]+self.x_axis_length,end[1])
-            labeloffset *= -1
-          pygame.draw.line(self.surface, Utils.WHITE, start,end, 1)
-          labelPos = (start[0]-labeloffset, start[1]-5)
-          Utils.DrawText2Surface(self.surface, str(i), labelPos, 12, Utils.WHITE)
+            labeloffset = -15
+          if (len(t) > 1):
+            pygame.draw.line(self.surface, Utils.WHITE, start,end, 1)
+            labelPos = (start[0]-labeloffset, start[1]-5)
+            Utils.DrawText2Surface(self.surface, f"{i:,}", labelPos, 12, Utils.WHITE)
 
 
   def DrawData(self):
@@ -99,7 +103,7 @@ class Plot():
           points.append(((datapoint[0]-self.min_x)*x_scale+self.x_axis_start[0],self.y_axis_start[1]-(datapoint[1]-min_y)*y_scale))
           pygame.draw.circle(self.surface, color, (points[-1][0],points[-1][1]),2)
         if (len(points)>1):
-          pygame.draw.lines(self.surface, color, False, points, 1)
+          pygame.draw.lines(self.surface, color, False, points, 2)
       colorIndex += 1
     
     self.DrawAxisTicks('x', self.min_x, self.max_x, x_scale)
@@ -108,19 +112,40 @@ class Plot():
 
 
   def DrawLegend(self):
-    x = self.size[0]-self.legend_width
-    y = 100
+    x1 = 10
+    x2 = self.size[0]-self.legend_width-10
+    y1 = 100
+    y2 = 100
     colorIndex = 0
-    pygame.draw.rect(self.surface, Utils.DARKER_GRAY, ((x-5,y-2),(self.legend_width, len(self.data) * 20 + 4)))
+    leftLegendSize = 0
+    rightLegendSize = 0
+    for dataName in self.data:
+      if (self.data[dataName]['Axis'] == 0):
+        leftLegendSize +=1
+      else:
+        rightLegendSize +=1
+
+    pygame.draw.rect(self.surface, Utils.BLACK, ((x1-5,y1-2),(self.legend_width, leftLegendSize * 20 + 4)))
+    if (rightLegendSize):
+      pygame.draw.rect(self.surface, Utils.BLACK, ((x2-5,y2-2),(self.legend_width, rightLegendSize * 20 + 4)))
+
     for dataName in self.data:
       color = self.colors[colorIndex%len(self.colors)]
       data = self.data[dataName]['data']
-      labelPos = (x, y)
-      rect = Utils.DrawText2Surface(self.surface, dataName, labelPos, 14, color)
+      if (self.data[dataName]['Axis'] == 0):
+        labelPos = (x1, y1)
+      else:
+        labelPos = (x2, y2)
+      unit = self.data[dataName]['Unit']
+      label = dataName + ((' ('+unit+')') if unit != '' else '')
+      rect = Utils.DrawText2Surface(self.surface, label, labelPos, 14, color)
       self.game.MakeClickable(dataName, rect, self.ToggleDataPlot, par=dataName, parent=self.legendGUI_identifier, anchor = self.anchor)
       if (not self.data[dataName]['Enabled']):
         pygame.draw.line(self.surface, color, (labelPos[0],labelPos[1]+8), (labelPos[0]+rect[1][0],labelPos[1]+8))
-      y+=20
+      if (self.data[dataName]['Axis'] == 0):
+        y1+=20
+      else:
+        y2+=20
       colorIndex += 1
 
 

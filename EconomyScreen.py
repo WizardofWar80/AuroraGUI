@@ -100,7 +100,7 @@ class EconomyScreen(Screen):
       max_x = max([max_x, tuple[0]])
       max_y = max([max_y, tuple[1]])
       self.wealthHistory.append([ts, value])
-    self.tabs['Economy'].AddData('Wealth', self.wealthHistory, ((min_x,min_y),(max_x,max_y)), axis = 1)
+    self.tabs['Economy'].AddData('Wealth', self.wealthHistory, ((min_x,min_y),(max_x,max_y)), axis = 1, unit = '€')
 
 
   def GetPopulationData(self):
@@ -129,6 +129,9 @@ class EconomyScreen(Screen):
       max_x = -10000000000000000000000000000
       max_y = -10000000000000000000000000000
       history = []
+      unit = 't'
+      if (name == 'Fuel'):
+        unit = 'L'
       for timestamp in self.game.statisticsStockpile[name]:
         value = self.game.statisticsStockpile[name][timestamp]
         ts = int(timestamp)
@@ -142,6 +145,7 @@ class EconomyScreen(Screen):
           history[i][1]*=0.001
         min_y *= 0.001
         max_y *= 0.001
+        unit = 'k'+unit
       self.tabs['Stockpiles'].AddData(name, history, ((min_x,min_y),(max_x,max_y)), unit=unit)
 
 
