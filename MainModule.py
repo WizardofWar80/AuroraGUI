@@ -63,8 +63,8 @@ class Game():
     self.reDraw = True
     self.reDraw_GUI = True
     self.clickables = []
-    #self.currentScreen = 'System'
-    self.currentScreen = 'Bodies'
+    self.currentScreen = 'System'
+    #self.currentScreen = 'Bodies'
     self.GUI_identifier = 'Global GUI'
     self.GUI_Elements = {}
     self.GUI_Top_Anchor = (300,10)
