@@ -494,6 +494,7 @@ def GetSystemBodies(game, currentSystem):
 
     colonized = False
     industrialized = False
+    terraforming = {'Active':False}
     if (body[0] in game.colonies):
       colony = game.colonies[body[0]]
       if (colony['Pop'] > 0):
@@ -502,14 +503,16 @@ def GetSystemBodies(game, currentSystem):
         industrialized = True
       if (sum_minerals > 0):
         resources = True
+      terraforming = colony['Terraforming']
     colonizable = True if colonyCost < 10000 else False
     dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
     bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
+    
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
                             'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm, 'ColonyCost':colonyCost, 'Colonizable':colonizable,
                             'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
                             'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
-                            'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center, 'Visible orbit': 0, 'Status':bodyStatus}
+                            'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming }
     systemBodies[body[0]]['Deposits'] = deposits
   return systemBodies
 

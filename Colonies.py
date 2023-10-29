@@ -38,7 +38,13 @@ def GetColonies(game):
       total_stockpile[mineral] += amount
     colonies[systemBodyID]['Stockpile']['Sum of Minerals'] = stockpile_minerals_sum
     colonies[systemBodyID]['Stockpile']['Sum'] = stockpile_sum
-
+    tfGasID = colony[32]
+    tfGas = '' if tfGasID == 0 else game.gases[tfGasID]
+    tfActive = True if tfGasID > 0 else False
+    tfGasAdd = 'Add' if colony[7] else 'Remove'
+    tfGasAtm = colony[21]
+    terraforming = {'Active':tfActive, 'GasID' :tfGasID, 'Gas':tfGas, 'State':tfGasAdd, 'TargetATM':tfGasAtm}
+    colonies[systemBodyID]['Terraforming'] = terraforming
     colonies[systemBodyID]['Installations'] = {}
     industries_table = [list(x) for x in game.db.execute('''SELECT PlanetaryInstallationID, Amount from FCT_PopulationInstallations WHERE GameID = %d AND PopID = %d;'''%(game.gameID,colony[0]))]
     for installation in industries_table:

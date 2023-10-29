@@ -34,7 +34,7 @@ class BodiesScreen(Screen):
     self.images_GUI = {}
     #self.InitGUI()
   #def Init2(self, game, events):
-    self.table = Table.Table(self, 50, 17, anchor = (20,50), col_widths = [10,150,120,30,50,70,40])
+    self.table = Table.Table(self, 50, 20, anchor = (20,50), col_widths = [10,150,120,30,50,70,40])
     
     self.currentSystem = game.currentSystem
     self.showColonizedBodies = True
@@ -231,6 +231,7 @@ class BodiesScreen(Screen):
         unsortedIDs.append([bodyID, body['Distance2Center'], body['Name'], body['Type'], body['Status'], body['ColonyCost'], pop, body['Population Capacity'], body['Colonizable']])
         for id in Utils.MineralNames:
           unsortedIDs[-1].append(body['Deposits'][Utils.MineralNames[id]]['Amount'])
+        unsortedIDs[-1].append(body['Terraforming']['Active'])
         #unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['Population Capacity']])
         #unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['ColonyCost']])
     
@@ -241,6 +242,7 @@ class BodiesScreen(Screen):
     header = ['AU', 'Name', 'Type', 'S', 'CC', 'Pop','Pop Cap', 'Colonizable']
     for id in Utils.MineralNames:
       header.append(Utils.MineralNames[id][:2])
+    header.append('TF')
     self.table.AddRow(row, header, [True]*len(header))
 
     row = 1
@@ -272,6 +274,8 @@ class BodiesScreen(Screen):
             val = body['Deposits'][Utils.MineralNames[id]]['Amount']
             data[index] = '' if val == 0 else Utils.ConvertNumber2kMGT(val) + '  (' + str(body['Deposits'][Utils.MineralNames[id]]['Accessibility']) + ')'
           index += 1
+      data.append(body['Terraforming']['Active'])
+      row_format.append(False)
       self.table.AddRow(row, data, row_format)
       row += 1
       if (row > self.table.num_rows):
@@ -285,6 +289,9 @@ class BodiesScreen(Screen):
     self.table.FormatColumn(5,align = 'right')
     self.table.FormatColumn(6,align = 'right')
     self.table.FormatColumn(7,align = 'center')
+    self.table.FormatColumn(19,align = 'center')
+    self.table.FormatColumnIfValuesAbove(7,False,text_color = Utils.GREEN)
+    self.table.FormatColumnIfValuesAbove(19,False,text_color = Utils.GREEN)
     
     if (self.GUI_Elements == {}):
       self.InitGUI()
