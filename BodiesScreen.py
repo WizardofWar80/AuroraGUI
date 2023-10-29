@@ -124,6 +124,12 @@ class BodiesScreen(Screen):
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showUnsurveyedBodies)
 
+    idGUI += 1
+    x += size+5
+    bb = (x,y,size,size)
+    name = 'Show LowColonyCost'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showLowCCBodies)
 
   def UpdateGUI(self):
     for i in range(len(self.table.cells[0])):
@@ -168,7 +174,8 @@ class BodiesScreen(Screen):
       self.showIndustrializedBodies = not self.showIndustrializedBodies
     elif (name == 'Show Unsurveyed'):
       self.showUnsurveyedBodies = not self.showUnsurveyedBodies
-
+    elif (name == 'Show LowColonyCost'):
+      self.showLowCCBodies = not self.showLowCCBodies
 
   def Draw(self):
     reblit = False
@@ -220,10 +227,10 @@ class BodiesScreen(Screen):
         if (bodyID in self.game.colonies):
           colony = self.game.colonies[bodyID]
           pop = colony['Pop']
-
-        unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['Distance2Center'], self.game.systemBodies[bodyID]['Name'], self.game.systemBodies[bodyID]['Type'] , self.game.systemBodies[bodyID]['ColonyCost'], pop, self.game.systemBodies[bodyID]['Population Capacity'], self.game.systemBodies[bodyID]['Colonizable']])
+        body = self.game.systemBodies[bodyID]
+        unsortedIDs.append([bodyID, body['Distance2Center'], body['Name'], body['Type'], body['Status'], body['ColonyCost'], pop, body['Population Capacity'], body['Colonizable']])
         for id in Utils.MineralNames:
-          unsortedIDs[-1].append(self.game.systemBodies[bodyID]['Deposits'][Utils.MineralNames[id]]['Amount'])
+          unsortedIDs[-1].append(body['Deposits'][Utils.MineralNames[id]]['Amount'])
         #unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['Population Capacity']])
         #unsortedIDs.append([bodyID, self.game.systemBodies[bodyID]['ColonyCost']])
     
@@ -231,10 +238,10 @@ class BodiesScreen(Screen):
     sortedIDs = sorted(unsortedIDs, key=itemgetter(id+1), reverse=rev)
       
     row = 0
-    header = ['AU', 'Name', 'Type','CC', 'Pop','Pop Cap', 'Colonizable']
+    header = ['AU', 'Name', 'Type', 'S', 'CC', 'Pop','Pop Cap', 'Colonizable']
     for id in Utils.MineralNames:
       header.append(Utils.MineralNames[id][:2])
-    self.table.AddRow(row, header)
+    self.table.AddRow(row, header, [True]*len(header))
 
     row = 1
     for row_sorted in sortedIDs:
@@ -245,10 +252,11 @@ class BodiesScreen(Screen):
       if (bodyID in self.game.colonies):
         colony = self.game.colonies[bodyID]
         pop = colony['Pop']
-
+      row_format = [False, True if body['Colonized'] else False, False, False, False,False,False,]
       data = [ int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
               ,body['Name'] 
               ,body['Type'] 
+              ,body['Status']
               ,round(body['ColonyCost'],1)
               ,f"{round(pop,2):,}" if pop > 0 else ''
               ,f"{round(body['Population Capacity'],2):,}"
@@ -257,24 +265,26 @@ class BodiesScreen(Screen):
       index = len(data)
       for id in Utils.MineralNames:
         data.append(None)
+        row_format.append(False)
       if ('Deposits' in body):
         for id in Utils.MineralNames:
           if Utils.MineralNames[id] in body['Deposits']:
             val = body['Deposits'][Utils.MineralNames[id]]['Amount']
             data[index] = '' if val == 0 else Utils.ConvertNumber2kMGT(val) + '  (' + str(body['Deposits'][Utils.MineralNames[id]]['Accessibility']) + ')'
           index += 1
-      self.table.AddRow(row, data)
+      self.table.AddRow(row, data, row_format)
       row += 1
       if (row > self.table.num_rows):
         break
-    self.table.FormatColumnIfValuesBetween(3,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
-    self.table.FormatColumnIfValuesAbove(3,self.highColonyCostThreshold,text_color = Utils.RED)
+    self.table.FormatColumnIfValuesBetween(4,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
+    self.table.FormatColumnIfValuesAbove(4,self.highColonyCostThreshold,text_color = Utils.RED)
     self.table.Realign()
     self.table.FormatColumn(0,align = 'center')
-    self.table.FormatColumn(3,align = 'right')
+    self.table.FormatColumn(3,align = 'center')
     self.table.FormatColumn(4,align = 'right')
     self.table.FormatColumn(5,align = 'right')
-    self.table.FormatColumn(6,align = 'center')
+    self.table.FormatColumn(6,align = 'right')
+    self.table.FormatColumn(7,align = 'center')
     
     if (self.GUI_Elements == {}):
       self.InitGUI()

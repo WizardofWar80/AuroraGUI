@@ -504,11 +504,12 @@ def GetSystemBodies(game, currentSystem):
         resources = True
     colonizable = True if colonyCost < 10000 else False
     dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
+    bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
                             'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm, 'ColonyCost':colonyCost, 'Colonizable':colonizable,
                             'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
                             'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
-                            'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center, 'Visible orbit': 0}
+                            'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center, 'Visible orbit': 0, 'Status':bodyStatus}
     systemBodies[body[0]]['Deposits'] = deposits
   return systemBodies
 

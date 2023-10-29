@@ -2,7 +2,7 @@ import Utils
 import pygame
 
 class Cell():
-  def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120), align = 'left'):
+  def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120), align = 'left', bold = False):
     self.value = value
     self.sortvalue = sortvalue
     self.type = type
@@ -13,7 +13,8 @@ class Cell():
     self.border_color = border_color
     self.bg_color = bg_color
     self.text_size = text_size
-    self.font = pygame.font.SysFont("Times New Roman", text_size)
+    self.bold = bold
+    self.font = pygame.font.SysFont("Times New Roman", text_size, bold = bold)
     self.width = width
     self.height = height
     self.rect = (pos[0], pos[1], width, height)
@@ -96,7 +97,7 @@ class Table():
       return 'float'
 
 
-  def AddRow(self, row, data):
+  def AddRow(self, row, data, row_format = []):
     cell_text_sizes = []
     if (len(self.cells) <= row):
       self.cells.append([])
@@ -108,10 +109,13 @@ class Table():
     current_lat_pos = 0
     for c in range(self.num_cols):
       if (c < len(data)):
+        bold = False
+        if c < len(row_format):
+          bold = row_format[c]
         col_width = self.GetWidth(c)
         screenpos = Utils.AddTuples(self.anchor, (current_lat_pos, row * self.row_height))
 
-        self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]) , x = c, y = row))
+        self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]) , x = c, y = row, bold = bold))
         cell_text_sizes.append(self.cells[index][-1].text_size[0])
         if (self.header and row == 0):
           cell_text_sizes[-1] += 10
