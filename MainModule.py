@@ -114,7 +114,8 @@ class Game():
       self.myRaceHullPicFilename = self.db.execute('''SELECT HullPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
       self.myRaceFlagPicFilename = self.db.execute('''SELECT FlagPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
       self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
-      self.deltaTime = self.db.execute('''SELECT Length from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchone()[0]
+      self.gameTick = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
+      (self.deltaTime, self.gameTick) = self.db.execute('''SELECT Length, IncrementID from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchall()[0]
       self.homeSystemID = Systems.GetHomeSystemID(self)
       self.GetMySpecies()
       self.currentSystem = self.homeSystemID
@@ -204,6 +205,13 @@ class Game():
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Xenos'
+    gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[0]+5
+    bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
+    name = 'Events'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
@@ -400,6 +408,11 @@ class Game():
         self.terraformingScreen.ResetGUI()
         #self.terraformingScreen.UpdateData()
       reblit |= self.terraformingScreen.Draw()
+    elif (self.currentScreen == 'Events'):
+      if (self.lastScreen != self.currentScreen):
+        self.eventsScreen.ResetGUI()
+        #self.terraformingScreen.UpdateData()
+      reblit |= self.eventsScreen.Draw()
     else:
       self.surface.fill(self.bg_color)
       reblit = True
@@ -429,6 +442,8 @@ class Game():
       self.terraformingScreen.reDraw = True
     elif (screen_name == 'Galaxy'):
       self.galaxyScreen.reDraw = True
+    elif (screen_name == 'Events'):
+      self.eventsScreen.reDraw = True
 
 
   def CheckForNewDBData(self):

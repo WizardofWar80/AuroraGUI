@@ -65,6 +65,9 @@
     <Compile Include="MainModule.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MultiWindowTest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Plot.py">
       <SubType>Code</SubType>
     </Compile>
