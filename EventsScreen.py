@@ -2,14 +2,14 @@ import Table
 import pygame
 import Utils
 import Events
+import Clickable
 import GUI
 from Screen import Screen
 from operator import itemgetter
 
 
 class EventsScreen(Screen):
-  pass
-
+  #self.clickedEvent = {}
 
   def Draw(self):
     reblit = False
@@ -35,7 +35,7 @@ class EventsScreen(Screen):
   def DrawGameEvents(self):
     game_event_table = [list(x) for x in self.game.db.execute('''SELECT * from FCT_Gamelog WHERE IncrementID
    = %d AND GameID = %d AND RaceID = %d;'''%(self.game.gameTick, self.game.gameID,self.game.myRaceID))]
-    #IncrementID	GameID	RaceID	SMOnly	Time	EventType	MessageText
+    #IncrementID	GameID	RaceID	SMOnly	Time	EventType	MessageText SystemID	Xcor	Ycor	IDType	PopulationID
     lineNr = 0
     line_height = 20
     for game_event in game_event_table:
@@ -43,12 +43,18 @@ class EventsScreen(Screen):
       line = game_event[6]
       texts, links, links_to = self.DeconstructEventMessage(game_event[5], line)
       link_index = 0
+      if (game_event[8]== game_event[9]):
+        game_event[8] = game_event[9] = 0
+      parameters = [game_event[7], game_event[8], game_event[9], game_event[10], game_event[11]]
       for i in range(len(texts)):
         if (links[i]):
           cursorPos, label_size = Utils.DrawText2Surface(self.surface, texts[i], cursorPos, 15, Utils.DODGER_BLUE)
           pygame.draw.line(self.surface, Utils.DODGER_BLUE, (cursorPos[0],cursorPos[1]+15), (cursorPos[0]+label_size[0],cursorPos[1]+15))
           print(texts[i]+' - '+ links_to[link_index])
+          bb = (cursorPos,label_size)
+          gui_cl = self.game.MakeClickable(links_to[link_index], bb, self.game.FollowEvent, par=[texts[i]]+parameters, parent=links_to[link_index])
           link_index += 1
+          #['Ship', 'Body', 'Fleet','Missile', 'Contact','Research', 'Xenos', 'System']
         else:
           cursorPos, label_size = Utils.DrawText2Surface(self.surface, texts[i], cursorPos, 15, (255,255,255))
 
@@ -382,3 +388,9 @@ class EventsScreen(Screen):
       links.append(True)
 
     return split_line, links
+
+
+  #def GetClickedEvent(self):
+  #  event = self.clickedEvent
+  #  self.clickedEvent = {}
+  #  return event

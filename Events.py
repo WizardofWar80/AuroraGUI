@@ -136,7 +136,7 @@ class Events:
       #logger.write('Button %d down at: %d,%d'%(event.button,event.pos[0], event.pos[1]))
       #print('LMB')
       if(not self.LeftMouseButtonDown):
-        game.screenCenterBeforeDrag = game.screenCenter
+        game.systemScreen.screenCenterBeforeDrag = game.systemScreen.screenCenter
       if (self.TimeSinceLeftMouseButtonReleased < self.doubleClickTiming):
         self.LeftMouseButtonDoubleClicked = True
         self.TimeLeftMouseButtonDoubleClick = current_time
@@ -232,6 +232,7 @@ class Events:
           game.mouseDragged = mousePosDelta2
           game.systemScreen.screenCenter = Utils.AddTuples(game.systemScreen.screenCenterBeforeDrag, mousePosDelta2)
           game.systemScreen.reDraw = True
+          #print(game.systemScreen.screenCenter,game.systemScreen.screenCenterBeforeDrag)
 
 
   def HandleSingleClickEvents(self, button, game):

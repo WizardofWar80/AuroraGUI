@@ -216,9 +216,16 @@ class Game():
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
 
-  def SwitchScreens(self, id, parent = None):
+  def SwitchScreens(self, value, parent = None):
     thisGroup = None
     thisElement = None
+
+    if type(value) is int:
+      id = value
+    else:
+      for id in self.GUI_Elements:
+        if (self.GUI_Elements[id].name == value):
+          break
     if (id in self.GUI_Elements):
       thisElement = self.GUI_Elements[id]
       if (thisElement.radioButton):
@@ -340,6 +347,7 @@ class Game():
       self.counter_FPS = 0
       self.timestampLastSecond = currentTimestamp
     Utils.DrawText2Screen(self.screen,'%d FPS'%(self.FPS),(5,5),18,Utils.WHITE, False)
+    Utils.DrawText2Screen(self.screen,'Scale: %3.2f'%(self.systemScreen.systemScale),(5,25),18,Utils.WHITE, False)
 
     return
 
@@ -583,3 +591,49 @@ class Game():
   def GetMySpecies(self):
     self.myRaceSpecies = self.db.execute('''SELECT SpeciesID from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
     self.myRacePicFilename = self.db.execute('''SELECT RacePic from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
+
+
+  def FollowEvent(self, parameters, parent):
+    # parents: ['Ship', 'Body', 'Fleet','Missile', 'Contact','Research', 'Xenos', 'System']
+    [name, SystemID, Xcor, Ycor, IDType, PopulationID] = parameters
+
+    if (parent == 'Body'):
+      if (SystemID != 0):
+        self.currentSystem = SystemID
+        self.GetNewLocalData(SystemID)
+        if (Xcor == Ycor):
+          body = Bodies.GetBodyFromName(self, name)
+          if (body):
+            (Xcor,Ycor) = body['Pos']
+        self.systemScreen.ZoomTo((Xcor, Ycor), 409600)
+        self.SwitchScreens('System')
+    elif (parent == 'Fleet'):
+      if (SystemID != 0):
+        self.currentSystem = SystemID
+        self.GetNewLocalData(SystemID)
+        self.systemScreen.ZoomTo((Xcor, Ycor), 409600)
+        self.SwitchScreens('System')
+    elif (parent == 'Ship'):
+      if (SystemID != 0):
+        self.currentSystem = SystemID
+        self.GetNewLocalData(SystemID)
+        self.systemScreen.ZoomTo((Xcor, Ycor), 409600)
+        self.SwitchScreens('System')
+    elif (parent == 'Research'):
+      self.SwitchScreens(parent)
+    elif (parent == 'System'):
+      if (SystemID != 0):
+        self.currentSystem = SystemID
+        self.GetNewLocalData(SystemID)
+        self.systemScreen.ZoomTo((0, 0), 50)
+        self.SwitchScreens('System')
+    elif (parent == 'Xenos'):
+      self.SwitchScreens(parent)
+    elif (parent == 'Contact'):
+      if (SystemID != 0):
+        self.currentSystem = SystemID
+        self.GetNewLocalData(SystemID)
+        self.systemScreen.ZoomTo((Xcor, Ycor), 409600)
+        self.SwitchScreens('System')
+    elif (parent == 'Missile'):
+      pass

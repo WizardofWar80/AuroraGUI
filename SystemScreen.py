@@ -515,7 +515,7 @@ class SystemScreen(Screen):
 
     return Utils.AddTuples(self.screenCenter ,scaled_world_pos)
 
-  
+    
   def ExpandFleet(self, id, parent):
     game = self.game
     if (id in game.fleets[game.currentSystem]):
@@ -637,6 +637,13 @@ class SystemScreen(Screen):
       self.game.GetNewLocalData(id)
       self.reDraw = True
 
+
+  def ZoomTo(self, world_pos, zoom_level):
+    print(world_pos)
+    self.systemScale=zoom_level
+    scaled_position = Utils.MulTuples(world_pos,(Utils.AU_INV*self.systemScale))
+    self.screenCenter = Utils.SubTuples(self.game.screenCenter, scaled_position)
+    #self.systemScale = 10
 
   #def ToggleGUI(self, id, parent = None):
   #  if (id in self.GUI_Elements):

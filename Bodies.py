@@ -21,6 +21,7 @@ def Select(id, parent):
     gameInstance.highlighted_fleet_ID = -1
     gameInstance.highlighted_body_ID=id
     gameInstance.systemScreen.reDraw = True
+    print(gameInstance.systemBodies[id]['Name'], gameInstance.systemBodies[id]['Pos'])
 
 
 def Draw(context):
@@ -580,3 +581,11 @@ def HighlightBody(game, body, bodySize):
   if (game.highlightArtifactsBodies and body['Artifacts']):
     width = 2*(0.5*bodySize+15)
     pygame.draw.rect(game.surface, Utils.MED_GREEN,(pos[0]-0.5*width, pos[1]-0.5*width, width, width), 2)
+
+
+def GetBodyFromName(game, name):
+  for bodyID in game.systemBodies:
+    body = game.systemBodies[bodyID]
+    if (body['Name'] == name):
+      return body
+  return None
