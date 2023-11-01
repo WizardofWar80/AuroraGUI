@@ -113,8 +113,8 @@ class Events:
       self.HandleSingleClickEvents(1, game)
     if (self.RightMouseButtonClicked):
       self.HandleSingleClickEvents(3, game)
-    #if (self.LeftMouseButtonDoubleClicked):
-    #  self.HandleDoubleClickEvents(1)
+    if (self.LeftMouseButtonDoubleClicked):
+      self.HandleDoubleClickEvents(1)
 
 
   def HandleKeyboardEvents(self, event, game):
@@ -268,7 +268,7 @@ class Events:
         game.bodiesScreen.CloseMenus()
 
 
-  def HandleDoubleClickEvents(self):
+  def HandleDoubleClickEvents(self, button):
     self.LeftMouseButtonClicked = False
     self.RightMouseButtonClicked = False
     self.LeftMouseButtonDoubleClicked = False
@@ -278,7 +278,9 @@ class Events:
              and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
              and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
              and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
+          clickable.parameter = self.LeftMouseClickPosition
           clickable.DoubleClick()
+          print(clickable.name)
 
 
   def HandleMouseWheelEvents(self, event, game):
@@ -321,6 +323,6 @@ class Events:
   def ProcessClickablesEvents(self, game):
     for clickable in self.clickables:
       if (clickable.toBeProcessed):
-        if (not clickable.doubleClicked):
-          clickable.Process()
+        #if (not clickable.doubleClicked):
+        clickable.Process()
           

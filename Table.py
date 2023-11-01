@@ -59,6 +59,7 @@ class Table():
     self.num_rows = rows
     self.num_cols = cols
     self.anchor = anchor
+    self.rect = (anchor[0], anchor[1], 150*cols,row_height*(rows))
     #self.InitTable()
     self.in_cell_pad_x = 4
     self.in_cell_pad_y = 3
@@ -66,6 +67,9 @@ class Table():
 
 
   def InitTable(self):
+    table_width = 0
+    table_height = 0
+
     for r in range(self.num_rows):
       self.cells.append([])
       current_lat_pos = 0
@@ -75,7 +79,9 @@ class Table():
 
         self.cells[-1].append(Cell(screenpos, col_width, self.row_height, x = c, y = r))
         current_lat_pos += col_width
-
+      table_width = current_lat_pos
+      table_height = screenpos[1]+self.row_height
+      self.rect = (anchor[0], anchor[1], anchor[0]+table_width, anchor[1]+table_height)
 
   def GetWidth(self, col_index):
     if(col_index < len(self.col_widths)):
@@ -208,6 +214,8 @@ class Table():
 
   def Draw(self):
     t1 = pygame.time.get_ticks()
+    table_width = 0
+    table_height = 0
     # draw the grid:
     for row in self.cells:
       for cell in row:
@@ -220,6 +228,9 @@ class Table():
           elif (cell.align == 'center'):
             textPos = (cell.screenpos[0] + cell.width/2 - cell.text_size[0]/2 , textPos[1])
           self.BlitRenderToSurface(cell, textPos)
+      table_width = cell.rect[0]+cell.rect[2]
+      table_height = cell.rect[1]+cell.rect[3]
+      self.rect = (self.anchor[0], self.anchor[1], self.anchor[0]+table_width, self.anchor[1]+table_height)
     t2 = pygame.time.get_ticks()
     print(t2- t1)
     return True
@@ -246,3 +257,25 @@ class Table():
         
   def Clear(self):
     self.cells = []
+
+
+  def GetLocationInsideTable(self, mouse_pos):
+    row = None
+    col = None
+    value = None
+    for i in range(len(self.cells[0])):
+      cell = self.cells[0][i]
+      if (mouse_pos[0] > cell.rect[0] and mouse_pos[0] < cell.rect[0]+cell.rect[2]):
+        col = i
+        break
+    
+    if (col is not None):
+      for i in range(len(self.cells)):
+        cell = self.cells[i][0]
+        if (mouse_pos[1] > cell.rect[1] and mouse_pos[1] < cell.rect[1]+cell.rect[3]):
+          row = i
+          break
+      if (row is not None):
+        value = self.cells[row][col].value
+
+    return row, col, value

@@ -5,6 +5,7 @@ import Events
 import GUI
 from Screen import Screen
 from operator import itemgetter
+import Bodies
 
 class BodiesScreen(Screen):
   def __init__(self, game, events):
@@ -52,15 +53,22 @@ class BodiesScreen(Screen):
     self.GUI_Table_radioGroup = 1
     self.GUI_identifier = 'Bodies Screen'
     self.GUI_Bottom_Anchor = (500,game.height-50)
+    self.GUI_table_ID = 0
 
 
   def InitGUI(self):
     idGUI = 0
+
     for cell in self.table.cells[0]:
       gui_cl = self.game.MakeClickable(cell.value, cell.rect, self.SortTableGUI, par=idGUI, parent=self.GUI_Table_identifier)
       self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, cell.value, cell.rect, gui_cl, enabled = True if idGUI == 0 else False, radioButton = True, radioGroup = self.GUI_Table_radioGroup, state = 0)
       idGUI += 1
-    
+
+    gui_cl = self.game.MakeClickable('Complete Bodies Table', self.table.rect, double_click_call_back = self.GetBodyFromInsideTable, parent='Complete Bodies Table')
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Table', self.table.rect, gui_cl)
+    self.GUI_table_ID = idGUI
+    idGUI += 1
+
     size = 32
     x = self.GUI_Bottom_Anchor[0]
     y = self.GUI_Bottom_Anchor[1]
@@ -135,6 +143,9 @@ class BodiesScreen(Screen):
   def UpdateGUI(self):
     for i in range(len(self.table.cells[0])):
       self.GUI_Elements[i].rect = self.table.cells[0][i].rect
+      self.GUI_Elements[i].clickable.rect = self.table.cells[0][i].rect
+    self.GUI_Elements[self.GUI_table_ID].rect = self.table.rect
+
 
 
   def SortTableGUI(self, id, parent = None):
@@ -190,6 +201,8 @@ class BodiesScreen(Screen):
       self.surface.fill(self.bg_color)
 
       reblit |= self.table.Draw()
+      self.GUI_Elements[self.GUI_table_ID].rect = self.table.rect
+      self.GUI_Elements[self.GUI_table_ID].clickable.rect = self.table.rect
 
     reblit |= self.DrawGUI()
 
@@ -320,6 +333,8 @@ class BodiesScreen(Screen):
             else:
               heading = 90
             Utils.DrawTriangle(self.surface,(element.rect[0]+element.rect[2]-7,element.rect[1]+0.5*element.rect[3]), color, heading)
+          elif (element.clickable.parent == 'Complete Bodies Table'):
+            pygame.draw.rect(self.surface, (255,0,0),self.table.rect,1)
           else:
             element.Draw(self.surface)
       self.reDraw_GUI = False
@@ -349,4 +364,15 @@ class BodiesScreen(Screen):
         if (self.showResourcelessLargeWorlds):
           return True
     return False
+
+
+  def GetBodyFromInsideTable(self, mouse_pos, parent = None):
+    row, col, value = self.table.GetLocationInsideTable(mouse_pos)
+    if (row is not None) and (col is not None):
+      if row > 0 and col == 1:
+        if (value is not None):
+          #body = Bodies.GetBodyFromName(value)
+          #print(value)
+          self.game.FollowEvent([value, self.currentSystem, 0, 0, 0, 0], 'Body')
+
 
