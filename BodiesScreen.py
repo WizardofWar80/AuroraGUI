@@ -334,7 +334,8 @@ class BodiesScreen(Screen):
               heading = 90
             Utils.DrawTriangle(self.surface,(element.rect[0]+element.rect[2]-7,element.rect[1]+0.5*element.rect[3]), color, heading)
           elif (element.clickable.parent == 'Complete Bodies Table'):
-            pygame.draw.rect(self.surface, (255,0,0),self.table.rect,1)
+            #pygame.draw.rect(self.surface, (255,0,0),self.table.rect,1)
+            pass
           else:
             element.Draw(self.surface)
       self.reDraw_GUI = False
