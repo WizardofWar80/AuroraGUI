@@ -188,3 +188,30 @@ def DrawSurveyLocations(context):
         pygame.draw.circle(context.surface,context.color_UnsurveyedLoc,screen_pos,5,1)
         Utils.DrawText2Surface(context.surface,str(SL['Number']),screen_pos_label,14,context.color_UnsurveyedLoc)
  
+
+def GetKnownSystemNames(game):
+  results = []
+  for id in game.starSystems:
+    if game.starSystems[id]['Name'] not in results:
+      results.append(game.starSystems[id]['Name'])
+  return results
+
+
+def GetSystemIDByName(game, name):
+  for id in game.starSystems:
+    if game.starSystems[id]['Name'] == name:
+      return id
+  return None
+
+
+def GetIndexOfCurrentSystem(game):
+  results = []
+  index = 0
+  for id in game.starSystems:
+    if id not in results:
+      results.append(id)
+      if (id == game.currentSystem):
+        return index
+      index += 1
+
+  return None

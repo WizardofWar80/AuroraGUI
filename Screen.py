@@ -97,6 +97,8 @@ class Screen():
       if (not element.parent):
         if (element.open):
           self.ToggleGUI(id)
+      if (element.type == 'Dropdown') and element.open:
+        element.open = False
 
 
   def ToggleGUI_Element_ByName(self, name):

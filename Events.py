@@ -85,6 +85,22 @@ class Events:
         self.clickables.remove(cl)
     
 
+  def RemoveClickable(self, cl, parent = None):
+    listOfElementsToDelete = []
+    if(parent):
+      listOfElementsToDelete = []
+      for clickable in self.clickables:
+        if (clickable.parent == parent) and (cl['Name'] == clickable['Name']):
+          listOfElementsToDelete.append(clickable)
+    else:
+      listOfElementsToDelete = []
+      for clickable in self.clickables:
+        if (clickable.parent != 'Global GUI'):
+          if (cl['Name'] == clickable['Name']):
+            listOfElementsToDelete.append(clickable)
+    for cl in listOfElementsToDelete:
+        self.clickables.remove(cl)
+
   def Bind(self, clickable):
     self.clickables.append(clickable)
 
@@ -251,6 +267,8 @@ class Events:
                and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
             clicked_clickable = index
             clickable.LeftClick()
+            if (clickable.parameter == None):
+              clickable.parameter = self.LeftMouseClickPosition
             print(clickable.name)
         elif (clickable.RightClickCallBack is not None and button == 3):
           if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])

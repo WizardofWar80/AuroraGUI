@@ -6,6 +6,7 @@ import GUI
 from Screen import Screen
 from operator import itemgetter
 import Bodies
+import Systems
 
 class BodiesScreen(Screen):
   def __init__(self, game, events):
@@ -37,7 +38,6 @@ class BodiesScreen(Screen):
   #def Init2(self, game, events):
     self.table = Table.Table(self, 50, 20, anchor = (20,50), col_widths = [10,150,120,30,50,70,40])
     
-    self.currentSystem = game.currentSystem
     self.showColonizedBodies = True
     self.showIndustrializedBodies = True
     self.showUnsurveyedBodies = False
@@ -54,6 +54,7 @@ class BodiesScreen(Screen):
     self.GUI_identifier = 'Bodies Screen'
     self.GUI_Bottom_Anchor = (500,game.height-50)
     self.GUI_table_ID = 0
+    self.GUI_dropdown_ID = 1
 
 
   def InitGUI(self):
@@ -61,12 +62,22 @@ class BodiesScreen(Screen):
 
     for cell in self.table.cells[0]:
       gui_cl = self.game.MakeClickable(cell.value, cell.rect, self.SortTableGUI, par=idGUI, parent=self.GUI_Table_identifier)
-      self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, cell.value, cell.rect, gui_cl, enabled = True if idGUI == 0 else False, radioButton = True, radioGroup = self.GUI_Table_radioGroup, state = 0)
+      self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, cell.value, cell.rect, gui_cl, 'Button', enabled = True if idGUI == 0 else False, radioButton = True, radioGroup = self.GUI_Table_radioGroup, state = 0)
       idGUI += 1
 
     gui_cl = self.game.MakeClickable('Complete Bodies Table', self.table.rect, double_click_call_back = self.GetBodyFromInsideTable, parent='Complete Bodies Table')
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Table', self.table.rect, gui_cl)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Table', self.table.rect, gui_cl, 'Button')
     self.GUI_table_ID = idGUI
+    idGUI += 1
+
+    x = self.GUI_Bottom_Anchor[0] - 300
+    y = self.GUI_Bottom_Anchor[1]
+    bb = (x,y,250,25)
+    gui_cl = self.game.MakeClickable('Bodies Dropdown', bb, self.OpenSystemDropdown, parent='Bodies Dropdown')
+    systemNames = Systems.GetKnownSystemNames(self.game)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Dropdown', bb, gui_cl, 'Dropdown', content = systemNames)
+    self.GUI_dropdown_ID = idGUI
+    self.GUI_Elements[idGUI].dropdownSelection = Systems.GetIndexOfCurrentSystem(self.game)
     idGUI += 1
 
     size = 32
@@ -75,14 +86,14 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Colonies'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showColonizedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showColonizedBodies)
 
     idGUI += 1
     x += size+5
     bb = (x,y,size,size)
     name = 'Filter Resources'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button')
     showBodiesGUI = self.GUI_Elements[idGUI]
 
     idGUI += 1
@@ -90,7 +101,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'LargeWorlds'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessLargeWorlds)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessLargeWorlds)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -98,7 +109,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'SmallWorlds'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessSmallWorlds)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessSmallWorlds)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -106,7 +117,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Comets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessComets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessComets)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -114,7 +125,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Asteroids'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.showResourcelessAsteroids)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessAsteroids)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -123,21 +134,21 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Installations'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showIndustrializedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showIndustrializedBodies)
 
     idGUI += 1
     x += size+5
     bb = (x,y,size,size)
     name = 'Show Unsurveyed'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showUnsurveyedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showUnsurveyedBodies)
 
     idGUI += 1
     x += size+5
     bb = (x,y,size,size)
     name = 'Show LowColonyCost'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, enabled = self.showLowCCBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showLowCCBodies)
 
 
   def UpdateGUI(self):
@@ -145,7 +156,6 @@ class BodiesScreen(Screen):
       self.GUI_Elements[i].rect = self.table.cells[0][i].rect
       self.GUI_Elements[i].clickable.rect = self.table.cells[0][i].rect
     self.GUI_Elements[self.GUI_table_ID].rect = self.table.rect
-
 
 
   def SortTableGUI(self, id, parent = None):
@@ -232,7 +242,7 @@ class BodiesScreen(Screen):
   def UpdateTable(self):
     t1 = pygame.time.get_ticks()
     self.table.Clear()
-    system = self.game.starSystems[self.currentSystem]
+    system = self.game.starSystems[self.game.currentSystem]
     text_widths = []
     unsortedIDs = []
     for bodyID in self.game.systemBodies:
@@ -374,6 +384,30 @@ class BodiesScreen(Screen):
         if (value is not None):
           #body = Bodies.GetBodyFromName(value)
           #print(value)
-          self.game.FollowEvent([value, self.currentSystem, 0, 0, 0, 0], 'Body')
+          self.game.FollowEvent([value, self.game.currentSystem, 0, 0, 0, 0], 'Body')
 
 
+  def OpenSystemDropdown(self, parameter, parent):
+    self.GUI_Elements[self.GUI_dropdown_ID].open = not self.GUI_Elements[self.GUI_dropdown_ID].open
+    if (self.GUI_Elements[self.GUI_dropdown_ID].open):
+      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_dropdown_ID].extendedBB, self.GetDropdownSelection, parent='Bodies Dropdown')
+    else:
+      self.game.Events.RemoveClickable('open dropdown', parent='Bodies Dropdown')
+    self.reDraw = True
+
+
+  def GetDropdownSelection(self, mouse_pos, parent):
+    for i in range(len(self.GUI_Elements[self.GUI_dropdown_ID].content)):
+      height = self.GUI_Elements[self.GUI_dropdown_ID].rect[3]
+      anchor = (self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[0],self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[1])
+      y = i*height
+      if (mouse_pos[1]-anchor[1] > y) and (mouse_pos[1]-anchor[1] < y + height):
+        self.GUI_Elements[self.GUI_dropdown_ID].dropdownSelection = i
+        self.GUI_Elements[self.GUI_dropdown_ID].open  = False
+        id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[self.GUI_dropdown_ID].content[i])
+        if (id is not None):
+          self.game.currentSystem = id
+          self.game.GetNewLocalData(id)
+        self.reDraw = True
+        break
+        

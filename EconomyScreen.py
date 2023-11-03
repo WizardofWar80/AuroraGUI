@@ -68,21 +68,21 @@ class EconomyScreen(Screen):
     bb = (x,y,self.GUI_Button_Size[0],self.GUI_Button_Size[1])
     name = 'Economy'
     gui_cl = self.game.MakeClickable(name, bb, self.SwitchTabs, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, tab = True, enabled = True if self.active_tab == name else False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, tab = True, enabled = True if self.active_tab == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Button_Size[0]+5
     bb = (x,y,self.GUI_Button_Size[0],self.GUI_Button_Size[1])
     name = 'Stockpiles'
     gui_cl = self.game.MakeClickable(name, bb, self.SwitchTabs, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, tab = True, enabled = True if self.active_tab == name else False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, tab = True, enabled = True if self.active_tab == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Button_Size[0]+5
     bb = (x,y,self.GUI_Button_Size[0],self.GUI_Button_Size[1])
     name = 'Military'
     gui_cl = self.game.MakeClickable(name, bb, self.SwitchTabs, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, textButton = True, tab = True, enabled = True if self.active_tab == name else False, radioButton = True, radioGroup = 0)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, tab = True, enabled = True if self.active_tab == name else False, radioButton = True, radioGroup = 0)
 
 
   def GetWealthData(self):

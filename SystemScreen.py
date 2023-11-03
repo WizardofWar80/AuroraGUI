@@ -183,7 +183,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Bodies'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button')
     showBodiesGUI = self.GUI_Elements[idGUI]
     parentName = name
 
@@ -192,7 +192,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Planets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Planets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.show_Planets)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -200,7 +200,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Moons'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Moons)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.show_Moons)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -208,7 +208,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Asteroids'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Asteroids)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.show_Asteroids)
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -216,7 +216,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Comets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showBodiesGUI.GetID(), enabled = self.show_Comets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.show_Comets)
     showBodiesGUI.AddChildren(idGUI)
 
     # Second Column
@@ -227,7 +227,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Orbits'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button')
     showOrbitsGUI = self.GUI_Elements[idGUI]
     parentName = name
 
@@ -236,7 +236,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Planet Orbits'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Planets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Planets)
     showOrbitsGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -244,7 +244,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Moon Orbits'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Moons)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Moons)
     showOrbitsGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -252,7 +252,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Asteroid Orbits'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Asteroids)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Asteroids)
     showOrbitsGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -260,7 +260,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Comet Orbits'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Comets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showOrbitsGUI.GetID(), enabled = self.showOrbits_Comets)
     showOrbitsGUI.AddChildren(idGUI)
 
     # Third Column
@@ -271,7 +271,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button')
     FilterBodiesGUI = self.GUI_Elements[idGUI]
     parentName = name
 
@@ -280,7 +280,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter Colonies'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showColonizedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=FilterBodiesGUI.GetID(), enabled = self.showColonizedBodies)
     FilterBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -288,7 +288,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter Resources'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showResourcefulBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=FilterBodiesGUI.GetID(), enabled = self.showResourcefulBodies)
     FilterBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -296,7 +296,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter Installations'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showIndustrializedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=FilterBodiesGUI.GetID(), enabled = self.showIndustrializedBodies)
     FilterBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -304,7 +304,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter Unsurveyed'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showUnsurveyedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', parent=FilterBodiesGUI.GetID(), enabled = self.showUnsurveyedBodies)
     FilterBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -312,7 +312,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter Enemies'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showEnemyBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=FilterBodiesGUI.GetID(), enabled = self.showEnemyBodies)
     FilterBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -320,7 +320,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter Xenos'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showXenosBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=FilterBodiesGUI.GetID(), enabled = self.showXenosBodies)
     FilterBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -328,7 +328,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Filter Artifacts'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=FilterBodiesGUI.GetID(), enabled = self.showArtifactsBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=FilterBodiesGUI.GetID(), enabled = self.showArtifactsBodies)
     FilterBodiesGUI.AddChildren(idGUI)
 
     # Fourth Column
@@ -339,7 +339,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button')
     HighlightGUI = self.GUI_Elements[idGUI]
     parentName = name
 
@@ -348,7 +348,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight Colonies'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightColonizedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=HighlightGUI.GetID(), enabled = self.highlightColonizedBodies)
     HighlightGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -356,7 +356,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight Resources'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightResourcefulBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=HighlightGUI.GetID(), enabled = self.highlightResourcefulBodies)
     HighlightGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -364,7 +364,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight Installations'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightIndustrializedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=HighlightGUI.GetID(), enabled = self.highlightIndustrializedBodies)
     HighlightGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -372,7 +372,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight Unsurveyed'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightUnsurveyedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', parent=HighlightGUI.GetID(), enabled = self.highlightUnsurveyedBodies)
     HighlightGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -380,7 +380,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight Enemies'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightEnemyBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=HighlightGUI.GetID(), enabled = self.highlightEnemyBodies)
     HighlightGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -388,7 +388,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight Xenos'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightXenosBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=HighlightGUI.GetID(), enabled = self.highlightXenosBodies)
     HighlightGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -396,7 +396,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Highlight Artifacts'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, parent=HighlightGUI.GetID(), enabled = self.highlightArtifactsBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=HighlightGUI.GetID(), enabled = self.highlightArtifactsBodies)
     HighlightGUI.AddChildren(idGUI)
 
     # Left GUI
@@ -407,7 +407,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Empty Fleets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showEmptyFleets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showEmptyFleets)
 
     idGUI += 1
     x += size+5
@@ -415,7 +415,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Military Fleets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showMilitaryFleets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showMilitaryFleets)
 
     idGUI += 1
     x += size+5
@@ -423,7 +423,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Commercial Fleets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showCommercialFleets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showCommercialFleets)
 
     idGUI += 1
     x += size+5
@@ -431,7 +431,7 @@ class SystemScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Stationary Fleets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, enabled = self.showStationaryFleets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showStationaryFleets)
 
 
   def Draw(self):
