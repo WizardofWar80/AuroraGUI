@@ -2,7 +2,7 @@ import pygame
 import Utils
 
 class GUI():
-  def __init__(self, gameClass, id, name, rect, clickable, type, parent = None, enabled = True, parentName = '', tab = False, textButton = False, radioButton = False, radioGroup = None, state = 0, content = []):
+  def __init__(self, gameClass, id, name, rect, clickable, type, parent = None, enabled = True, parentName = '', tab = False, textButton = False, radioButton = False, radioGroup = None, state = 0, content = [], dropUp = False):
     self.ID = id
     self.type = type
     self.name = name
@@ -18,8 +18,12 @@ class GUI():
     self.radioGroup = radioGroup
     self.dropdownSelection = None
     self.extendedBB = None
+    self.scroll_position = 0
     self.children = []
     self.content = content
+    self.maxLength = 5
+    self.maxScroll = 0
+    self.dropUp = dropUp
     self.isTab = tab
     self.tooltip = 'This is a GUI element'
     self.image_enabled = None
@@ -36,8 +40,13 @@ class GUI():
         self.label = self.name[0]
     if (type == 'Dropdown'):
       num_entries = len(self.content)
+      max_entries = min(self.maxLength,num_entries)
       if (num_entries > 1):
-        self.extendedBB = (self.rect[0],self.rect[1]-self.rect[3]*(num_entries),self.rect[2]-self.rect[3], self.rect[3]*(num_entries))
+        if (self.dropUp):
+          self.extendedBB = pygame.Rect((self.rect[0],self.rect[1]-self.rect[3]*max_entries),(self.rect[2]-self.rect[3], self.rect[3]*max_entries))
+        else:
+          self.extendedBB = pygame.Rect((self.rect[0],self.rect[1]+self.rect[3]),(self.rect[2]-self.rect[3], self.rect[3]*max_entries))
+        self.maxScroll = min(0,self.maxLength-num_entries)
 
 
   def Draw(self, surface):
@@ -89,22 +98,23 @@ class GUI():
         text = self.content[self.dropdownSelection]
       Utils.DrawText2Surface(temp_surf, text, (pos[0]+5,pos[1]+1),20,Utils.WHITE)
       pygame.draw.rect(temp_surf, Utils.GRAY, ((pos[0]+size[0]-self.rect[3],pos[1]),(self.rect[3], self.rect[3])), 0)
+      Utils.DrawSizedTriangle(temp_surf,(pos[0]+size[0]-self.rect[3]+13,pos[1]+10),Utils.BLACK,[8,4], 0, upside_down = True)
       surface.blit(temp_surf,(self.rect[0],self.rect[1]))
       if self.open:
         num_entries = len(self.content)
         if (num_entries > 1):
-          #size = (self.rect[2], self.rect[3]*(num_entries))
-          #temp_surf = pygame.Surface(size, pygame.SRCALPHA,32)
-          #pos = (0, 2)
-          #bb = (pos[0],pos[1],size[0]-self.rect[3], size[1])
           pygame.draw.rect(surface, self.insideColor, self.extendedBB, 0)
           pygame.draw.rect(surface, Utils.GRAY, self.extendedBB, 2)
+          lineNr = 0
           for i in range(num_entries):
-            text= self.content[i]
-            if (len(self.content) > 0) and (self.dropdownSelection > -1) and (self.dropdownSelection < len(self.content)):
-              text = self.content[i]
-            Utils.DrawText2Surface(surface, text, (self.extendedBB[0]+5,self.extendedBB[1]+1+i*self.rect[3]),20,Utils.WHITE)
-          #surface.blit(temp_surf,(self.rect[0],self.rect[1]-size[1]))
+            if (self.scroll_position+i >= 0):
+              text= self.content[i]
+              if (len(self.content) > 0) and (self.dropdownSelection > -1) and (self.dropdownSelection < len(self.content)):
+                text = self.content[i]
+              Utils.DrawText2Surface(surface, text, (self.extendedBB[0]+5,self.extendedBB[1]+1+lineNr*self.rect[3]),20,Utils.WHITE)
+              lineNr += 1
+              if (lineNr >= self.maxLength):
+                break
 
 
   def ClearContent(self):
@@ -127,6 +137,7 @@ class GUI():
 
   def GetID(self):
     return self.ID
+
 
 
 

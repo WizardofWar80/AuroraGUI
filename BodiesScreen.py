@@ -71,11 +71,11 @@ class BodiesScreen(Screen):
     idGUI += 1
 
     x = self.GUI_Bottom_Anchor[0] - 300
-    y = self.GUI_Bottom_Anchor[1]
+    y = self.GUI_Bottom_Anchor[1] - 300
     bb = (x,y,250,25)
     gui_cl = self.game.MakeClickable('Bodies Dropdown', bb, self.OpenSystemDropdown, parent='Bodies Dropdown')
     systemNames = Systems.GetKnownSystemNames(self.game)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Dropdown', bb, gui_cl, 'Dropdown', content = systemNames)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Dropdown', bb, gui_cl, 'Dropdown', content = systemNames, dropUp = True)
     self.GUI_dropdown_ID = idGUI
     self.GUI_Elements[idGUI].dropdownSelection = Systems.GetIndexOfCurrentSystem(self.game)
     idGUI += 1
@@ -393,21 +393,26 @@ class BodiesScreen(Screen):
       self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_dropdown_ID].extendedBB, self.GetDropdownSelection, parent='Bodies Dropdown')
     else:
       self.game.Events.RemoveClickable('open dropdown', parent='Bodies Dropdown')
+      self.GUI_Elements[self.GUI_dropdown_ID].scroll_position = 0
     self.reDraw = True
 
 
   def GetDropdownSelection(self, mouse_pos, parent):
+    lineNr = 0
     for i in range(len(self.GUI_Elements[self.GUI_dropdown_ID].content)):
-      height = self.GUI_Elements[self.GUI_dropdown_ID].rect[3]
-      anchor = (self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[0],self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[1])
-      y = i*height
-      if (mouse_pos[1]-anchor[1] > y) and (mouse_pos[1]-anchor[1] < y + height):
-        self.GUI_Elements[self.GUI_dropdown_ID].dropdownSelection = i
-        self.GUI_Elements[self.GUI_dropdown_ID].open  = False
-        id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[self.GUI_dropdown_ID].content[i])
-        if (id is not None):
-          self.game.currentSystem = id
-          self.game.GetNewLocalData(id)
-        self.reDraw = True
-        break
+      if (self.GUI_Elements[self.GUI_dropdown_ID].scroll_position+i >= 0):
+        height = self.GUI_Elements[self.GUI_dropdown_ID].rect[3]
+        anchor = (self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[0],self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[1])
+        y = lineNr*height
+        lineNr+=1
+        if (mouse_pos[1]-anchor[1] > y) and (mouse_pos[1]-anchor[1] < y + height):
+          self.GUI_Elements[self.GUI_dropdown_ID].dropdownSelection = i
+          self.GUI_Elements[self.GUI_dropdown_ID].open  = False
+          id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[self.GUI_dropdown_ID].content[i])
+          if (id is not None):
+            self.game.currentSystem = id
+            self.game.GetNewLocalData(id)
+          self.reDraw = True
+          break
+
         

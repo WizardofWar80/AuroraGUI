@@ -90,19 +90,21 @@ class Events:
     if(parent):
       listOfElementsToDelete = []
       for clickable in self.clickables:
-        if (clickable.parent == parent) and (cl['Name'] == clickable['Name']):
+        if (clickable.parent == parent) and (cl == clickable.name):
           listOfElementsToDelete.append(clickable)
     else:
       listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent != 'Global GUI'):
-          if (cl['Name'] == clickable['Name']):
+          if (cl == clickable.name):
             listOfElementsToDelete.append(clickable)
     for cl in listOfElementsToDelete:
         self.clickables.remove(cl)
 
+
   def Bind(self, clickable):
     self.clickables.append(clickable)
+
 
   def UnBind(self, clickable):
     #self.clickables.append(clickable)
@@ -111,6 +113,7 @@ class Events:
 
   def GetTimeinSeconds(self):
     return pygame.time.get_ticks()/1000
+
 
   def HandleMouseEvents(self, event, game):
     # The mouse wheel will generate pygame.MOUSEBUTTONDOWN and pygame.MOUSEBUTTONUP events when rolled. 
@@ -336,6 +339,17 @@ class Events:
             zoomed_delta = Utils.DivTuples(delta, 2)
             game.systemScreen.screenCenter=Utils.SubTuples(game.systemScreen.screenCenter, zoomed_delta)
             game.systemScreen.reDraw = True
+    elif (game.currentScreen == 'Bodies'):
+      dropdown_element = game.bodiesScreen.GUI_Elements[game.bodiesScreen.GUI_dropdown_ID]
+      if (dropdown_element.extendedBB.collidepoint(event.pos)):
+        if (dropdown_element.open):
+          if (event.button == 4):
+            if (dropdown_element.scroll_position < 0):
+              dropdown_element.scroll_position += 1
+          else:
+            if (dropdown_element.scroll_position > dropdown_element.maxScroll):
+              dropdown_element.scroll_position -= 1
+          game.bodiesScreen.reDraw_GUI = True
 
 
   def ProcessClickablesEvents(self, game):

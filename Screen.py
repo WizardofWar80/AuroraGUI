@@ -99,6 +99,7 @@ class Screen():
           self.ToggleGUI(id)
       if (element.type == 'Dropdown') and element.open:
         element.open = False
+        element.scroll_position = 0
 
 
   def ToggleGUI_Element_ByName(self, name):

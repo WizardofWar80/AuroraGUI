@@ -211,10 +211,17 @@ def DrawTriangle(surface,position, color, heading=0):
   #pygame.draw.rect(surface,(255,255,255), ((position[0]-6,position[1]-6),(12,12)), 1)
     
 
-def DrawSizedTriangle(surface, pos, color, size, thickness):
-  points = [( pos[0]-size, pos[1]+size*0.5),
-            ( pos[0]+size, pos[1]+size*0.5),
-            ( pos[0]     , pos[1]-size*1.5)]
+def DrawSizedTriangle(surface, pos, color, size, thickness, upside_down = False):
+  f = -1 if upside_down else 1
+  if type(size) == list:
+    h = size[1]
+    w = size[0]
+  else:
+    h = size
+    w = size
+  points = [( pos[0]-w, pos[1]+h*0.5*f),
+            ( pos[0]+w, pos[1]+h*0.5*f),
+            ( pos[0]  , pos[1]-h*1.5*f)]
   pygame.draw.polygon(surface,color, points, thickness)
   #pygame.draw.rect(surface,(255,255,255), ((position[0]-6,position[1]-6),(12,12)), 1)
 
