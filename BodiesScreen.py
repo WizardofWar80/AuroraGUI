@@ -37,7 +37,7 @@ class BodiesScreen(Screen):
     self.images_GUI = {}
     #self.InitGUI()
   #def Init2(self, game, events):
-    self.table = Table.Table(self, 50, 20, anchor = (20,50), col_widths = [10,150,120,30,50,70,40])
+    self.table = Table.Table(self, 1, 20, anchor = (20,50), col_widths = [10,150,120,30,50,70,40])
     
     self.showColonizedBodies = True
     self.showIndustrializedBodies = True
@@ -53,7 +53,7 @@ class BodiesScreen(Screen):
     self.GUI_Table_identifier = 'Bodies Table'
     self.GUI_Table_radioGroup = 1
     self.GUI_identifier = 'Bodies Screen'
-    self.GUI_Bottom_Anchor = (500,game.height-50)
+    self.GUI_Bottom_Anchor = (525, game.height-50)
     self.GUI_table_ID = 0
     self.GUI_ID_dropdown_systems = 1
     self.GUI_ID_dropdown_designations = 2
@@ -72,21 +72,21 @@ class BodiesScreen(Screen):
     self.GUI_table_ID = idGUI
     idGUI += 1
 
-    x = self.GUI_Bottom_Anchor[0] - 300
-    y = self.GUI_Bottom_Anchor[1]
+    x = self.GUI_Bottom_Anchor[0] - 275
+    y = self.GUI_Bottom_Anchor[1] + 3
     bb = (x,y,250,25)
     gui_cl = self.game.MakeClickable('Bodies Dropdown', bb, self.OpenSystemDropdown, parent='Bodies Dropdown')
     systemNames = Systems.GetKnownSystemNames(self.game)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Dropdown', bb, gui_cl, 'Dropdown', content = systemNames, dropUp = True)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'System', bb, gui_cl, 'Dropdown', content = systemNames, dropUp = True, showLabel = True)
     self.GUI_ID_dropdown_systems = idGUI
     self.GUI_Elements[idGUI].dropdownSelection = Systems.GetIndexOfCurrentSystem(self.game)
     idGUI += 1
 
     x = 25
-    y = self.GUI_Bottom_Anchor[1]
+    y = self.GUI_Bottom_Anchor[1] + 3
     bb = (x,y,200,25)
     gui_cl = self.game.MakeClickable('Designation', bb, self.OpenDesignationDropdown, parent='Designation Dropdown')
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Designation', bb, gui_cl, 'Dropdown', content = Designations.system_designations, dropUp = True)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Designation', bb, gui_cl, 'Dropdown', content = Designations.system_designations, dropUp = True, showLabel = True)
     self.GUI_ID_dropdown_designations = idGUI
     self.GUI_Elements[idGUI].dropdownSelection = Designations.GetIndexOfCurrentSystem()
     idGUI += 1
@@ -282,40 +282,45 @@ class BodiesScreen(Screen):
     self.table.AddRow(row, header, [True]*len(header))
 
     row = 1
+    sortedRowIndex = 0
+    self.table.maxScroll = min(0,self.table.max_rows-len(sortedIDs)-1)
+    self.table.num_rows = 1
     for row_sorted in sortedIDs:
-      bodyID = row_sorted[0]
-    #for bodyID in self.game.systemBodies:
-      body = self.game.systemBodies[bodyID]
-      pop = 0
-      if (bodyID in self.game.colonies):
-        colony = self.game.colonies[bodyID]
-        pop = colony['Pop']
-      row_format = [False, True if body['Colonized'] else False, False, False, False,False,False,]
-      data = [ int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
-              ,body['Name'] 
-              ,body['Type'] 
-              ,body['Status']
-              ,round(body['ColonyCost'],1)
-              ,f"{round(pop,2):,}" if pop > 0 else ''
-              ,f"{round(body['Population Capacity'],2):,}"
-              ,body['Colonizable']
-              ]
-      index = len(data)
-      for id in Utils.MineralNames:
-        data.append(None)
-        row_format.append(False)
-      if ('Deposits' in body):
+      if (sortedRowIndex + self.table.scroll_position >= 0) and (row < self.table.max_rows):
+        bodyID = row_sorted[0]
+      #for bodyID in self.game.systemBodies:
+        body = self.game.systemBodies[bodyID]
+        pop = 0
+        if (bodyID in self.game.colonies):
+          colony = self.game.colonies[bodyID]
+          pop = colony['Pop']
+        row_format = [False, True if body['Colonized'] else False, False, False, False,False,False,]
+        data = [ int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
+                ,body['Name'] 
+                ,body['Type'] 
+                ,body['Status']
+                ,round(body['ColonyCost'],1)
+                ,f"{round(pop,2):,}" if pop > 0 else ''
+                ,f"{round(body['Population Capacity'],2):,}"
+                ,body['Colonizable']
+                ]
+        index = len(data)
         for id in Utils.MineralNames:
-          if Utils.MineralNames[id] in body['Deposits']:
-            val = body['Deposits'][Utils.MineralNames[id]]['Amount']
-            data[index] = '' if val == 0 else Utils.ConvertNumber2kMGT(val) + '  (' + str(body['Deposits'][Utils.MineralNames[id]]['Accessibility']) + ')'
-          index += 1
-      data.append(body['Terraforming']['Active'])
-      row_format.append(False)
-      self.table.AddRow(row, data, row_format)
-      row += 1
-      if (row > self.table.num_rows):
-        break
+          data.append(None)
+          row_format.append(False)
+        if ('Deposits' in body):
+          for id in Utils.MineralNames:
+            if Utils.MineralNames[id] in body['Deposits']:
+              val = body['Deposits'][Utils.MineralNames[id]]['Amount']
+              data[index] = '' if val == 0 else Utils.ConvertNumber2kMGT(val) + '  (' + str(body['Deposits'][Utils.MineralNames[id]]['Accessibility']) + ')'
+            index += 1
+        data.append(body['Terraforming']['Active'])
+        row_format.append(False)
+        self.table.AddRow(row, data, row_format)
+        row += 1
+        if (row > min(self.table.max_rows, self.table.num_rows)):
+          break
+      sortedRowIndex += 1
     self.table.FormatColumnIfValuesBetween(4,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
     self.table.FormatColumnIfValuesAbove(4,self.highColonyCostThreshold,text_color = Utils.RED)
     self.table.Realign()

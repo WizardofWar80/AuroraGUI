@@ -56,32 +56,36 @@ class Table():
     self.cells = []
     self.row_height = row_height
     self.col_widths = col_widths
+    self.anchor = anchor
+    self.max_rows = 20
     self.num_rows = rows
     self.num_cols = cols
-    self.anchor = anchor
-    self.rect = (anchor[0], anchor[1], 150*cols,row_height*(rows))
+    self.rect = pygame.Rect(anchor[0], anchor[1], 150*cols,row_height*(min(rows, self.max_rows)))
+    self.scroll_position = 0
     #self.InitTable()
     self.in_cell_pad_x = 4
     self.in_cell_pad_y = 3
     self.max_cell_sizes = [0 for col in range(cols)]
+    self.maxScroll = min(0,self.max_rows-self.num_rows)
 
 
   def InitTable(self):
-    table_width = 0
-    table_height = 0
+    pass
+    #table_width = 0
+    #table_height = 0
 
-    for r in range(self.num_rows):
-      self.cells.append([])
-      current_lat_pos = 0
-      for c in range(self.num_cols):
-        col_width = self.GetWidth(c)
-        screenpos = Utils.AddTuples(self.anchor, (current_lat_pos, r * self.row_height))
+    #for r in range(self.num_rows):
+    #  self.cells.append([])
+    #  current_lat_pos = 0
+    #  for c in range(self.num_cols):
+    #    col_width = self.GetWidth(c)
+    #    screenpos = Utils.AddTuples(self.anchor, (current_lat_pos, r * self.row_height))
 
-        self.cells[-1].append(Cell(screenpos, col_width, self.row_height, x = c, y = r))
-        current_lat_pos += col_width
-      table_width = current_lat_pos
-      table_height = screenpos[1]+self.row_height
-      self.rect = (anchor[0], anchor[1], anchor[0]+table_width, anchor[1]+table_height)
+    #    self.cells[-1].append(Cell(screenpos, col_width, self.row_height, x = c, y = r))
+    #    current_lat_pos += col_width
+    #  table_width = current_lat_pos
+    #  table_height = screenpos[1]+self.row_height
+    #  self.rect = (anchor[0], anchor[1], anchor[0]+table_width, anchor[1]+table_height)
 
   def GetWidth(self, col_index):
     if(col_index < len(self.col_widths)):
@@ -108,6 +112,7 @@ class Table():
     if (len(self.cells) <= row):
       self.cells.append([])
       index = -1
+      self.num_rows += 1
     else:
       index = row
       self.cells[index] = []
@@ -217,6 +222,7 @@ class Table():
     table_width = 0
     table_height = 0
     # draw the grid:
+    rowIndex = 0
     for row in self.cells:
       for cell in row:
         pygame.draw.rect(self.context.surface, cell.border_color, cell.rect, 1)
@@ -230,9 +236,11 @@ class Table():
           self.BlitRenderToSurface(cell, textPos)
       table_width = cell.rect[0]+cell.rect[2]
       table_height = cell.rect[1]+cell.rect[3]
-      self.rect = (self.anchor[0], self.anchor[1], self.anchor[0]+table_width, self.anchor[1]+table_height)
+      self.rect = pygame.Rect(self.anchor[0], self.anchor[1], table_width, table_height)
     t2 = pygame.time.get_ticks()
     print(t2- t1)
+    if (self.context.game.Debug):
+      pygame.draw.rect(self.context.surface, Utils.RED, self.rect, 1)
     return True
     #if(len(self.col_widths) == self.num_cols):
     #  pass

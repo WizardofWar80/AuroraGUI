@@ -2,7 +2,7 @@ import pygame
 import Utils
 
 class GUI():
-  def __init__(self, gameClass, id, name, rect, clickable, type, parent = None, enabled = True, parentName = '', tab = False, textButton = False, radioButton = False, radioGroup = None, state = 0, content = [], dropUp = False):
+  def __init__(self, gameClass, id, name, rect, clickable, type, parent = None, enabled = True, parentName = '', tab = False, textButton = False, radioButton = False, radioGroup = None, state = 0, content = [], dropUp = False, showLabel = False):
     self.ID = id
     self.type = type
     self.name = name
@@ -31,8 +31,10 @@ class GUI():
     self.visible = True if (parent == None) else False
     self.clickable = clickable
     self.label = self.name
+    self.showLabel = showLabel
+    self.labelOffset = (0,-25)
     self.insideColor = Utils.SUPER_DARK_GRAY
-    if (not self.textButton):
+    if (not self.textButton) and (self.type == 'Button'):
       find_space = self.name.find(' ')
       if (find_space > -1):
         self.label = (self.name[find_space+1:])[0]
@@ -50,6 +52,8 @@ class GUI():
 
 
   def Draw(self, surface):
+    if (self.showLabel):
+      Utils.DrawText2Surface(surface, self.label, (self.rect[0]+self.labelOffset[0], self.rect[1]+self.labelOffset[1]),20,Utils.GRAY)
     if (self.type == 'Button'):
       if (not self.enabled or self.children):
         if (self.isTab):
