@@ -21,11 +21,11 @@ class GUI():
     self.scroll_position = 0
     self.children = []
     self.content = content
-    self.maxLength = 5
+    self.maxLength = 10
     self.maxScroll = 0
     self.dropUp = dropUp
     self.isTab = tab
-    self.tooltip = 'This is a GUI element'
+    self.tooltip = name
     self.image_enabled = None
     self.image_disabled = None
     self.visible = True if (parent == None) else False

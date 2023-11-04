@@ -272,7 +272,7 @@ class Events:
             clickable.LeftClick()
             if (clickable.parameter == None):
               clickable.parameter = self.LeftMouseClickPosition
-            print(clickable.name)
+            #print(clickable.name)
         elif (clickable.RightClickCallBack is not None and button == 3):
           if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])
                and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
@@ -301,7 +301,7 @@ class Events:
              and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
           clickable.parameter = self.LeftMouseClickPosition
           clickable.DoubleClick()
-          print(clickable.name)
+          #print(clickable.name)
 
 
   def HandleMouseWheelEvents(self, event, game):
@@ -340,7 +340,7 @@ class Events:
             game.systemScreen.screenCenter=Utils.SubTuples(game.systemScreen.screenCenter, zoomed_delta)
             game.systemScreen.reDraw = True
     elif (game.currentScreen == 'Bodies'):
-      dropdown_element = game.bodiesScreen.GUI_Elements[game.bodiesScreen.GUI_dropdown_ID]
+      dropdown_element = game.bodiesScreen.GUI_Elements[game.bodiesScreen.GUI_ID_dropdown_systems]
       if (dropdown_element.extendedBB.collidepoint(event.pos)):
         if (dropdown_element.open):
           if (event.button == 4):

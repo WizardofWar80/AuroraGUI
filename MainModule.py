@@ -25,6 +25,7 @@ import TerraformingScreen
 import GalaxyScreen
 import XenosScreen
 import EventsScreen
+import Designations
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -127,6 +128,7 @@ class Game():
       self.colonies = None
       self.stellarTypes = Bodies.GetStellarTypes(self)  
       self.gases = self.InitGases()
+      Designations.Init(self)
       self.GetNewData()
 
     self.systemScreen       = SystemScreen.SystemScreen(self, eventsclass)
@@ -140,6 +142,7 @@ class Game():
     self.galaxyScreen       = GalaxyScreen.GalaxyScreen(self, eventsclass)
     self.xenosScreen        = XenosScreen.XenosScreen(self, eventsclass)
     self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass)
+
     self.InitGUI()
 
 

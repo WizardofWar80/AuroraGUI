@@ -7,6 +7,7 @@ from Screen import Screen
 from operator import itemgetter
 import Bodies
 import Systems
+import Designations
 
 class BodiesScreen(Screen):
   def __init__(self, game, events):
@@ -54,7 +55,8 @@ class BodiesScreen(Screen):
     self.GUI_identifier = 'Bodies Screen'
     self.GUI_Bottom_Anchor = (500,game.height-50)
     self.GUI_table_ID = 0
-    self.GUI_dropdown_ID = 1
+    self.GUI_ID_dropdown_systems = 1
+    self.GUI_ID_dropdown_designations = 2
 
 
   def InitGUI(self):
@@ -71,13 +73,22 @@ class BodiesScreen(Screen):
     idGUI += 1
 
     x = self.GUI_Bottom_Anchor[0] - 300
-    y = self.GUI_Bottom_Anchor[1] - 300
+    y = self.GUI_Bottom_Anchor[1]
     bb = (x,y,250,25)
     gui_cl = self.game.MakeClickable('Bodies Dropdown', bb, self.OpenSystemDropdown, parent='Bodies Dropdown')
     systemNames = Systems.GetKnownSystemNames(self.game)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Dropdown', bb, gui_cl, 'Dropdown', content = systemNames, dropUp = True)
-    self.GUI_dropdown_ID = idGUI
+    self.GUI_ID_dropdown_systems = idGUI
     self.GUI_Elements[idGUI].dropdownSelection = Systems.GetIndexOfCurrentSystem(self.game)
+    idGUI += 1
+
+    x = 25
+    y = self.GUI_Bottom_Anchor[1]
+    bb = (x,y,200,25)
+    gui_cl = self.game.MakeClickable('Designation', bb, self.OpenDesignationDropdown, parent='Designation Dropdown')
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Designation', bb, gui_cl, 'Dropdown', content = Designations.system_designations, dropUp = True)
+    self.GUI_ID_dropdown_designations = idGUI
+    self.GUI_Elements[idGUI].dropdownSelection = Designations.GetIndexOfCurrentSystem()
     idGUI += 1
 
     size = 32
@@ -388,31 +399,52 @@ class BodiesScreen(Screen):
 
 
   def OpenSystemDropdown(self, parameter, parent):
-    self.GUI_Elements[self.GUI_dropdown_ID].open = not self.GUI_Elements[self.GUI_dropdown_ID].open
-    if (self.GUI_Elements[self.GUI_dropdown_ID].open):
-      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_dropdown_ID].extendedBB, self.GetDropdownSelection, parent='Bodies Dropdown')
+    self.GUI_Elements[self.GUI_ID_dropdown_systems].open = not self.GUI_Elements[self.GUI_ID_dropdown_systems].open
+    if (self.GUI_Elements[self.GUI_ID_dropdown_systems].open):
+      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_systems].extendedBB, self.GetDropdownSelection, parent='Bodies Dropdown')
     else:
       self.game.Events.RemoveClickable('open dropdown', parent='Bodies Dropdown')
-      self.GUI_Elements[self.GUI_dropdown_ID].scroll_position = 0
+      self.GUI_Elements[self.GUI_ID_dropdown_systems].scroll_position = 0
     self.reDraw = True
 
 
+  def OpenDesignationDropdown(self, parameter, parent):
+    self.GUI_Elements[self.GUI_ID_dropdown_designations].open = not self.GUI_Elements[self.GUI_ID_dropdown_designations].open
+    if (self.GUI_Elements[self.GUI_ID_dropdown_designations].open):
+      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_designations].extendedBB, self.GetDropdownSelection, parent='Designation Dropdown')
+    else:
+      self.game.Events.RemoveClickable('open dropdown', parent='Designation Dropdown')
+      self.GUI_Elements[self.GUI_ID_dropdown_designations].scroll_position = 0
+    self.reDraw = True
+
+    
   def GetDropdownSelection(self, mouse_pos, parent):
     lineNr = 0
-    for i in range(len(self.GUI_Elements[self.GUI_dropdown_ID].content)):
-      if (self.GUI_Elements[self.GUI_dropdown_ID].scroll_position+i >= 0):
-        height = self.GUI_Elements[self.GUI_dropdown_ID].rect[3]
-        anchor = (self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[0],self.GUI_Elements[self.GUI_dropdown_ID].extendedBB[1])
-        y = lineNr*height
-        lineNr+=1
-        if (mouse_pos[1]-anchor[1] > y) and (mouse_pos[1]-anchor[1] < y + height):
-          self.GUI_Elements[self.GUI_dropdown_ID].dropdownSelection = i
-          self.GUI_Elements[self.GUI_dropdown_ID].open  = False
-          id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[self.GUI_dropdown_ID].content[i])
-          if (id is not None):
-            self.game.currentSystem = id
-            self.game.GetNewLocalData(id)
-          self.reDraw = True
-          break
+    id = None
+    if (parent == 'Bodies Dropdown'):
+      id = self.GUI_ID_dropdown_systems
+    elif (parent == 'Designation Dropdown'):
+      id = self.GUI_ID_dropdown_designations
+    if id is not None:
+      for i in range(len(self.GUI_Elements[id].content)):
+        if (self.GUI_Elements[id].scroll_position+i >= 0):
+          height = self.GUI_Elements[id].rect[3]
+          anchor = (self.GUI_Elements[id].extendedBB[0],self.GUI_Elements[id].extendedBB[1])
+          y = lineNr*height
+          lineNr+=1
+          if (mouse_pos[1]-anchor[1] > y) and (mouse_pos[1]-anchor[1] < y + height):
+            self.GUI_Elements[id].dropdownSelection = i
+            self.GUI_Elements[id].open  = False
+            if (parent == 'Bodies Dropdown'):
+              id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[id].content[i])
+              if (id is not None):
+                self.game.currentSystem = id
+                self.game.GetNewLocalData(id)
+              self.reDraw = True
+              break
+            elif (parent == 'Designation Dropdown'):
+              Designations.Set(self.game.currentSystem, i)
+              self.reDraw = True
+              break
 
         

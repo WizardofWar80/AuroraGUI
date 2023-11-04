@@ -39,6 +39,9 @@
     <Compile Include="ColonyDetailsScreen.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Designations.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="EconomyScreen.py">
       <SubType>Code</SubType>
     </Compile>
