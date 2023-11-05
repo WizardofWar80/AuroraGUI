@@ -10,6 +10,7 @@ class Cell():
     self.y = y
     self.screenpos = pos
     self.text_color = text_color
+    self.default_text_color = text_color
     self.border_color = border_color
     self.bg_color = bg_color
     self.text_size = text_size
@@ -18,16 +19,10 @@ class Cell():
     self.width = width
     self.height = height
     self.rect = (pos[0], pos[1], width, height)
-    #self.default_text_color = text_color
-    #self.default_border_color = border_color
-    #self.default_bg_color = bg_color
-    #self.default_text_size = text_size
-    #self.default_font = pygame.font.SysFont("Times New Roman", text_size)
-    #self.surface = None
     self.text_render = None
-    #self.surface.blit(label)
     self.text_size = None
     self.align = align
+    #self.format = {}
     self.Render()
 
 
@@ -49,6 +44,29 @@ class Cell():
     self.align = align
 
 
+  def Format(self, f):
+    if (f['Operation'] == 'Above'):
+      if (self.value is not None):
+        if (self.type is not 'string' ):
+          if (self.value > f['threshold']):
+            self.text_color=f['text_color']
+            self.Render()
+    elif (f['Operation'] == 'Below'):
+      if (self.value is not None):
+        if (self.type is not 'string' ):
+          if (self.value < f['threshold']):
+            self.text_color=f['text_color']
+            self.Render()
+    elif (f['Operation'] == 'Between'):
+      if (self.value is not None):
+        if (self.type is not 'string' ):
+          if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
+            self.text_color=f['text_color']
+            self.Render()
+    elif (f['Operation'] == 'Align'):
+      self.SetAlignment(align = f['value'])      
+
+
 class Table():
   def __init__(self, context, rows, cols, header = True, row_height = 20, col_widths = 150, anchor = (0,0)):
     self.context = context
@@ -57,7 +75,7 @@ class Table():
     self.row_height = row_height
     self.col_widths = col_widths
     self.anchor = anchor
-    self.max_rows = 20
+    self.max_rows = 40
     self.num_rows = rows
     self.num_cols = cols
     self.rect = pygame.Rect(anchor[0], anchor[1], 150*cols,row_height*(min(rows, self.max_rows)))
@@ -65,8 +83,13 @@ class Table():
     #self.InitTable()
     self.in_cell_pad_x = 4
     self.in_cell_pad_y = 3
-    self.max_cell_sizes = [0 for col in range(cols)]
+    self.max_cell_sizes = []
     self.maxScroll = min(0,self.max_rows-self.num_rows)
+    self.colFormats = [[],[],[],[],[],
+                       [],[],[],[],[],
+                       [],[],[],[],[],
+                       [],[],[],[],[]
+                       ]
 
 
   def InitTable(self):
@@ -87,7 +110,16 @@ class Table():
     #  table_height = screenpos[1]+self.row_height
     #  self.rect = (anchor[0], anchor[1], anchor[0]+table_width, anchor[1]+table_height)
 
+
+  def AddFormat(self, column, cell_format):
+    self.colFormats[column].append(cell_format)
+
+
   def GetWidth(self, col_index):
+    if (self.max_cell_sizes):
+      if(col_index < len(self.max_cell_sizes)):
+        return self.max_cell_sizes[col_index]
+
     if(col_index < len(self.col_widths)):
       return self.col_widths[col_index]
     elif (len(self.col_widths) == 1):
@@ -108,6 +140,7 @@ class Table():
 
 
   def AddRow(self, row, data, row_format = []):
+    updateCells = False
     cell_text_sizes = []
     if (len(self.cells) <= row):
       self.cells.append([])
@@ -115,7 +148,8 @@ class Table():
       self.num_rows += 1
     else:
       index = row
-      self.cells[index] = []
+      updateCells = True
+      #self.cells[index] = []
 
     current_lat_pos = 0
     for c in range(self.num_cols):
@@ -125,11 +159,23 @@ class Table():
           bold = row_format[c]
         col_width = self.GetWidth(c)
         screenpos = Utils.AddTuples(self.anchor, (current_lat_pos, row * self.row_height))
-
-        self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]) , x = c, y = row, bold = bold))
-        cell_text_sizes.append(self.cells[index][-1].text_size[0])
+        if (updateCells):
+          self.cells[index][c].screenpos = screenpos
+          self.cells[index][c].value = data[c]
+          self.cells[index][c].type = self.GetType(data[c])
+          self.cells[index][c].SetWidth(col_width)
+          self.cells[index][c].bold = bold
+          self.cells[index][c].Render()
+          self.cells[index][c].text_color = self.cells[index][c].default_text_color
+          cell_text_sizes.append(self.cells[index][c].text_size[0])
+        else:
+          self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]), x = c, y = row, bold = bold))
+          cell_text_sizes.append(self.cells[index][-1].text_size[0])
         if (self.header and row == 0):
           cell_text_sizes[-1] += 10
+        else:
+          for f in self.colFormats[c]:
+            self.cells[index][c].Format(f)
         current_lat_pos += col_width
 
     self.UpdateMaxCellWidths(cell_text_sizes)
@@ -153,11 +199,11 @@ class Table():
         if (delta < 0):
           delta = 0
         if (delta > 0) or (offset > 0):
-          self.FormatColumn(col, column_width=col_width+delta, latOffset = offset)
-          offset+=delta
+          self.FormatColumn(col, column_width=col_width+delta, latPos = offset+self.anchor[0])
+        offset+=col_width+delta
 
 
-  def FormatCell(self, r, c, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None, align = None):
+  def FormatCell(self, r, c, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None, latPos = None, align = None):
     rerender = False
     if text_color:
       self.cells[r][c].text_color=text_color
@@ -175,7 +221,10 @@ class Table():
       self.cells[r][c].SetWidth(column_width)
       rerender = True
     if latOffset:
-      self.cells[r][c].SetPos((self.cells[r][c].screenpos[0]+latOffset, self.cells[r][c].screenpos[1]))
+      self.cells[r][c].SetPos((self.cells[r][c].screenpos[0]+latOffset+self.anchor[0], self.cells[r][c].screenpos[1]))
+      rerender = True
+    if latPos:
+      self.cells[r][c].SetPos((latPos, self.cells[r][c].screenpos[1]))
       rerender = True
     if align:
       if (not self.header or r > 0):
@@ -184,37 +233,37 @@ class Table():
       self.cells[r][c].Render()
 
 
-  def FormatColumn(self, column, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None, align = None):
+  def FormatColumn(self, column, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None, latPos = None, align = None):
     for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
-        self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset, align)
+        self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset, latPos, align)
 
 
-  def FormatColumnIfValuesAbove(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+  def FormatColumnIfValuesAbove(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
     for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
         if (self.cells[r][column].value is not None):
           if (self.cells[r][column].type is not 'string' ):
             if (self.cells[r][column].value > threshold):
-              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
 
 
-  def FormatColumnIfValuesBelow(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+  def FormatColumnIfValuesBelow(self, column, threshold, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
     for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
         if (self.cells[r][column].value is not None):
           if (self.cells[r][column].type is not 'string' ):
             if (self.cells[r][column].value < threshold):
-              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
 
 
-  def FormatColumnIfValuesBetween(self, column, threshold_low, threshold_high, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None):
+  def FormatColumnIfValuesBetween(self, column, threshold_low, threshold_high, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False):
     for r in range(min(self.num_rows, len(self.cells))):
       if column < self.num_cols:
         if (self.cells[r][column].value is not None):
           if (self.cells[r][column].type is not 'string' ):
             if (self.cells[r][column].value > threshold_low and self.cells[r][column].value < threshold_high):
-              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold, column_width, latOffset)
+              self.FormatCell(r, column, text_color, bg_color, text_size, border_color, bold)
 
 
   def Draw(self):
@@ -237,6 +286,9 @@ class Table():
       table_width = cell.rect[0]+cell.rect[2]
       table_height = cell.rect[1]+cell.rect[3]
       self.rect = pygame.Rect(self.anchor[0], self.anchor[1], table_width, table_height)
+      rowIndex += 1
+      if (rowIndex >= self.num_rows):
+        break
     t2 = pygame.time.get_ticks()
     print(t2- t1)
     if (self.context.game.Debug):
@@ -264,7 +316,9 @@ class Table():
   
         
   def Clear(self):
-    self.cells = []
+    for row in self.cells:
+      for cell in row:
+        cell.value = None
 
 
   def GetLocationInsideTable(self, mouse_pos):

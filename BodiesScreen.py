@@ -37,8 +37,8 @@ class BodiesScreen(Screen):
     self.images_GUI = {}
     #self.InitGUI()
   #def Init2(self, game, events):
-    self.table = Table.Table(self, 1, 20, anchor = (20,50), col_widths = [10,150,120,30,50,70,40])
-    
+    self.table = Table.Table(self, 1, 20, anchor = (20,50), col_widths = [10,10,10,10,10,10,10])
+
     self.showColonizedBodies = True
     self.showIndustrializedBodies = True
     self.showUnsurveyedBodies = False
@@ -57,6 +57,22 @@ class BodiesScreen(Screen):
     self.GUI_table_ID = 0
     self.GUI_ID_dropdown_systems = 1
     self.GUI_ID_dropdown_designations = 2
+
+    self.FormatTable(self.table)
+
+
+  def FormatTable(self, table):
+    table.AddFormat(4, {'Operation':'Between', 'threshold_low':0, 'threshold_high':self.highColonyCostThreshold, 'text_color':Utils.GREEN} )
+    table.AddFormat(4, {'Operation':'Above', 'threshold':self.highColonyCostThreshold, 'text_color':Utils.RED} )
+    table.AddFormat(7, {'Operation':'Above', 'threshold':False, 'text_color':Utils.GREEN} )
+    table.AddFormat(19,{'Operation':'Above', 'threshold':False, 'text_color':Utils.GREEN} )
+    table.AddFormat(0, {'Operation':'Align', 'value':'center'} )
+    table.AddFormat(3, {'Operation':'Align', 'value':'center'} )
+    table.AddFormat(7, {'Operation':'Align', 'value':'center'} )
+    table.AddFormat(9, {'Operation':'Align', 'value':'center'} )
+    table.AddFormat(4, {'Operation':'Align', 'value':'right'} )
+    table.AddFormat(5, {'Operation':'Align', 'value':'right'} )
+    table.AddFormat(6, {'Operation':'Align', 'value':'right'} )
 
 
   def InitGUI(self):
@@ -256,6 +272,7 @@ class BodiesScreen(Screen):
     system = self.game.starSystems[self.game.currentSystem]
     text_widths = []
     unsortedIDs = []
+    #self.table.max_cell_sizes = []
     for bodyID in self.game.systemBodies:
       cond = self.GetDrawConditions(self.game.systemBodies[bodyID])
       if (cond):
@@ -318,21 +335,23 @@ class BodiesScreen(Screen):
         row_format.append(False)
         self.table.AddRow(row, data, row_format)
         row += 1
-        if (row > min(self.table.max_rows, self.table.num_rows)):
+        self.table.num_rows += 1
+        if (row > self.table.max_rows):
           break
       sortedRowIndex += 1
-    self.table.FormatColumnIfValuesBetween(4,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
-    self.table.FormatColumnIfValuesAbove(4,self.highColonyCostThreshold,text_color = Utils.RED)
+
+    #self.table.FormatColumnIfValuesBetween(4,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
+    #self.table.FormatColumnIfValuesAbove(4,self.highColonyCostThreshold,text_color = Utils.RED)
     self.table.Realign()
-    self.table.FormatColumn(0,align = 'center')
-    self.table.FormatColumn(3,align = 'center')
-    self.table.FormatColumn(4,align = 'right')
-    self.table.FormatColumn(5,align = 'right')
-    self.table.FormatColumn(6,align = 'right')
-    self.table.FormatColumn(7,align = 'center')
-    self.table.FormatColumn(19,align = 'center')
-    self.table.FormatColumnIfValuesAbove(7,False,text_color = Utils.GREEN)
-    self.table.FormatColumnIfValuesAbove(19,False,text_color = Utils.GREEN)
+    #self.table.FormatColumn(0,align = 'center')
+    #self.table.FormatColumn(3,align = 'center')
+    #self.table.FormatColumn(4,align = 'right')
+    #self.table.FormatColumn(5,align = 'right')
+    #self.table.FormatColumn(6,align = 'right')
+    #self.table.FormatColumn(7,align = 'center')
+    #self.table.FormatColumn(19,align = 'center')
+    #self.table.FormatColumnIfValuesAbove(7,False,text_color = Utils.GREEN)
+    #self.table.FormatColumnIfValuesAbove(19,False,text_color = Utils.GREEN)
     
     if (self.GUI_Elements == {}):
       self.InitGUI()
@@ -341,14 +360,14 @@ class BodiesScreen(Screen):
     self.reDraw = True
     t2 = pygame.time.get_ticks()
     deltaTime = t2- t1
-    print(deltaTime)
+    print('UpdateTable ',deltaTime)
 
 
   def DrawGUI(self):
     if (self.reDraw_GUI):
       for GUI_ID in self.GUI_Elements:
         element = self.GUI_Elements[GUI_ID]
-        if (element.visible):
+        if (element.visible) and (element.clickable):
           if (element.clickable.parent == self.GUI_Table_identifier):
             if (element.enabled):
               color = Utils.TEAL
