@@ -68,7 +68,7 @@ class Screen():
       return False
 
 
-  def ToggleGUI(self, id, parent = None):
+  def ToggleGUI(self, id, parent = None, mousepos = None):
     if (id in self.GUI_Elements):
       self.reDraw = True
       element = self.GUI_Elements[id]

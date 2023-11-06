@@ -80,6 +80,9 @@
     <Compile Include="Screen.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Scrollbar.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="SurveyScreen.py">
       <SubType>Code</SubType>
     </Compile>

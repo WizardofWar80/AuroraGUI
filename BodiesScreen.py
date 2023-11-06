@@ -59,6 +59,7 @@ class BodiesScreen(Screen):
     self.GUI_ID_dropdown_designations = 2
 
     self.FormatTable(self.table)
+    self.table.Scrollbar()
 
 
   def FormatTable(self, table):
@@ -76,6 +77,7 @@ class BodiesScreen(Screen):
 
 
   def InitGUI(self):
+    self.table.scrollbar.clickable.enabled = True
     idGUI = 0
 
     for cell in self.table.cells[0]:
@@ -185,7 +187,7 @@ class BodiesScreen(Screen):
     self.GUI_Elements[self.GUI_table_ID].rect = self.table.rect
 
 
-  def SortTableGUI(self, id, parent = None):
+  def SortTableGUI(self, id, parent = None, mousepos = None):
     thisGroup = None
     thisElement = None
     if (id in self.GUI_Elements):
@@ -225,6 +227,10 @@ class BodiesScreen(Screen):
       self.showUnsurveyedBodies = not self.showUnsurveyedBodies
     elif (name == 'Show LowColonyCost'):
       self.showLowCCBodies = not self.showLowCCBodies
+
+
+  def ExitScreen(self):
+    self.table.scrollbar.clickable.enabled = False
 
 
   def Draw(self):
@@ -336,10 +342,10 @@ class BodiesScreen(Screen):
         self.table.AddRow(row, data, row_format)
         row += 1
         self.table.num_rows += 1
-        if (row > self.table.max_rows):
+        if (row >= self.table.max_rows):
           break
       sortedRowIndex += 1
-
+    self.table.scrollbar.Update(total_range = len(sortedIDs), current_position = -self.table.scroll_position)
     #self.table.FormatColumnIfValuesBetween(4,0,self.highColonyCostThreshold,text_color = Utils.GREEN)
     #self.table.FormatColumnIfValuesAbove(4,self.highColonyCostThreshold,text_color = Utils.RED)
     self.table.Realign()
@@ -412,7 +418,7 @@ class BodiesScreen(Screen):
     return False
 
 
-  def GetBodyFromInsideTable(self, mouse_pos, parent = None):
+  def GetBodyFromInsideTable(self, par, parent, mouse_pos):
     row, col, value = self.table.GetLocationInsideTable(mouse_pos)
     if (row is not None) and (col is not None):
       if row > 0 and col == 1:
@@ -422,7 +428,7 @@ class BodiesScreen(Screen):
           self.game.FollowEvent([value, self.game.currentSystem, 0, 0, 0, 0], 'Body')
 
 
-  def OpenSystemDropdown(self, parameter, parent):
+  def OpenSystemDropdown(self, parameter, parent, mousepos):
     self.GUI_Elements[self.GUI_ID_dropdown_systems].open = not self.GUI_Elements[self.GUI_ID_dropdown_systems].open
     if (self.GUI_Elements[self.GUI_ID_dropdown_systems].open):
       self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_systems].extendedBB, self.GetDropdownSelection, parent='Bodies Dropdown')
@@ -432,7 +438,7 @@ class BodiesScreen(Screen):
     self.reDraw = True
 
 
-  def OpenDesignationDropdown(self, parameter, parent):
+  def OpenDesignationDropdown(self, parameter, parent, mousepos):
     self.GUI_Elements[self.GUI_ID_dropdown_designations].open = not self.GUI_Elements[self.GUI_ID_dropdown_designations].open
     if (self.GUI_Elements[self.GUI_ID_dropdown_designations].open):
       self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_designations].extendedBB, self.GetDropdownSelection, parent='Designation Dropdown')
@@ -442,7 +448,7 @@ class BodiesScreen(Screen):
     self.reDraw = True
 
     
-  def GetDropdownSelection(self, mouse_pos, parent):
+  def GetDropdownSelection(self, mouse_pos, parent, mousepos):
     lineNr = 0
     id = None
     if (parent == 'Bodies Dropdown'):

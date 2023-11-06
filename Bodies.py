@@ -10,7 +10,7 @@ def SetGameInstance(game):
   gameInstance = game
 
 
-def Select(id, parent):
+def Select(id, parent, mousepos = None):
   if (id in gameInstance.starSystems[gameInstance.currentSystem]['Stars']):
     #print(gameInstance.starSystems[gameInstance.currentSystem]['Stars'][id])
     gameInstance.highlighted_fleet_ID = -1

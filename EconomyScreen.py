@@ -204,7 +204,7 @@ class EconomyScreen(Screen):
     return reblit
 
 
-  def SwitchTabs(self, id, parent):
+  def SwitchTabs(self, id, parent, mousepos):
     thisGroup = None
     thisElement = None
     if (id in self.GUI_Elements):

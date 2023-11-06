@@ -11,7 +11,7 @@ def SetGameInstance(game):
   gameInstance = game
 
 
-def Select_Fleet(id, parent):
+def Select_Fleet(id, parent, mousepos=None):
   if (gameInstance.currentSystem in gameInstance.fleets):
     if (id in gameInstance.fleets[gameInstance.currentSystem]):
       #print(gameInstance.fleets[game.currentSystem][id])

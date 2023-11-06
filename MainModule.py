@@ -219,7 +219,7 @@ class Game():
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
 
-  def SwitchScreens(self, value, parent = None):
+  def SwitchScreens(self, value, parent = None, mousepos = None):
     thisGroup = None
     thisElement = None
 
@@ -371,6 +371,8 @@ class Game():
     reblit = False
     if (self.lastScreen != self.currentScreen):
       self.Events.ClearClickables()
+      if (self.lastScreen == 'Bodies'):
+        self.bodiesScreen.ExitScreen()
     if (self.currentScreen == 'System'):
       if (self.lastScreen != self.currentScreen):
         self.systemScreen.InitGUI()
@@ -552,7 +554,7 @@ class Game():
       self.myRaceFlagPic = pygame.image.load(self.aurora_folder+'Flags\\'+self.myRaceFlagPicFilename)
 
 
-  def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True ):
+  def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True, persistent = False):
     if (len(bounding_box) == 2):
       if (len(bounding_box[0]) == 2 and len(bounding_box[1]) == 2):
         bounding_box = (bounding_box[0][0],bounding_box[0][1],bounding_box[1][0],bounding_box[1][1])
@@ -566,7 +568,8 @@ class Game():
                      RightClickCallBack=right_click_call_back, 
                      DoubleClickCallBack=double_click_call_back,
                      parent = parent,
-                     enabled = enabled)
+                     enabled = enabled,
+                     persistent = persistent)
       if (self.Events):
         self.Events.Bind(cl)
       return cl
@@ -596,7 +599,7 @@ class Game():
     self.myRacePicFilename = self.db.execute('''SELECT RacePic from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
 
 
-  def FollowEvent(self, parameters, parent):
+  def FollowEvent(self, parameters, parent, mousepos):
     # parents: ['Ship', 'Body', 'Fleet','Missile', 'Contact','Research', 'Xenos', 'System']
     [name, SystemID, Xcor, Ycor, IDType, PopulationID] = parameters
 

@@ -73,12 +73,12 @@ class Events:
       listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent != exclude):
-          if (clickable.parent != 'Global GUI'):
+          if (clickable.parent != 'Global GUI') and (not clickable.persistent):
             listOfElementsToDelete.append(clickable)
     else:
       listOfElementsToDelete = []
       for clickable in self.clickables:
-        if (clickable.parent != 'Global GUI'):
+        if (clickable.parent != 'Global GUI') and (not clickable.persistent):
           listOfElementsToDelete.append(clickable)
 
     for cl in listOfElementsToDelete:
@@ -270,8 +270,7 @@ class Events:
                and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
             clicked_clickable = index
             clickable.LeftClick()
-            if (clickable.parameter == None):
-              clickable.parameter = self.LeftMouseClickPosition
+            clickable.mousepos = self.LeftMouseClickPosition
             #print(clickable.name)
         elif (clickable.RightClickCallBack is not None and button == 3):
           if (     (self.LeftMouseClickPosition[0]  > clickable.rect[0])
@@ -281,6 +280,7 @@ class Events:
             rightClickProcessed = True
             clicked_clickable = index
             clickable.RightClick()
+            clickable.mousepos = self.RightMouseClickPosition
       index += 1
     if (button == 3 and rightClickProcessed == False):
       if (game.currentScreen == 'System'):
@@ -301,6 +301,7 @@ class Events:
              and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
           clickable.parameter = self.LeftMouseClickPosition
           clickable.DoubleClick()
+          clickable.mousepos = self.LeftMouseClickPosition
           #print(clickable.name)
 
 

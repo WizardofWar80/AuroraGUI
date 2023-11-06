@@ -1,5 +1,6 @@
 import Utils
 import pygame
+import Scrollbar
 
 class Cell():
   def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120), align = 'left', bold = False):
@@ -68,17 +69,17 @@ class Cell():
 
 
 class Table():
-  def __init__(self, context, rows, cols, header = True, row_height = 20, col_widths = 150, anchor = (0,0)):
+  def __init__(self, context, rows, cols, header = True, row_height = 20, col_widths = 50, anchor = (0,0)):
     self.context = context
     self.header = header
     self.cells = []
     self.row_height = row_height
     self.col_widths = col_widths
     self.anchor = anchor
-    self.max_rows = 40
+    self.max_rows = 25
     self.num_rows = rows
     self.num_cols = cols
-    self.rect = pygame.Rect(anchor[0], anchor[1], 150*cols,row_height*(min(rows, self.max_rows)))
+    self.rect = pygame.Rect(anchor[0], anchor[1], 50*cols,row_height*(min(rows, self.max_rows)))
     self.scroll_position = 0
     #self.InitTable()
     self.in_cell_pad_x = 4
@@ -90,6 +91,12 @@ class Table():
                        [],[],[],[],[],
                        [],[],[],[],[]
                        ]
+    self.scrollbar = None
+
+
+  def Scrollbar(self):
+    # pos, height, visible_range, total_range, parent
+    self.scrollbar = Scrollbar.Scrollbar(self.context.surface, (self.rect[0]+self.rect[2],self.rect[1]), self.rect[3], min(self.num_rows, self.max_rows), self.num_rows, self, self.context.game)
 
 
   def InitTable(self):
@@ -293,6 +300,9 @@ class Table():
     print(t2- t1)
     if (self.context.game.Debug):
       pygame.draw.rect(self.context.surface, Utils.RED, self.rect, 1)
+    self.scrollbar.Update(pos=(self.rect[0]+self.rect[2],self.rect[1]), height = self.rect[3], visible_range = min(self.num_rows-1, self.max_rows-1))
+    self.scrollbar.Draw()
+
     return True
     #if(len(self.col_widths) == self.num_cols):
     #  pass

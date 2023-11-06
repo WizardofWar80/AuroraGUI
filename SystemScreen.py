@@ -516,7 +516,7 @@ class SystemScreen(Screen):
     return Utils.AddTuples(self.screenCenter ,scaled_world_pos)
 
     
-  def ExpandFleet(self, id, parent):
+  def ExpandFleet(self, id, parent, mousepos):
     game = self.game
     if (id in game.fleets[game.currentSystem]):
       if (parent == self.window_fleet_info_identifier):
@@ -533,7 +533,7 @@ class SystemScreen(Screen):
         self.reDraw_InfoWindow = True
 
 
-  def ExpandBodyInfo(self, category, parent):
+  def ExpandBodyInfo(self, category, parent, mousepos):
     if (category == self.info_category_physical):
       self.info_cat_phys_expanded = not self.info_cat_phys_expanded
     elif (category == self.info_category_economical):
@@ -550,7 +550,7 @@ class SystemScreen(Screen):
     self.reDraw_InfoWindow = True
 
 
-  def ExpandShipClasses(self, shipClass, parent):
+  def ExpandShipClasses(self, shipClass, parent, mousepos):
     if (shipClass in self.GUI_expanded_fleets3):
       self.GUI_expanded_fleets3.remove(shipClass)
     else:
@@ -628,7 +628,7 @@ class SystemScreen(Screen):
       self.showStationaryFleets = not self.showStationaryFleets
 
 
-  def Follow_Jumppoint(self, id, parent):
+  def Follow_Jumppoint(self, id, parent, mousepos):
     if (id in self.game.starSystems):
       self.game.currentSystem = id
       self.window_fleet_info_scoll_pos = 0

@@ -218,7 +218,7 @@ class Plot():
     return reblit
 
 
-  def ToggleDataPlot(self, name, parent):
+  def ToggleDataPlot(self, name, parent, mousepos = None):
     if name in self.data:
       self.data[name]['Enabled'] = not self.data[name]['Enabled']
       self.context.reDraw = True
