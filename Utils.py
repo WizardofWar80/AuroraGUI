@@ -628,3 +628,46 @@ def ConvertNumber2kMGT(value, coarse = False):
   else:
     return value
 
+
+def GetObjectImage(game, system, bodyID, bodyClass, bodyType, temp, hydro, atm):
+  #Todo: check if this image is already stored in json file for this game
+
+  if (bodyClass == 'Asteroid'):
+    numImages = len(game.images_Body['Asteroids'])
+    selectedImage = random.randint(0,numImages-1)
+    image = game.images_Body['Asteroids'][selectedImage]
+  elif (bodyClass == 'Planet') or (bodyClass == 'Moon'):
+    if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
+      numImages = len(game.images_Body['Gas Giants'])
+      selectedImage = random.randint(0,numImages-1)
+      image = game.images_Body['Gas Giants'][selectedImage]
+    elif (bodyType == 'Planet Small' or bodyType == 'Moon Small'):
+      numImages = len(game.images_Body['Small Bodies'])
+      selectedImage = random.randint(0,numImages-1)
+      image = game.images_Body['Small Bodies'][selectedImage]
+    else:
+      if (temp > 100):
+        numImages = len(game.images_Body['Planets']['h'])
+        selectedImage = random.randint(0,numImages-1)
+        image = game.images_Body['Planets']['h'][selectedImage]
+      elif (hydro > 80):
+        numImages = len(game.images_Body['Planets']['o'])
+        selectedImage = random.randint(0,numImages-1)
+        image = game.images_Body['Planets']['o'][selectedImage]
+      elif (hydro > 50):
+        numImages = len(game.images_Body['Planets']['m'])
+        selectedImage = random.randint(0,numImages-1)
+        image = game.images_Body['Planets']['m'][selectedImage]
+      elif (atm > 0.01):
+        numImages = len(game.images_Body['Planets']['b'])
+        selectedImage = random.randint(0,numImages-1)
+        image = game.images_Body['Planets']['b'][selectedImage]
+      else:
+        numImages = len(game.images_Body['Planets']['a'])
+        selectedImage = random.randint(0,numImages-1)
+        image = game.images_Body['Planets']['a'][selectedImage]
+  elif (bodyClass == 'Comet'):
+    numImages = len(game.images_Body['Comets'])
+    selectedImage = random.randint(0,numImages-1)
+    image = game.images_Body['Comets'][selectedImage]
+  return image
