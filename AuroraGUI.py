@@ -78,6 +78,8 @@ def main():
       # push the data to the display for displaying
       pygame.display.flip()
 
+    game.MusicTick()
+
 
 # run the main function only if this module is executed as the main script
 # (if you import this as a module then nothing is executed)

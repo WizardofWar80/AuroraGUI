@@ -272,7 +272,10 @@ class Events:
                and (game.mousePos[0] <  clickable.rect[0]+clickable.rect[2])
                and (game.mousePos[1]  > clickable.rect[1])
                and (game.mousePos[1] <  clickable.rect[1]+clickable.rect[3]) ):
+            clickable.mousepos = game.mousePos
             if (self.lastEnteredElement != clickable):
+              if (self.lastEnteredElement != None):
+                self.lastEnteredElement.hover = False
               print('entered %s'%clickable.name)
               self.lastEnteredElement = clickable
               self.timestampEnteredElement = self.GetTimeinSeconds()

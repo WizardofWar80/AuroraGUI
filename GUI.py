@@ -2,7 +2,7 @@ import pygame
 import Utils
 
 class GUI():
-  def __init__(self, gameClass, id, name, rect, clickable, type, parent = None, enabled = True, parentName = '', tab = False, textButton = False, radioButton = False, radioGroup = None, state = 0, content = [], dropUp = False, showLabel = False):
+  def __init__(self, gameClass, id, name, rect, clickable, type, parent = None, enabled = True, parentName = '', tab = False, textButton = False, radioButton = False, radioGroup = None, state = 0, content = [], dropUp = False, showLabel = False, latching = True, tooltip = ''):
     self.ID = id
     self.type = type
     self.name = name
@@ -14,6 +14,7 @@ class GUI():
     self.textButton = textButton
     self.enabled = enabled
     self.state = state
+    self.latching = latching
     self.radioButton = radioButton
     self.radioGroup = radioGroup
     self.dropdownSelection = None
@@ -25,7 +26,10 @@ class GUI():
     self.maxScroll = 0
     self.dropUp = dropUp
     self.isTab = tab
-    self.tooltip = name
+    if (tooltip == ''):
+      self.tooltip = name
+    else:
+      self.tooltip = tooltip
     self.image_enabled = None
     self.image_disabled = None
     self.visible = True if (parent == None) else False
@@ -56,10 +60,8 @@ class GUI():
   def Draw(self, surface):
     if (self.showLabel):
       Utils.DrawText2Surface(surface, self.label, (self.rect[0]+self.labelOffset[0], self.rect[1]+self.labelOffset[1]),20,Utils.GRAY)
-    if (self.clickable and self.clickable.hover):
-      Utils.DrawText2Surface(surface, self.tooltip, (self.rect[0]+self.rect[2]+self.labelOffset[0], self.rect[1]+self.labelOffset[1]),20,Utils.GRAY)
     if (self.type == 'Button'):
-      if (not self.enabled or self.children):
+      if (not self.enabled or self.children or not self.latching):
         if (self.isTab):
           temp_surf = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA,32)
           pos = (0, 0)
@@ -71,7 +73,14 @@ class GUI():
           if (not self.image_disabled):
             pygame.draw.rect(surface, self.insideColor, self.rect, 0)
             pygame.draw.rect(surface, Utils.GRAY, self.rect, 3)
-            Utils.DrawText2Surface(surface, self.label, (self.rect[0]+10,self.rect[1]+5),20,Utils.GRAY)
+            offset = (10,5)
+            if (len(self.label) == 1):
+              if (self.rect[2] < 28):
+                offset = (5,-2)
+            #  offset = (self.rect[2]/2,self.rect[3]/2)
+            #Utils.DrawTextCenteredAt(surface, self.label, self.rect[0]+self.rect[2]/2, self.rect[1]+self.rect[3]/2, pygame.font.SysFont("Times New Roman", 20, bold = True), Utils.GRAY)
+            Utils.DrawText2Surface(surface, self.label, (self.rect[0]+offset[0],self.rect[1]+offset[1]),20,Utils.GRAY)
+            pygame.draw.rect(surface, Utils.RED, (self.rect[0]+offset[0],self.rect[1]+offset[1],1,1), 0)
             if self.children:
               Utils.DrawSizedTriangle(surface, (self.rect[0]+25,self.rect[1]+7), Utils.GRAY, 4, 1)
           else:
@@ -123,6 +132,21 @@ class GUI():
               lineNr += 1
               if (lineNr >= self.maxLength):
                 break
+
+
+  def DrawTooltip(self, surface):
+    if (self.clickable and self.clickable.hover):
+      tooltip_position = (self.clickable.mousepos[0]+13,self.clickable.mousepos[1])
+      #tooltip_position = (self.rect[0]+self.rect[2]+self.labelOffset[0], self.rect[1]+self.labelOffset[1])
+      text_width = len(self.tooltip)*10
+      while (tooltip_position[0] > surface.get_rect()[2]-text_width-25):
+        tooltip_position = (tooltip_position[0]-10,self.clickable.mousepos[1]+15)
+        
+      while (tooltip_position[1] < 10):
+        tooltip_position = (tooltip_position[0],tooltip_position[1]+10)
+      while (tooltip_position[1] > surface.get_rect()[3]-20):
+        tooltip_position = (tooltip_position[0],tooltip_position[1]-10)
+      Utils.DrawText2Surface(surface, self.tooltip, tooltip_position, 20, Utils.GRAY, transparent=False)
 
 
   def ClearContent(self):

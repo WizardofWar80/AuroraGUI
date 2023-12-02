@@ -62,6 +62,10 @@ class Screen():
         element = self.GUI_Elements[GUI_ID]
         if (element.visible):
           element.Draw(self.surface)
+      for GUI_ID in self.GUI_Elements:
+        element = self.GUI_Elements[GUI_ID]
+        if (element.visible):
+          element.DrawTooltip(self.surface)
       self.reDraw_GUI = False
       return True
     else:

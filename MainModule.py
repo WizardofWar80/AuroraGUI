@@ -26,6 +26,7 @@ import GalaxyScreen
 import XenosScreen
 import EventsScreen
 import Designations
+import os
 
 class Game():
   def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
@@ -144,6 +145,11 @@ class Game():
     self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass)
 
     self.InitGUI()
+    self.playList = []
+    self.currentSong = 0
+    self.music = True
+    self.LoadMP3Playlist('D:\\MP3\\Musik\\Stellaris OST\\')
+    pygame.mixer.music.set_volume(0.5)
 
 
   def InitGUI(self):
@@ -217,6 +223,36 @@ class Game():
     name = 'Events'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[0]+50
+    bb = (x,y,self.GUI_Top_Button_Size[1],self.GUI_Top_Button_Size[1])
+    name = 'Music'
+    gui_cl = self.MakeClickable(name, bb, self.ToggleMusic, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[1]+5
+    bb = (x,y,self.GUI_Top_Button_Size[1],self.GUI_Top_Button_Size[1])
+    name = 'Skip'
+    gui_cl = self.MakeClickable(name, bb, self.PlayNextSong, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True, latching=False)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[1]+5
+    bb = (x,y,20,20)
+    name = '+'
+    gui_cl = self.MakeClickable(name, bb, self.IncreaseVolume, double_click_call_back=self.IncreaseVolume, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True, latching=False, tooltip = 'Increase Volume')
+
+    idGUI += 1
+    y += 20+5
+    bb = (x,y,20,20)
+    name = '-'
+    gui_cl = self.MakeClickable(name, bb, self.DecreaseVolume, double_click_call_back=self.DecreaseVolume, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True, latching=False, tooltip = 'Decrease Volume')
+
+    #from pygame import mixer  # Load the popular external library
 
 
   def SwitchScreens(self, value, parent = None, mousepos = None):
@@ -361,6 +397,10 @@ class Game():
         element = self.GUI_Elements[GUI_ID]
         if (element.visible):
           element.Draw(self.surface)
+      for GUI_ID in self.GUI_Elements:
+        element = self.GUI_Elements[GUI_ID]
+        if (element.visible):
+          element.DrawTooltip(self.surface)
       self.reDraw_GUI = False
       return True
     else:
@@ -643,3 +683,45 @@ class Game():
         self.SwitchScreens('System')
     elif (parent == 'Missile'):
       pass
+
+
+  def LoadMP3Playlist(self, folder):
+    pygame.mixer.init()
+    for root, dirs, files in os.walk(folder, topdown=False):
+      for name in files:
+        if (name.endswith('.mp3')):
+          self.playList.append(os.path.join(root, name))
+    self.currentSong = random.randint(0,len(self.playList)-1)
+    self.PlayNextSong(None, None, None)
+
+
+  def ToggleMusic(self, parameters, parent, mousepos):
+    self.music = not self.music
+    if (self.music):
+      pygame.mixer.music.unpause()
+    else:
+      pygame.mixer.music.pause()
+
+
+  def PlayNextSong(self, parameters, parent, mousepos):
+    self.currentSong += 1
+    if (self.currentSong >= len(self.playList)):
+      self.currentSong = 0
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load(self.playList[self.currentSong])
+    pygame.mixer.music.play()
+
+
+  def MusicTick(self):
+    if (self.music):
+      if (not pygame.mixer.music.get_busy()):
+        self.PlayNextSong(None, None, None)
+
+
+  def IncreaseVolume(self, parameters, parent, mousepos):
+    pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()+0.1)
+    print(pygame.mixer.music.get_volume())
+
+  def DecreaseVolume(self, parameters, parent, mousepos):
+    pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()-0.1)
+    print(pygame.mixer.music.get_volume())
