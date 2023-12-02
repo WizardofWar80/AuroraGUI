@@ -144,11 +144,20 @@ class EventsScreen(Screen):
       pass
     elif (id == 60):
       #60	A science team led by Nogushi Fumie working on Earth has completed research into Compact Electronic Counter-countermeasures - 1
-      results, links = self.SplitData(text, searchTokens = [' working on ', ' has completed ', ' into '])
-      links_to = ['Body', 'Research']
-      links[0] = False
-      links[-1] = False
-      pass
+      tokens = [' working on ', ' has completed ', ' into ']
+      if (self.CheckTokensInText(text, tokens)):
+        results, links = self.SplitData(text, searchTokens = tokens)
+        links_to = ['Body', 'Research']
+        links[0] = False
+        links[-1] = False
+      else:
+        #A Prototype of Procaccini-Harrigill Aeromarine EP013 Commercial Conventional Engine has been created
+        tokens = ['A Prototype of ', ' has been created']
+        if (self.CheckTokensInText(text, tokens)):
+          results, links = self.SplitData(text, searchTokens = tokens)
+          links_to = ['Research']
+          #links[0] = False
+          #links[-1] = False
     elif (id == 63):
       #63	1 inactive research facilities on Earth
       results, links = self.SplitData(text, searchTokens = [' inactive research facilities on '])
@@ -389,7 +398,12 @@ class EventsScreen(Screen):
 
     return split_line, links
 
-
+  def CheckTokensInText(self, text, tokens):
+    for t in tokens:
+      if (text.find(t) == -1):
+        return False
+    else:
+      return True
   #def GetClickedEvent(self):
   #  event = self.clickedEvent
   #  self.clickedEvent = {}

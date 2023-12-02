@@ -366,7 +366,6 @@ def GetSystemBodies(game, currentSystem):
       # Tidal locked
 
   for body in body_table:
-    deposits, sum_minerals = GetMineralDeposits(game, currentSystem, body[0])
     body_name = body[1]
     planetNumber = body[2]
     orbitNumber = body[3]
@@ -496,6 +495,8 @@ def GetSystemBodies(game, currentSystem):
     colonized = False
     industrialized = False
     terraforming = {'Active':False}
+    deposits, sum_minerals = GetMineralDeposits(game, currentSystem, body[0], unsurveyed)
+
     if (body[0] in game.colonies):
       colony = game.colonies[body[0]]
       if (colony['Pop'] > 0):
@@ -540,7 +541,7 @@ def GetStellarTypes(game):
   return stellarTypes
 
   
-def GetMineralDeposits(game, systemID, bodyID):
+def GetMineralDeposits(game, systemID, bodyID, unsurveyed):
   deposits = {}
   sum_deposits = 0
   # GameID	MaterialID	SystemID	SystemBodyID	Amount	Accessibility	HalfOriginalAmount	OriginalAcc
@@ -549,11 +550,12 @@ def GetMineralDeposits(game, systemID, bodyID):
     mineral = Utils.MineralNames[id]
     deposits[mineral] = {'Amount':0, 'Accessibility':0}
 
-  for deposit in results:
-    if (deposit[1] in Utils.MineralNames):
-      mineral = Utils.MineralNames[deposit[1]]
-      deposits[mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
-      sum_deposits += deposit[4]
+  if (not unsurveyed):
+    for deposit in results:
+      if (deposit[1] in Utils.MineralNames):
+        mineral = Utils.MineralNames[deposit[1]]
+        deposits[mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
+        sum_deposits += deposit[4]
 
   return deposits, sum_deposits
 

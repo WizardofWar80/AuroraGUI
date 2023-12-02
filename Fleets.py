@@ -135,14 +135,14 @@ def GetFleets(game):
 
       shipClass = game.db.execute('''SELECT * from FCT_ShipClass WHERE ShipClassID = %d;'''%(shipClassID)).fetchall()[0]
       shipClassName = shipClass[1]
-      fuelCapacity = shipClass[27]
-      commercial = shipClass[26]
-      size = shipClass[66]*50
-      cost = shipClass[17]
-      suppliesCapacity = shipClass[84]
-      magazineCapacity = shipClass[38]
-      plannedDeployment = shipClass[53]
-      enginePower = shipClass[23]
+      fuelCapacity = shipClass[26]
+      commercial = shipClass[25]
+      size = shipClass[65]*50
+      cost = shipClass[16]
+      suppliesCapacity = shipClass[83]
+      magazineCapacity = shipClass[37]
+      plannedDeployment = shipClass[52]
+      enginePower = shipClass[22]
       deploymentTime = (game.gameTime-ship[23])/3600/24/365.25*12
       maintenanceLife = (game.gameTime-ship[22])/3600/24/365.25
       components = GetShipComponents(game, shipClassID)

@@ -87,6 +87,8 @@ class EconomyScreen(Screen):
 
   def GetWealthData(self):
     results = self.game.db.execute('''SELECT IncrementTime, WealthAmount from FCT_WealthHistory WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
+    if len (results) == 0:
+      results = self.game.db.execute('''SELECT TimeUsed, Amount from FCT_WealthData WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
     self.wealthHistory = []
     min_x = 10000000000000000000000000000
     min_y = 10000000000000000000000000000

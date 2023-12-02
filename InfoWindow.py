@@ -135,7 +135,7 @@ def Draw(context):
             if (colony['Stockpile']['Sum'] > 0 or colony['Stockpile']['Sum of Minerals'] > 0):
               cursorPos = (cursorPos[0]+indentWidth, cursorPos[1])
               expRect2 = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
-              game.MakeClickable(game.info_category_stockpile, expRect2, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_stockpile, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+              game.MakeClickable(context.info_category_stockpile, expRect2, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_stockpile, parent = context.window_info_identifier, anchor=context.window_info_anchor)
               DrawLineOfText(context.window_info, 'Stockpile', _indentLevel+2, unscrollable = True)
               if (context.info_cat_stock_expanded):
                 if (colony['Stockpile']['Sum'] > 0):

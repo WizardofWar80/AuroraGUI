@@ -156,6 +156,7 @@ class Table():
     else:
       index = row
       updateCells = True
+      self.num_rows += 1
       #self.cells[index] = []
 
     current_lat_pos = 0

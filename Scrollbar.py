@@ -45,7 +45,7 @@ class Scrollbar():
       self.invisible_range = self.total_range-self.visible_range
       self.bar_height = (self.visible_range/self.total_range)*(self.height-2*self.width)
     if (current_position is not None):
-      self.current_position = current_position/self.invisible_range
+      self.current_position = current_position/max(1,self.invisible_range)
     self.MoveBar()
     self.clickable.rect = self.rect
     self.reDraw = True
@@ -81,15 +81,15 @@ class Scrollbar():
     if (self.upArrow.collidepoint(mousepos)):
       self.parent.scroll_position+=1
       self.current_position=-self.parent.scroll_position/self.invisible_range
+      # todo, make this use a function pointer instead
       self.MoveBar()
       self.parent.context.UpdateTable()
-      print('UpArrow')
     elif (self.dnArrow.collidepoint(mousepos)):
       self.parent.scroll_position-=1
       self.current_position=-self.parent.scroll_position/self.invisible_range
+      # todo, make this use a function pointer instead
       self.MoveBar()
       self.parent.context.UpdateTable()
-      print('DownArrow')
     elif (self.barRect.collidepoint(mousepos)):
       pass
     else:
@@ -102,13 +102,14 @@ class Scrollbar():
         self.parent.scroll_position = -int(ticks_above*percentage)
         self.current_position=-self.parent.scroll_position/self.invisible_range
         self.MoveBar()
+        # todo, make this use a function pointer instead
         self.parent.context.UpdateTable()
-        # above bar
       elif (mousepos[1] > self.barRect[1]+self.barRect[3]):
         scrollbar_inside_end = self.dnArrow[1]
         percentage = (mousepos[1] - (self.barRect[1]+self.barRect[3]))/(scrollbar_inside_end-(self.barRect[1]+self.barRect[3]))
         self.parent.scroll_position=-(ticks_above+int(ticks_below*percentage)+1)
         self.current_position=-self.parent.scroll_position/self.invisible_range
+        # todo, make this use a function pointer instead
         self.MoveBar()
         self.parent.context.UpdateTable()
 

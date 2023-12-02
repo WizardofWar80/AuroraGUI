@@ -45,7 +45,7 @@ class BodiesScreen(Screen):
     self.showResourcelessComets = False
     self.showResourcelessAsteroids = False
     self.showResourcelessSmallWorlds = False
-    self.showResourcelessLargeWorlds = False
+    self.showResourcelessLargeWorlds = True
     self.showLowCCBodies = True
     self.highColonyCostThreshold = 3
 
@@ -341,7 +341,7 @@ class BodiesScreen(Screen):
         row_format.append(False)
         self.table.AddRow(row, data, row_format)
         row += 1
-        self.table.num_rows += 1
+        #self.table.num_rows += 1
         if (row >= self.table.max_rows):
           break
       sortedRowIndex += 1
@@ -431,7 +431,7 @@ class BodiesScreen(Screen):
   def OpenSystemDropdown(self, parameter, parent, mousepos):
     self.GUI_Elements[self.GUI_ID_dropdown_systems].open = not self.GUI_Elements[self.GUI_ID_dropdown_systems].open
     if (self.GUI_Elements[self.GUI_ID_dropdown_systems].open):
-      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_systems].extendedBB, self.GetDropdownSelection, parent='Bodies Dropdown')
+      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_systems].extendedBB, self.GetDropdownSelection, par=mousepos, parent='Bodies Dropdown')
     else:
       self.game.Events.RemoveClickable('open dropdown', parent='Bodies Dropdown')
       self.GUI_Elements[self.GUI_ID_dropdown_systems].scroll_position = 0
@@ -441,7 +441,7 @@ class BodiesScreen(Screen):
   def OpenDesignationDropdown(self, parameter, parent, mousepos):
     self.GUI_Elements[self.GUI_ID_dropdown_designations].open = not self.GUI_Elements[self.GUI_ID_dropdown_designations].open
     if (self.GUI_Elements[self.GUI_ID_dropdown_designations].open):
-      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_designations].extendedBB, self.GetDropdownSelection, parent='Designation Dropdown')
+      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_designations].extendedBB, self.GetDropdownSelection, par=mousepos, parent='Designation Dropdown')
     else:
       self.game.Events.RemoveClickable('open dropdown', parent='Designation Dropdown')
       self.GUI_Elements[self.GUI_ID_dropdown_designations].scroll_position = 0
@@ -462,7 +462,7 @@ class BodiesScreen(Screen):
           anchor = (self.GUI_Elements[id].extendedBB[0],self.GUI_Elements[id].extendedBB[1])
           y = lineNr*height
           lineNr+=1
-          if (mouse_pos[1]-anchor[1] > y) and (mouse_pos[1]-anchor[1] < y + height):
+          if (mousepos[1]-anchor[1] > y) and (mousepos[1]-anchor[1] < y + height):
             self.GUI_Elements[id].dropdownSelection = i
             self.GUI_Elements[id].open  = False
             if (parent == 'Bodies Dropdown'):

@@ -49,6 +49,8 @@ class GUI():
         else:
           self.extendedBB = pygame.Rect((self.rect[0],self.rect[1]+self.rect[3]),(self.rect[2]-self.rect[3], self.rect[3]*max_entries))
         self.maxScroll = min(0,self.maxLength-num_entries)
+      else:
+        self.extendedBB = pygame.Rect((self.rect[0],self.rect[1]),(self.rect[2],self.rect[3]))
 
 
   def Draw(self, surface):

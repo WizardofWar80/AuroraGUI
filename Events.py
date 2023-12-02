@@ -342,17 +342,7 @@ class Events:
             game.systemScreen.reDraw = True
     elif (game.currentScreen == 'Bodies'):
       dropdown_element = game.bodiesScreen.GUI_Elements[game.bodiesScreen.GUI_ID_dropdown_systems]
-      if (dropdown_element.extendedBB.collidepoint(event.pos)):
-        if (dropdown_element.open):
-          if (event.button == 4):
-            if (dropdown_element.scroll_position < 0):
-              dropdown_element.scroll_position += 1
-          else:
-            if (dropdown_element.scroll_position > dropdown_element.maxScroll):
-              dropdown_element.scroll_position -= 1
-          game.bodiesScreen.reDraw_GUI = True
-      else:
-        dropdown_element = game.bodiesScreen.GUI_Elements[game.bodiesScreen.GUI_ID_dropdown_designations]
+      if (dropdown_element.extendedBB):
         if (dropdown_element.extendedBB.collidepoint(event.pos)):
           if (dropdown_element.open):
             if (event.button == 4):
@@ -363,15 +353,26 @@ class Events:
                 dropdown_element.scroll_position -= 1
             game.bodiesScreen.reDraw_GUI = True
         else:
-          scrollable_element = game.bodiesScreen.table
-          if (scrollable_element.rect.collidepoint(event.pos)):
-            if (event.button == 4):
-              if (scrollable_element.scroll_position < 0):
-                scrollable_element.scroll_position += 1
-            else:
-              if (scrollable_element.scroll_position > scrollable_element.maxScroll):
-                scrollable_element.scroll_position -= 1
-            game.bodiesScreen.reDraw = True
+          dropdown_element = game.bodiesScreen.GUI_Elements[game.bodiesScreen.GUI_ID_dropdown_designations]
+          if (dropdown_element.extendedBB.collidepoint(event.pos)):
+            if (dropdown_element.open):
+              if (event.button == 4):
+                if (dropdown_element.scroll_position < 0):
+                  dropdown_element.scroll_position += 1
+              else:
+                if (dropdown_element.scroll_position > dropdown_element.maxScroll):
+                  dropdown_element.scroll_position -= 1
+              game.bodiesScreen.reDraw_GUI = True
+          else:
+            scrollable_element = game.bodiesScreen.table
+            if (scrollable_element.rect.collidepoint(event.pos)):
+              if (event.button == 4):
+                if (scrollable_element.scroll_position < 0):
+                  scrollable_element.scroll_position += 1
+              else:
+                if (scrollable_element.scroll_position > scrollable_element.maxScroll):
+                  scrollable_element.scroll_position -= 1
+              game.bodiesScreen.reDraw = True
 
 
   def ProcessClickablesEvents(self, game):
