@@ -18,7 +18,7 @@ screen_height = 1000
 logger = lg.Logger(logfile= 'log.txt', module='AuroraGUI.py', log_level = 1)
 img_path = "Images"
 lastTimestamp = pygame.time.get_ticks()
-
+lastTimestampOptions = pygame.time.get_ticks()
 
 def CheckReDrawFramerate():
   return True
@@ -29,6 +29,16 @@ def CheckReFreshRate():
   currentTimestamp = pygame.time.get_ticks()
   if (currentTimestamp - lastTimestamp > 1000):
     lastTimestamp = currentTimestamp
+    return True
+  else:
+    return False
+
+
+def CheckOptionsSaveRate():
+  global lastTimestampOptions
+  currentTimestamp = pygame.time.get_ticks()
+  if (currentTimestamp - lastTimestampOptions > 5000):
+    lastTimestampOptions = currentTimestamp
     return True
   else:
     return False
@@ -79,6 +89,9 @@ def main():
       pygame.display.flip()
 
     game.MusicTick()
+
+    if (CheckOptionsSaveRate()):
+      game.SaveOptions()
 
 
 # run the main function only if this module is executed as the main script

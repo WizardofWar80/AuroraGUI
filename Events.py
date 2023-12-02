@@ -5,6 +5,7 @@ import Utils
 
 logger = lg.Logger(logfile= 'log_events.txt', module='Events.py', log_level = 1)
 logger.Reset()
+EVENTS_DEBUG = False
 
 class Events:
   def __init__(self, clickables=[]):
@@ -69,7 +70,8 @@ class Events:
       if(self.timeSinceEnteredElement > .7):
         if (not self.lastEnteredElement.hover):
           game.SetRedrawFlag(game.currentScreen)
-          print('hover over %s'%self.lastEnteredElement.name)
+          if (EVENTS_DEBUG):
+            print('hover over %s'%self.lastEnteredElement.name)
           self.lastEnteredElement.hover = True
         
 
@@ -276,14 +278,16 @@ class Events:
             if (self.lastEnteredElement != clickable):
               if (self.lastEnteredElement != None):
                 self.lastEnteredElement.hover = False
-              print('entered %s'%clickable.name)
+              if (EVENTS_DEBUG):
+                print('entered %s'%clickable.name)
               self.lastEnteredElement = clickable
               self.timestampEnteredElement = self.GetTimeinSeconds()
               self.timeSinceEnteredElement = self.TimeDeltaInit
             exited_element = False
       if (exited_element):
         if (self.lastEnteredElement != None):
-          print('exited %s'%self.lastEnteredElement.name)
+          if (EVENTS_DEBUG):
+            print('exited %s'%self.lastEnteredElement.name)
           self.lastEnteredElement.hover = False
           self.lastEnteredElement = None
           self.timeSinceEnteredElement = self.TimeDeltaInit
@@ -296,7 +300,8 @@ class Events:
     self.RightMouseButtonClicked = False
     index = 0
     rightClickProcessed = False
-    print(self.LeftMouseClickPosition)
+    if (EVENTS_DEBUG):
+      print(self.LeftMouseClickPosition)
     for clickable in self.clickables:
       if (clickable.rect) and (clickable.enabled):
         if (clickable.LeftClickCallBack is not None and button == 1):

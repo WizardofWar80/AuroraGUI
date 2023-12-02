@@ -85,6 +85,7 @@ class Game():
     self.statisticsShips = {}
     self.statisticsGroundUnits = {}
     self.statisticsStations = {}
+    self.options = {}
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -101,11 +102,11 @@ class Game():
     self.aurora_folder = 'D:\\Spiele\\Aurora4x\\'
     db_filename = self.aurora_folder+'AuroraDB.db'
     try:
-        db_connection = sqlite3.connect(db_filename)
-        self.db = db_connection.cursor()
+      db_connection = sqlite3.connect(db_filename)
+      self.db = db_connection.cursor()
     except Exception as e:
-        print(e)
-        self.logger.write('Error connecting to DB (%s): %s'%(db_filename, repr(e)))
+      print(e)
+      self.logger.write('Error connecting to DB (%s): %s'%(db_filename, repr(e)))
 
     if (self.db):
       game_table = self.db.execute('''SELECT * from FCT_Game''').fetchall()[-1]
@@ -144,12 +145,14 @@ class Game():
     self.xenosScreen        = XenosScreen.XenosScreen(self, eventsclass)
     self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass)
 
-    self.InitGUI()
     self.playList = []
     self.currentSong = 0
     self.music = True
+    self.LoadOptions()
     self.LoadMP3Playlist('D:\\MP3\\Musik\\Stellaris OST\\')
-    pygame.mixer.music.set_volume(0.5)
+    
+    self.InitGUI()
+    
 
 
   def InitGUI(self):
@@ -229,7 +232,7 @@ class Game():
     bb = (x,y,self.GUI_Top_Button_Size[1],self.GUI_Top_Button_Size[1])
     name = 'Music'
     gui_cl = self.MakeClickable(name, bb, self.ToggleMusic, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.music)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[1]+5
@@ -356,6 +359,102 @@ class Game():
     except:
       print('File %s not writeable'%filename)
 
+
+  def LoadOptions(self):
+    filename = 'options.json'
+    try:
+      with open(filename, 'r') as f:
+        self.options = json.load(f)
+    except:
+      print('File %s not found'%filename)
+    self.music = self.options['Audio']['Music']
+    pygame.mixer.music.set_volume(self.options['Audio']['Volume'])
+
+    self.systemScreen.show_Planets = self.options['SystemScreen']['show_Planets']
+    self.systemScreen.show_Asteroids = self.options['SystemScreen']['show_Asteroids']
+    self.systemScreen.show_Comets = self.options['SystemScreen']['show_Comets']                    
+    self.systemScreen.show_DwarfPlanets = self.options['SystemScreen']['show_DwarfPlanets']              
+    self.systemScreen.show_FleetTraces = self.options['SystemScreen']['show_FleetTraces']               
+    self.systemScreen.show_Moons = self.options['SystemScreen']['show_Moons']                     
+    self.systemScreen.showArtifactsBodies = self.options['SystemScreen']['showArtifactsBodies']            
+    self.systemScreen.showColonizedBodies = self.options['SystemScreen']['showColonizedBodies']            
+    self.systemScreen.showCommercialFleets = self.options['SystemScreen']['showCommercialFleets']           
+    self.systemScreen.showEmptyFleets = self.options['SystemScreen']['showEmptyFleets']                
+    self.systemScreen.showEnemyBodies = self.options['SystemScreen']['showEnemyBodies']                
+    self.systemScreen.showIndustrializedBodies = self.options['SystemScreen']['showIndustrializedBodies']       
+    self.systemScreen.showLabels_Asteroids = self.options['SystemScreen']['showLabels_Asteroids']           
+    self.systemScreen.showLabels_Comets = self.options['SystemScreen']['showLabels_Comets']              
+    self.systemScreen.showLabels_DwarfPlanets = self.options['SystemScreen']['showLabels_DwarfPlanets']        
+    self.systemScreen.showLabels_Moons = self.options['SystemScreen']['showLabels_Moons']               
+    self.systemScreen.showLabels_Planets = self.options['SystemScreen']['showLabels_Planets']             
+    self.systemScreen.showLabels_Stars = self.options['SystemScreen']['showLabels_Stars']               
+    self.systemScreen.showMilitaryFleets = self.options['SystemScreen']['showMilitaryFleets']             
+    self.systemScreen.showOrbits_DwarfPlanets = self.options['SystemScreen']['showOrbits_DwarfPlanets']        
+    self.systemScreen.showOrbits_Comets = self.options['SystemScreen']['showOrbits_Comets']              
+    self.systemScreen.showOrbits_DwarfPlanets = self.options['SystemScreen']['showOrbits_DwarfPlanets']        
+    self.systemScreen.showOrbits_Moons = self.options['SystemScreen']['showOrbits_Moons']               
+    self.systemScreen.showOrbits_Planets = self.options['SystemScreen']['showOrbits_Planets']             
+    self.systemScreen.showOrbits_Stars = self.options['SystemScreen']['showOrbits_Stars']               
+    self.systemScreen.showStationaryFleets = self.options['SystemScreen']['showStationaryFleets']           
+    self.systemScreen.showSurveyedLocations = self.options['SystemScreen']['showSurveyedLocations']          
+    self.systemScreen.showUnsurveyedBodies = self.options['SystemScreen']['showUnsurveyedBodies']           
+    self.systemScreen.showUnsurveyedLocations = self.options['SystemScreen']['showUnsurveyedLocations']        
+    self.systemScreen.showXenosBodies = self.options['SystemScreen']['showXenosBodies']                
+    self.systemScreen.highlightColonizedBodies =  self.options['SystemScreen']['highlightColonizedBodies']       
+    self.systemScreen.highlightIndustrializedBodies = self.options['SystemScreen']['highlightIndustrializedBodies']
+    self.systemScreen.highlightUnsurveyedBodies = self.options['SystemScreen']['highlightUnsurveyedBodies']      
+    self.systemScreen.highlightEnemyBodies = self.options['SystemScreen']['highlightEnemyBodies']           
+    self.systemScreen.highlightResourcefulBodies =  self.options['SystemScreen']['highlightResourcefulBodies']     
+    self.systemScreen.highlightXenosBodies =  self.options['SystemScreen']['highlightXenosBodies']           
+    self.systemScreen.highlightArtifactsBodies = self.options['SystemScreen']['highlightArtifactsBodies']       
+
+  def SaveOptions(self):
+    self.options['Audio'] = {'Music':self.music, 'Volume':pygame.mixer.music.get_volume()}
+    self.options['SystemScreen'] = {'show_Planets':self.systemScreen.show_Planets,
+                                    'show_Asteroids':self.systemScreen.show_Asteroids,
+                                    'show_Comets':self.systemScreen.show_Comets,
+                                    'show_DwarfPlanets':self.systemScreen.show_DwarfPlanets,
+                                    'show_FleetTraces':self.systemScreen.show_FleetTraces,
+                                    'show_Moons':self.systemScreen.show_Moons,
+                                    'showArtifactsBodies':self.systemScreen.showArtifactsBodies,
+                                    'showColonizedBodies':self.systemScreen.showColonizedBodies,
+                                    'showCommercialFleets':self.systemScreen.showCommercialFleets,
+                                    'showEmptyFleets':self.systemScreen.showEmptyFleets,
+                                    'showEnemyBodies':self.systemScreen.showEnemyBodies,
+                                    'showIndustrializedBodies':self.systemScreen.showIndustrializedBodies,
+                                    'showLabels_Asteroids':self.systemScreen.showLabels_Asteroids,
+                                    'showLabels_Comets':self.systemScreen.showLabels_Comets,
+                                    'showLabels_DwarfPlanets':self.systemScreen.showLabels_DwarfPlanets,
+                                    'showLabels_Moons':self.systemScreen.showLabels_Moons,
+                                    'showLabels_Planets':self.systemScreen.showLabels_Planets,
+                                    'showLabels_Stars':self.systemScreen.showLabels_Stars,
+                                    'showMilitaryFleets':self.systemScreen.showMilitaryFleets,
+                                    'showOrbits_DwarfPlanets':self.systemScreen.showOrbits_DwarfPlanets,
+                                    'showOrbits_Comets':self.systemScreen.showOrbits_Comets,
+                                    'showOrbits_DwarfPlanets':self.systemScreen.showOrbits_DwarfPlanets,
+                                    'showOrbits_Moons':self.systemScreen.showOrbits_Moons,
+                                    'showOrbits_Planets':self.systemScreen.showOrbits_Planets,
+                                    'showOrbits_Stars':self.systemScreen.showOrbits_Stars,
+                                    'showStationaryFleets':self.systemScreen.showStationaryFleets,
+                                    'showSurveyedLocations':self.systemScreen.showSurveyedLocations,
+                                    'showUnsurveyedBodies':self.systemScreen.showUnsurveyedBodies,
+                                    'showUnsurveyedLocations':self.systemScreen.showUnsurveyedLocations,
+                                    'showXenosBodies':self.systemScreen.showXenosBodies,
+                                    'highlightColonizedBodies':self.systemScreen.highlightColonizedBodies,
+                                    'highlightIndustrializedBodies':self.systemScreen.highlightIndustrializedBodies,
+                                    'highlightUnsurveyedBodies':self.systemScreen.highlightUnsurveyedBodies,
+                                    'highlightEnemyBodies':self.systemScreen.highlightEnemyBodies,
+                                    'highlightResourcefulBodies':self.systemScreen.highlightResourcefulBodies,
+                                    'highlightXenosBodies':self.systemScreen.highlightXenosBodies,
+                                    'highlightArtifactsBodies':self.systemScreen.highlightArtifactsBodies
+                                    }
+    filename = 'options.json'
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.options, f, indent=2)
+    except:
+      print('File %s not writeable'%filename)
+  
 
   def InitGases(self):
     gases = {}
@@ -692,11 +791,13 @@ class Game():
         if (name.endswith('.mp3')):
           self.playList.append(os.path.join(root, name))
     self.currentSong = random.randint(0,len(self.playList)-1)
-    self.PlayNextSong(None, None, None)
+    if (self.music):
+      self.PlayNextSong(None, None, None)
 
 
   def ToggleMusic(self, parameters, parent, mousepos):
     self.music = not self.music
+    self.GUI_Elements[parameters].enabled = self.music
     if (self.music):
       pygame.mixer.music.unpause()
     else:
@@ -721,6 +822,7 @@ class Game():
   def IncreaseVolume(self, parameters, parent, mousepos):
     pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()+0.1)
     print(pygame.mixer.music.get_volume())
+
 
   def DecreaseVolume(self, parameters, parent, mousepos):
     pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()-0.1)
