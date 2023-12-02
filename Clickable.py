@@ -9,6 +9,7 @@ class Clickable():
     self.parent = parent
     self.leftClicked = False
     self.rightClicked = False
+    self.hover = False
     self.doubleClicked = False
     self.toBeProcessed = False
     self.persistent = persistent

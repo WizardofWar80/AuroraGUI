@@ -56,6 +56,8 @@ class GUI():
   def Draw(self, surface):
     if (self.showLabel):
       Utils.DrawText2Surface(surface, self.label, (self.rect[0]+self.labelOffset[0], self.rect[1]+self.labelOffset[1]),20,Utils.GRAY)
+    if (self.clickable and self.clickable.hover):
+      Utils.DrawText2Surface(surface, self.tooltip, (self.rect[0]+self.rect[2]+self.labelOffset[0], self.rect[1]+self.labelOffset[1]),20,Utils.GRAY)
     if (self.type == 'Button'):
       if (not self.enabled or self.children):
         if (self.isTab):

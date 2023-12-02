@@ -58,8 +58,9 @@ def main():
   # main loop
   while running:
     # event handling, gets all event from the event queue
+    myEvents.Update(game)
     for event in pygame.event.get():
-      myEvents.Update()
+      #myEvents.Update()
       myEvents.HandleMouseEvents(event, game)
       myEvents.HandleKeyboardEvents(event, game)
       myEvents.ProcessClickablesEvents(game)

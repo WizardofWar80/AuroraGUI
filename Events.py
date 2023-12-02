@@ -43,8 +43,12 @@ class Events:
     self.TimeSinceRightMouseButtonReleased = self.TimeDeltaInit
     self.TimeRightMouseButtonDoubleClick = self.TimestampInit
     self.TimeSinceRightMouseButtonDoubleClick = self.TimeDeltaInit
-    
-  def Update(self):
+    self.lastEnteredElement = None
+    self.timestampEnteredElement = self.TimestampInit
+    self.timeSinceEnteredElement = self.TimeDeltaInit
+
+
+  def Update(self, game):
     current_time = self.GetTimeinSeconds()
     # Left Mouse Button
     if (self.TimeLeftMouseButtonReleased > self.TimestampInit):
@@ -60,6 +64,14 @@ class Events:
       self.TimeSinceRightMouseButtonPressed = current_time - self.TimeRightMouseButtonPressed
     if (self.TimeRightMouseButtonDoubleClick > self.TimestampInit):
       self.TimeSinceRightMouseButtonDoubleClick = current_time - self.TimeRightMouseButtonDoubleClick
+    if (self.lastEnteredElement != None):
+      self.timeSinceEnteredElement = current_time - self.timestampEnteredElement
+      if(self.timeSinceEnteredElement > .7):
+        if (not self.lastEnteredElement.hover):
+          game.SetRedrawFlag(game.currentScreen)
+          print('hover over %s'%self.lastEnteredElement.name)
+          self.lastEnteredElement.hover = True
+        
 
 
   def ClearClickables(self, parent = None, exclude = None):
@@ -243,8 +255,9 @@ class Events:
     #print(event.pos)
     #print(event.buttons)
     #print(event.touch)
+    game.mousePos = event.pos
+    exited_element = True
     if (game.currentScreen == 'System'):
-      game.mousePos = event.pos
       if (self.LeftMouseButtonDown):
         if (self.TimeSinceLeftMouseButtonPressed > 0.3):
           mousePosDelta2 = Utils.SubTuples(game.mousePos, self.LeftMousePressPosition)
@@ -252,6 +265,26 @@ class Events:
           game.systemScreen.screenCenter = Utils.AddTuples(game.systemScreen.screenCenterBeforeDrag, mousePosDelta2)
           game.systemScreen.reDraw = True
           #print(game.systemScreen.screenCenter,game.systemScreen.screenCenterBeforeDrag)
+    if (not self.LeftMouseButtonDown):
+      for clickable in self.clickables:
+        if (clickable.rect) and (clickable.enabled):
+          if (     (game.mousePos[0]  > clickable.rect[0])
+               and (game.mousePos[0] <  clickable.rect[0]+clickable.rect[2])
+               and (game.mousePos[1]  > clickable.rect[1])
+               and (game.mousePos[1] <  clickable.rect[1]+clickable.rect[3]) ):
+            if (self.lastEnteredElement != clickable):
+              print('entered %s'%clickable.name)
+              self.lastEnteredElement = clickable
+              self.timestampEnteredElement = self.GetTimeinSeconds()
+              self.timeSinceEnteredElement = self.TimeDeltaInit
+            exited_element = False
+      if (exited_element):
+        if (self.lastEnteredElement != None):
+          print('exited %s'%self.lastEnteredElement.name)
+          self.lastEnteredElement.hover = False
+          self.lastEnteredElement = None
+          self.timeSinceEnteredElement = self.TimeDeltaInit
+          game.SetRedrawFlag(game.currentScreen)
 
 
   def HandleSingleClickEvents(self, button, game):
