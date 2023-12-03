@@ -248,10 +248,12 @@ class Game():
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[1]+5
+    y -= 5
     bb = (x,y,20,20)
     name = '+'
     gui_cl = self.MakeClickable(name, bb, self.IncreaseVolume, double_click_call_back=self.IncreaseVolume, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True, latching=False, tooltip = 'Increase Volume')
+    self.GUI_Elements[idGUI].SetImages(self.images_GUI, 'vol_up_small')
 
     idGUI += 1
     y += 20+5
@@ -259,6 +261,7 @@ class Game():
     name = '-'
     gui_cl = self.MakeClickable(name, bb, self.DecreaseVolume, double_click_call_back=self.DecreaseVolume, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True, latching=False, tooltip = 'Decrease Volume')
+    self.GUI_Elements[idGUI].SetImages(self.images_GUI, 'vol_down_small')
 
     #from pygame import mixer  # Load the popular external library
 
