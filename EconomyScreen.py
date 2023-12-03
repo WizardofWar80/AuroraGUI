@@ -96,11 +96,11 @@ class EconomyScreen(Screen):
     max_y = -10000000000000000000000000000
     for tuple in results:
       value = tuple[1]
-      ts = int(tuple[0])
-      min_x = min([min_x, tuple[0]])
-      min_y = min([min_y, tuple[1]])
-      max_x = max([max_x, tuple[0]])
-      max_y = max([max_y, tuple[1]])
+      ts = int(tuple[0]) + self.game.gameTimestampStart
+      min_x = min([min_x, ts])
+      min_y = min([min_y, value])
+      max_x = max([max_x, ts])
+      max_y = max([max_y, value])
       self.wealthHistory.append([ts, value])
     self.tabs['Economy'].AddData('Wealth', self.wealthHistory, ((min_x,min_y),(max_x,max_y)), axis = 1, unit = '€')
 
@@ -114,7 +114,7 @@ class EconomyScreen(Screen):
     unit = 'k'
     for timestamp in self.game.statisticsPopulation:
       value = self.game.statisticsPopulation[timestamp]*1000
-      ts = int(timestamp)
+      ts = int(timestamp) + self.game.gameTimestampStart
       min_x = min([min_x, ts])
       min_y = min([min_y, value])
       max_x = max([max_x, ts])
@@ -136,7 +136,7 @@ class EconomyScreen(Screen):
         unit = 'L'
       for timestamp in self.game.statisticsStockpile[name]:
         value = self.game.statisticsStockpile[name][timestamp]
-        ts = int(timestamp)
+        ts = int(timestamp) + self.game.gameTimestampStart
         min_x = min([min_x, ts])
         min_y = min([min_y, value])
         max_x = max([max_x, ts])
@@ -159,7 +159,7 @@ class EconomyScreen(Screen):
     history = []
     for timestamp in self.game.statisticsShips:
       value = self.game.statisticsShips[timestamp]
-      ts = int(timestamp)
+      ts = int(timestamp) + self.game.gameTimestampStart
       min_x = min([min_x, ts])
       min_y = min([min_y, value])
       max_x = max([max_x, ts])
@@ -176,7 +176,7 @@ class EconomyScreen(Screen):
     history = []
     for timestamp in self.game.statisticsStations:
       value = self.game.statisticsStations[timestamp]
-      ts = int(timestamp)
+      ts = int(timestamp) + self.game.gameTimestampStart
       min_x = min([min_x, ts])
       min_y = min([min_y, value])
       max_x = max([max_x, ts])

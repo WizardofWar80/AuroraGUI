@@ -80,7 +80,7 @@ class GUI():
             #  offset = (self.rect[2]/2,self.rect[3]/2)
             #Utils.DrawTextCenteredAt(surface, self.label, self.rect[0]+self.rect[2]/2, self.rect[1]+self.rect[3]/2, pygame.font.SysFont("Times New Roman", 20, bold = True), Utils.GRAY)
             Utils.DrawText2Surface(surface, self.label, (self.rect[0]+offset[0],self.rect[1]+offset[1]),20,Utils.GRAY)
-            pygame.draw.rect(surface, Utils.RED, (self.rect[0]+offset[0],self.rect[1]+offset[1],1,1), 0)
+            #pygame.draw.rect(surface, Utils.RED, (self.rect[0]+offset[0],self.rect[1]+offset[1],1,1), 0)
             if self.children:
               Utils.DrawSizedTriangle(surface, (self.rect[0]+25,self.rect[1]+7), Utils.GRAY, 4, 1)
           else:

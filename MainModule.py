@@ -17,6 +17,7 @@ import BodiesScreen
 import EconomyScreen
 import json
 from datetime import datetime
+from time import mktime
 import ColonyDetailsScreen
 import ColoniesScreen
 import SurveyScreen
@@ -109,9 +110,9 @@ class Game():
       self.logger.write('Error connecting to DB (%s): %s'%(db_filename, repr(e)))
 
     if (self.db):
-      game_table = self.db.execute('''SELECT * from FCT_Game''').fetchall()[-1]
-      print(game_table[5],': ID', game_table[0])
-      self.gameID = game_table[0]
+      self.gameID, name, self.startYear = self.db.execute('''SELECT GameID, GameName, StartYear from FCT_Game''').fetchall()[-1]
+      self.gameTimestampStart = mktime(datetime(year=self.startYear, month=1, day=1).timetuple())
+      print(name,': ID', self.gameID)
       self.myRaceID = self.db.execute('''SELECT RaceID from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
       self.myRaceStationPicFilename = self.db.execute('''SELECT SpaceStationPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
       self.myRaceHullPicFilename = self.db.execute('''SELECT HullPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
