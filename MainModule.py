@@ -86,6 +86,7 @@ class Game():
     self.statisticsShips = {}
     self.statisticsGroundUnits = {}
     self.statisticsStations = {}
+    self.statisticsWealth = {}
     self.options = {}
 
     ## Options
@@ -295,6 +296,13 @@ class Game():
     except:
       print('File %s not found'%filename)
 
+    filename = 'statistics_wealth_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.statisticsWealth = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
     filename = 'statistics_stockpile_game_%d.json'%self.gameID
     try:
       with open(filename, 'r') as f:
@@ -329,6 +337,13 @@ class Game():
     try:
       with open(filename, 'w') as f:
         json.dump(self.statisticsPopulation, f)
+    except:
+      print('File %s not writeable'%filename)
+
+    filename = 'statistics_wealth_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.statisticsWealth, f)
     except:
       print('File %s not writeable'%filename)
 
@@ -408,6 +423,7 @@ class Game():
     self.systemScreen.highlightResourcefulBodies =  self.options['SystemScreen']['highlightResourcefulBodies']     
     self.systemScreen.highlightXenosBodies =  self.options['SystemScreen']['highlightXenosBodies']           
     self.systemScreen.highlightArtifactsBodies = self.options['SystemScreen']['highlightArtifactsBodies']       
+
 
   def SaveOptions(self):
     self.options['Audio'] = {'Music':self.music, 'Volume':pygame.mixer.music.get_volume()}
@@ -616,6 +632,7 @@ class Game():
     self.fleets = Fleets.GetFleets(self)
     self.installations = Colonies.GetInstallationInfo(self)
     self.colonies = Colonies.GetColonies(self)
+    self.GetWealthData()
     self.SaveStatistics()
     self.GetNewLocalData(self.currentSystem)
 
@@ -828,3 +845,13 @@ class Game():
   def DecreaseVolume(self, parameters, parent, mousepos):
     pygame.mixer.music.set_volume(pygame.mixer.music.get_volume()-0.1)
     print(pygame.mixer.music.get_volume())
+
+
+  def GetWealthData(self):
+    results = self.db.execute('''SELECT IncrementTime, WealthAmount from FCT_WealthHistory WHERE GameID = %d and RaceID = %d ORDER BY IncrementTime Asc;'''%(self.gameID, self.myRaceID)).fetchall()
+    #unsorted = []
+    for tuple in results:
+      #unsorted.append([int(tuple[0]), tuple[1]])
+      value = tuple[1]
+      ts = int(tuple[0])
+      self.statisticsWealth[str(ts)] = value

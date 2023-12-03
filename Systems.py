@@ -96,29 +96,35 @@ def GetSystems(game):
 
 
 def GetSystemJumpPoints(game, currentSystem):
+  jp_table = [list(x) for x in game.db.execute('''SELECT * from FCT_RaceJumpPointSurvey WHERE GameID = %d AND RaceID = %d;'''%(game.gameID, game.myRaceID))]
+  raceJPs = {}
+  for JP in jp_table:
+    raceJPs[JP[2]] = {'found':JP[3], 'explored':JP[4]}
   jp_table = [list(x) for x in game.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(game.gameID, currentSystem))]
   JPs = {}
   index = 1
   for JP in jp_table:
     JP_ID = JP[0]
-    JP_fromSystemID = JP[2]
-    JP_toWP = JP[5]
-    JP_explored = (0 if JP_toWP==0 else 1)
-    JP_Gate = (0 if JP[8]==0 else 1)
-    pos = (JP[6],JP[7])
-    bearing = JP[4]
-    JP_fromSystem = GetSystemName(game, JP_fromSystemID)
-    if (JP_explored):
-      JP_toSystemID = game.db.execute('''SELECT SystemID from FCT_JumpPoint WHERE GameID = %d AND WarpPointID = %d;'''%(game.gameID,JP_toWP)).fetchone()[0]
-      JP_toSystem = GetSystemName(game, JP_toSystemID)
-    else:
-      JP_toSystemID = -1
-      JP_toSystem = 'JP '+str(index)
-      index+=1
-    if (JP_fromSystem != 'Unknown'):
-      JPs[JP_ID] = {'Destination': JP_toSystem, 'DestID': JP_toSystemID, 
-                    'Explored':JP_explored, 'Gate':JP_Gate, 'Pos': pos, 'Bearing':bearing, 
-                    'CurrentSystem':JP_fromSystem,'CurrentSystemID':JP_fromSystemID}
+    if (JP_ID in raceJPs):
+      if (raceJPs[JP_ID]['found']):
+        JP_fromSystemID = JP[2]
+        JP_toWP = JP[5]
+        JP_explored = raceJPs[JP_ID]['explored']
+        JP_Gate = (0 if JP[8]==0 else 1)
+        pos = (JP[6],JP[7])
+        bearing = JP[4]
+        JP_fromSystem = GetSystemName(game, JP_fromSystemID)
+        if (JP_explored):
+          JP_toSystemID = game.db.execute('''SELECT SystemID from FCT_JumpPoint WHERE GameID = %d AND WarpPointID = %d;'''%(game.gameID,JP_toWP)).fetchone()[0]
+          JP_toSystem = GetSystemName(game, JP_toSystemID)
+        else:
+          JP_toSystemID = -1
+          JP_toSystem = 'JP '+str(index)
+          index+=1
+        if (JP_fromSystem != 'Unknown'):
+          JPs[JP_ID] = {'Destination': JP_toSystem, 'DestID': JP_toSystemID, 
+                        'Explored':JP_explored, 'Gate':JP_Gate, 'Pos': pos, 'Bearing':bearing, 
+                        'CurrentSystem':JP_fromSystem,'CurrentSystemID':JP_fromSystemID}
   return JPs
 
 

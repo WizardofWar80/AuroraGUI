@@ -86,17 +86,18 @@ class EconomyScreen(Screen):
 
 
   def GetWealthData(self):
-    results = self.game.db.execute('''SELECT IncrementTime, WealthAmount from FCT_WealthHistory WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
-    if len (results) == 0:
-      results = self.game.db.execute('''SELECT TimeUsed, Amount from FCT_WealthData WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
+    #results = self.game.db.execute('''SELECT IncrementTime, WealthAmount from FCT_WealthHistory WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
+    #if len (results) == 0:
+    #  results = self.game.db.execute('''SELECT TimeUsed, Amount from FCT_WealthData WHERE GameID = %d and RaceID = %d;'''%(self.game.gameID, self.game.myRaceID)).fetchall()
     self.wealthHistory = []
     min_x = 10000000000000000000000000000
     min_y = 10000000000000000000000000000
     max_x = -10000000000000000000000000000
     max_y = -10000000000000000000000000000
-    for tuple in results:
-      value = tuple[1]
-      ts = int(tuple[0]) + self.game.gameTimestampStart
+    #for tuple in results:
+    for timestamp in self.game.statisticsWealth:
+      value = self.game.statisticsWealth[timestamp]
+      ts = int(timestamp) + self.game.gameTimestampStart
       min_x = min([min_x, ts])
       min_y = min([min_y, value])
       max_x = max([max_x, ts])
