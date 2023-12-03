@@ -33,8 +33,8 @@ class EventsScreen(Screen):
 
 
   def DrawGameEvents(self):
-    game_event_table = [list(x) for x in self.game.db.execute('''SELECT * from FCT_Gamelog WHERE IncrementID
-   = %d AND GameID = %d AND RaceID = %d;'''%(self.game.gameTick, self.game.gameID,self.game.myRaceID))]
+    game_event_table = [list(x) for x in self.game.db.execute('''SELECT * from FCT_Gamelog WHERE Time >= %d 
+   AND GameID = %d AND RaceID = %d;'''%(int(self.game.lastGameTime), self.game.gameID,self.game.myRaceID))]
     #IncrementID	GameID	RaceID	SMOnly	Time	EventType	MessageText SystemID	Xcor	Ycor	IDType	PopulationID
     lineNr = 0
     line_height = 20
@@ -46,21 +46,28 @@ class EventsScreen(Screen):
       if (game_event[8]== game_event[9]):
         game_event[8] = game_event[9] = 0
       parameters = [game_event[7], game_event[8], game_event[9], game_event[10], game_event[11]]
+      printed = False
       for i in range(len(texts)):
         if (links[i]):
           cursorPos, label_size = Utils.DrawText2Surface(self.surface, texts[i], cursorPos, 15, Utils.DODGER_BLUE)
+          if (cursorPos == None):
+            break
           pygame.draw.line(self.surface, Utils.DODGER_BLUE, (cursorPos[0],cursorPos[1]+15), (cursorPos[0]+label_size[0],cursorPos[1]+15))
           print(texts[i]+' - '+ links_to[link_index])
           bb = (cursorPos,label_size)
           gui_cl = self.game.MakeClickable(links_to[link_index], bb, self.game.FollowEvent, par=[texts[i]]+parameters, parent=links_to[link_index])
           link_index += 1
           #['Ship', 'Body', 'Fleet','Missile', 'Contact','Research', 'Xenos', 'System']
+          printed = True
         else:
           cursorPos, label_size = Utils.DrawText2Surface(self.surface, texts[i], cursorPos, 15, (255,255,255))
-
+          if (cursorPos == None):
+            break
+          printed = True
+        
         cursorPos = (cursorPos[0]+label_size[0], cursorPos[1])
-
-      lineNr += 1
+      if (printed):
+        lineNr += 1
     return True
 
 
@@ -227,11 +234,27 @@ class EventsScreen(Screen):
       links_to = ['Ship']
       pass
     elif (id == 125):
-      #125	The continual capacity task for Zillmer Gulf Shipyards Company at Earth has reached its target capacity
-      results, links = self.SplitData(text, searchTokens = ['The continual capacity task for ', ' at ',' has reached its target capacity'])
-      links_to = ['Body']
-      links[1] = False
-      pass
+      tokens = ['Slipway added to ', ' at ']
+      if (self.CheckTokensInText(text, tokens)):
+        #125	Slipway added to CSY Shenkle Shipbuilding at Earth
+        results, links = self.SplitData(text, searchTokens = tokens)
+        links_to = ['Body']
+        links[1] = False
+      else:
+        tokens = ['The continual capacity task for ', ' at ',' has reached its target capacity']
+        if (self.CheckTokensInText(text, tokens)):
+          #125	The continual capacity task for Zillmer Gulf Shipyards Company at Earth has reached its target capacity
+          results, links = self.SplitData(text, searchTokens = tokens)
+          links_to = ['Body']
+          links[1] = False
+        else:
+          #'Retooling for Allosaurus Mk.2 class completed at CSY Shenkle Shipbuilding at Earth'
+          tokens = ['Retooling for ' , 'completed at ', ' at ']
+          if (self.CheckTokensInText(text, tokens)):
+            results, links = self.SplitData(text, searchTokens = tokens)
+            links_to = ['Body']
+            links[1] = False
+            links[3] = False
     elif (id == 129):
       #129	Commodore Alexandra Bentley assigned as commander of Fuel Logistics Command
       pass
@@ -240,16 +263,27 @@ class EventsScreen(Screen):
       pass
     elif (id == 141):
       #141	GEV-01 Proxima Centauri 001 under the command of CDR Santos Larrivee discovered minerals on Tarvos:   Mercassium: 25  Acc 1  
-      results, links = self.SplitData(text, searchTokens = [' under the command of ', ' discovered minerals on ',': '])
-      links_to = ['Ship', 'Body']
-      links[2] = False
-      links[-1] = False
+      tokens = [' under the command of ', ' discovered minerals on ',': ']
+      if (self.CheckTokensInText(text, tokens)):
+        results, links = self.SplitData(text, searchTokens = tokens)
+        links_to = ['Ship', 'Body']
+        links[2] = False
+        links[-1] = False
+      else:
+        #141	GEV-01 Proxima Centauri 001 discovered minerals on Tarvos:   Mercassium: 25  Acc 1  
+        tokens = [' discovered minerals on ',': ']
+        if (self.CheckTokensInText(text, tokens)):
+          results, links = self.SplitData(text, searchTokens = tokens)
+          links_to = ['Ship', 'Body']
+          links[-1] = False
       pass
     elif (id == 146):
       #146	A 10cm Railgun V10/C1 on PDC-17 Napoleon Mk.2 009 (PDC Alpha Centauri) has suffered a maintenance failure. Repairs have been carried out that required 1.7 maintenance supplies. The ship has 144 maintenance supplies remaining. Maintenance Clock: 5.61 years. Average Class Maintenance Life: 9.06 years. Current Deployment: 0%
-      results, links = self.SplitData(text, searchTokens = ['A ', ' on ', ' has '])
+      results, links = self.SplitData(text, searchTokens = ['A ', ' on ', ' has suffered '])
       links_to=['Ship']
       links[1] = False
+      links[0] = False
+      links[5] = False
       links[-1] = False
       pass
     elif (id == 181):
@@ -266,8 +300,16 @@ class EventsScreen(Screen):
       pass
     elif (id == 195):
       #195	GSC-01 Karl Schwarzschild  001 under the command of LCDR Aaron Lowe has discovered the new system of Epsilon Indi
-      results, links = self.SplitData(text, searchTokens = [' under the command of ', ' has discovered the new system of '])   
-      links_to = ['Ship', 'System']
+      tokens = [' under the command of ', ' has discovered the new system of ']
+      if (self.CheckTokensInText(text, tokens)):
+        results, links = self.SplitData(text, searchTokens = [' under the command of ', ' has discovered the new system of '])   
+        links_to = ['Ship', 'System']
+      else:
+        #195	GSC-01 Karl Schwarzschild  001 has discovered the new system of Epsilon Indi
+        tokens = [' has discovered the new system of ']
+        if (self.CheckTokensInText(text, tokens)):
+          results, links = self.SplitData(text, searchTokens = [' under the command of ', ' has discovered the new system of '])   
+          links_to = ['Ship', 'System']
       pass
     elif (id == 201):
       #201	As a result of repairs to Napoleon Mk.2 001, her maintenance clock has been reduced by 0.29 years

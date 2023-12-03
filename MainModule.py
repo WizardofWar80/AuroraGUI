@@ -52,6 +52,7 @@ class Game():
     self.gameID = -1
     self.myRaceID = -1
     self.gameTime = 0
+    self.lastGameTime = 0
     self.deltaTime = 0
     self.homeSystemID = -1
     self.currentSystem = -1
@@ -113,6 +114,7 @@ class Game():
 
     if (self.db):
       self.gameID, name, self.startYear = self.db.execute('''SELECT GameID, GameName, StartYear from FCT_Game''').fetchall()[-1]
+      self.LoadGameLog()
       self.gameTimestampStart = mktime(datetime(year=self.startYear, month=1, day=1).timetuple())
       print(name,': ID', self.gameID)
       self.myRaceID = self.db.execute('''SELECT RaceID from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
@@ -624,10 +626,12 @@ class Game():
   def CheckForNewDBData(self):
     gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
     if (gameTime != self.gameTime):
+      self.lastGameTime = self.gameTime
       self.GetNewData()
       self.SetRedrawFlag(self.currentScreen)
       date_time = datetime.fromtimestamp(self.gameTime)
       print('New game data! %s'%date_time.strftime("%b %d %Y"))
+      self.SaveGameLog()
 
 
   def GetNewData(self):
@@ -884,3 +888,23 @@ class Game():
       print('File %s not found'%filename)
       print (e)
 
+
+  def SaveGameLog(self):
+    filename = 'log_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump({'lastGameTime':self.lastGameTime}, f, indent=2)
+    except Exception as e:
+      print('File %s not found'%filename)
+      print (e)
+
+
+  def LoadGameLog(self):
+    filename = 'log_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        game_log = json.load(f)
+        self.lastGameTime = game_log['lastGameTime']
+    except Exception as e:
+      print('File %s not found'%filename)
+      print (e)
