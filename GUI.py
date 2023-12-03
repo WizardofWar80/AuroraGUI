@@ -162,10 +162,18 @@ class GUI():
     self.children.append(child)
 
 
-  def SetImages(self, image_enabled, image_disabled):
-    self.image_enabled = image_enabled
-    self.image_disabled = image_disabled
-
+  def SetImages(self, images_list, name_image_enabled, name_image_disabled = None):
+    name_image_enabled_lower = name_image_enabled.lower()
+    if (name_image_enabled_lower in images_list):
+      self.image_enabled = images_list[name_image_enabled_lower]
+    if (name_image_disabled):
+      name_image_disabled_lower = name_image_disabled.lower()
+      if (name_image_disabled_lower in images_list):
+        self.image_disabled = images_list[name_image_disabled_lower]
+    else:
+      if (not self.latching):
+        if (name_image_enabled_lower in images_list):
+          self.image_disabled = images_list[name_image_enabled_lower]
 
   def GetID(self):
     return self.ID

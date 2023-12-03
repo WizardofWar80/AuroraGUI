@@ -30,7 +30,7 @@ import Designations
 import os
 
 class Game():
-  def __init__(self, eventsclass, size = (1800,1000), name = 'AuroraGUI'):
+  def __init__(self, eventsclass, images_file_list, size = (1800,1000), name = 'AuroraGUI'):
     self.Debug = False
     Bodies.SetGameInstance(self)
     Fleets.SetGameInstance(self)
@@ -153,7 +153,7 @@ class Game():
     self.music = True
     self.LoadOptions()
     self.LoadMP3Playlist('D:\\MP3\\Musik\\Stellaris OST\\')
-    
+    self.LoadImages(images_file_list)
     self.InitGUI()
     
 
@@ -236,6 +236,7 @@ class Game():
     name = 'Music'
     gui_cl = self.MakeClickable(name, bb, self.ToggleMusic, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.music)
+    self.GUI_Elements[idGUI].SetImages(self.images_GUI, 'music_enabled', 'music_disabled')
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[1]+5
@@ -243,6 +244,7 @@ class Game():
     name = 'Skip'
     gui_cl = self.MakeClickable(name, bb, self.PlayNextSong, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True, latching=False)
+    self.GUI_Elements[idGUI].SetImages(self.images_GUI, 'music_skip')
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[1]+5
@@ -657,17 +659,18 @@ class Game():
             self.images_Body[sub_folder][body_name] = pygame.image.load(filename)
             self.images_Body[sub_folder][body_name].set_colorkey(self.bg_color)
       elif (sub_folder == 'Planets'):
-        if (not sub_folder in self.images_Body):
-          self.images_Body[sub_folder] = {}
+        #if (not sub_folder in self.images_Body):
+        #  self.images_Body[sub_folder] = {}
         file_lower = name.lower()
         if (file_lower.endswith('.jpg')):
-          if (not file_lower[0] in self.images_Body[sub_folder]):
-            self.images_Body[sub_folder][file_lower[0]] = []
+          planets_subcat = sub_folder+'_'+file_lower[0]
+          if (not planets_subcat in self.images_Body):
+            self.images_Body[planets_subcat] = []
           hyphen = file_lower.find('.')
           if (hyphen > -1):
-            body_name = file_lower[:hyphen].strip()
-            self.images_Body[sub_folder][file_lower[0]].append(pygame.image.load(filename))
-            self.images_Body[sub_folder][file_lower[0]][-1].set_colorkey(self.bg_color)
+            #body_name = file_lower[:hyphen].strip()
+            self.images_Body[planets_subcat].append(pygame.image.load(filename))
+            self.images_Body[planets_subcat][-1].set_colorkey(self.bg_color)
       elif (sub_folder == 'Stars'):
         if (not sub_folder in self.images_Body):
           self.images_Body[sub_folder] = {}
@@ -695,7 +698,7 @@ class Game():
         if (file_lower.endswith('.jpg')):
           hyphen = file_lower.find('.')
           if (hyphen > -1):
-            body_name = file_lower[:hyphen].strip()
+            #body_name = file_lower[:hyphen].strip()
             self.images_Body[sub_folder].append(pygame.image.load(filename))
             self.images_Body[sub_folder][-1].set_colorkey(self.bg_color)
     
@@ -861,7 +864,7 @@ class Game():
 
 
   def LoadBodyImages(self):
-    filename = 'body_imagesp_game_%d.json'%self.gameID
+    filename = 'body_images_game_%d.json'%self.gameID
     try:
       with open(filename, 'r') as f:
         self.assigned_body_images = json.load(f)
@@ -870,10 +873,11 @@ class Game():
 
 
   def SaveBodyImages(self):
-    filename = 'body_imagesp_game_%d.json'%self.gameID
+    filename = 'body_images_game_%d.json'%self.gameID
     try:
       with open(filename, 'w') as f:
         json.dump(self.assigned_body_images, f, indent=2)
-    except:
+    except Exception as e:
       print('File %s not found'%filename)
+      print (e)
 

@@ -353,6 +353,7 @@ def CalculateColonyCost(game, bodyID, currentTemp, atm, hydro, gravity, tidalMul
 
 def GetSystemBodies(game, currentSystem):
   systemBodies = {}
+  save_new_images_generated = False
   body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year
 , DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
   
@@ -442,7 +443,8 @@ def GetSystemBodies(game, currentSystem):
       if (body_name.lower() in game.images_Body['Sol']):
         image = game.images_Body['Sol'][body_name.lower()]
       else:
-        image = Utils.GetObjectImage(game, currentSystem, body[0], bodyClass, bodyType, temp, hydro, atm)
+        image, new_images_generated = Utils.GetObjectImage(game, currentSystem, body[0], bodyClass, bodyType, temp, hydro, atm)
+        save_new_images_generated |= new_images_generated
      
     resources = False
     enemies = False
@@ -479,6 +481,8 @@ def GetSystemBodies(game, currentSystem):
                             'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
                             'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming }
     systemBodies[body[0]]['Deposits'] = deposits
+    if (save_new_images_generated):
+      game.SaveBodyImages()
   return systemBodies
 
 

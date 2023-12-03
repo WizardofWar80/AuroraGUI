@@ -49,8 +49,6 @@ def main():
   pygameinstance = pygame.init()
   myEvents = Ev.Events()
 
-  game = MainModule.Game(myEvents)
-  #game.BindEventClass(myEvents)
   file_list = []
   for (dirpath, dirs, files) in os.walk(img_path):
     for filename in files:
@@ -61,7 +59,8 @@ def main():
         subfolder = 'Sol'
       file_list.append([subfolder, filename, os.path.join(dirpath, filename).lower()])
 
-  game.LoadImages(file_list)
+
+  game = MainModule.Game(myEvents, file_list)
 
   # define a variable to control the main loop
   running = True

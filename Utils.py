@@ -632,57 +632,72 @@ def ConvertNumber2kMGT(value, coarse = False):
 
 def GetObjectImage(game, system, bodyID, bodyClass, bodyType, temp, hydro, atm):
   image = None
-
-  if (system in game.assigned_body_images):
-    if bodyID in game.assigned_body_images[system]:
+  new_images_generated = False
+  str_system = str(system) 
+  str_body = str(bodyID) 
+  if (str_system in game.assigned_body_images):
+    if str_body in game.assigned_body_images[str_system]:
       # this image is already stored in json file for this game
-      image = game.assigned_body_images[system][bodyID]
+      bodytype = game.assigned_body_images[str_system][str_body]['bodytype']
+      selectedImage = game.assigned_body_images[str_system][str_body]['index']
+      image = game.images_Body[bodytype][selectedImage]
   
   # Assign new image randomly
   if (not image):
     if (bodyClass == 'Asteroid'):
-      numImages = len(game.images_Body['Asteroids'])
+      bt = 'Asteroids'
+      numImages = len(game.images_Body[bt])
       selectedImage = random.randint(0,numImages-1)
       image = game.images_Body['Asteroids'][selectedImage]
     elif (bodyClass == 'Planet') or (bodyClass == 'Moon'):
       if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
+        bt = 'Gas Giants'
         numImages = len(game.images_Body['Gas Giants'])
         selectedImage = random.randint(0,numImages-1)
         image = game.images_Body['Gas Giants'][selectedImage]
       elif (bodyType == 'Planet Small' or bodyType == 'Moon Small'):
+        bt = 'Small Bodies'
         numImages = len(game.images_Body['Small Bodies'])
         selectedImage = random.randint(0,numImages-1)
         image = game.images_Body['Small Bodies'][selectedImage]
       else:
+        bt = 'Planets'
         if (temp > 100):
-          numImages = len(game.images_Body['Planets']['h'])
+          bt = 'Planets'+'_h'
+          numImages = len(game.images_Body[bt])
           selectedImage = random.randint(0,numImages-1)
-          image = game.images_Body['Planets']['h'][selectedImage]
+          image = game.images_Body['Planets'+'_h'][selectedImage]
         elif (hydro > 80):
-          numImages = len(game.images_Body['Planets']['o'])
+          bt = 'Planets'+'_o'
+          numImages = len(game.images_Body[bt])
           selectedImage = random.randint(0,numImages-1)
-          image = game.images_Body['Planets']['o'][selectedImage]
+          image = game.images_Body[bt][selectedImage]
         elif (hydro > 50):
-          numImages = len(game.images_Body['Planets']['m'])
+          bt = 'Planets'+'_m'
+          numImages = len(game.images_Body[bt])
           selectedImage = random.randint(0,numImages-1)
-          image = game.images_Body['Planets']['m'][selectedImage]
+          image = game.images_Body[bt][selectedImage]
         elif (atm > 0.01):
-          numImages = len(game.images_Body['Planets']['b'])
+          bt = 'Planets'+'_b'
+          numImages = len(game.images_Body[bt])
           selectedImage = random.randint(0,numImages-1)
-          image = game.images_Body['Planets']['b'][selectedImage]
+          image = game.images_Body[bt][selectedImage]
         else:
-          numImages = len(game.images_Body['Planets']['a'])
+          bt = 'Planets'+'_a'
+          numImages = len(game.images_Body[bt])
           selectedImage = random.randint(0,numImages-1)
-          image = game.images_Body['Planets']['a'][selectedImage]
+          image = game.images_Body[bt][selectedImage]
     elif (bodyClass == 'Comet'):
-      numImages = len(game.images_Body['Comets'])
+      bt = 'Comets'
+      numImages = len(game.images_Body[bt])
       selectedImage = random.randint(0,numImages-1)
-      image = game.images_Body['Comets'][selectedImage]
+      image = game.images_Body[bt][selectedImage]
     
     if (system not in game.assigned_body_images):
-      game.assigned_body_images[system]={}
-    game.assigned_body_images[system][bodyID] = image
+      game.assigned_body_images[str_system]={}
+    game.assigned_body_images[str_system][str_body] = {'bodytype':bt, 'index':selectedImage}
+    new_images_generated = True
     
-    game.SaveBodyImages()
+    #game.SaveBodyImages()
 
-  return image
+  return image, new_images_generated
