@@ -99,6 +99,7 @@ class Game():
 
     self.images_GUI = {}
     self.systemBodies = {}
+    self.assigned_body_images = {}
 
     #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     self.aurora_folder = 'D:\\Spiele\\Aurora4x\\'
@@ -336,42 +337,42 @@ class Game():
     filename = 'statistics_pop_game_%d.json'%self.gameID
     try:
       with open(filename, 'w') as f:
-        json.dump(self.statisticsPopulation, f)
+        json.dump(self.statisticsPopulation, f, indent=2)
     except:
       print('File %s not writeable'%filename)
 
     filename = 'statistics_wealth_game_%d.json'%self.gameID
     try:
       with open(filename, 'w') as f:
-        json.dump(self.statisticsWealth, f)
+        json.dump(self.statisticsWealth, f, indent=2)
     except:
       print('File %s not writeable'%filename)
 
     filename = 'statistics_stockpile_game_%d.json'%self.gameID
     try:
       with open(filename, 'w') as f:
-        json.dump(self.statisticsStockpile, f)
+        json.dump(self.statisticsStockpile, f, indent=2)
     except:
       print('File %s not writeable'%filename)
 
     filename = 'statistics_ships_game_%d.json'%self.gameID
     try:
       with open(filename, 'w') as f:
-        json.dump(self.statisticsShips, f)
+        json.dump(self.statisticsShips, f, indent=2)
     except:
       print('File %s not writeable'%filename)
 
     filename = 'statistics_units_game_%d.json'%self.gameID
     try:
       with open(filename, 'w') as f:
-        json.dump(self.statisticsGroundUnits, f)
+        json.dump(self.statisticsGroundUnits, f, indent=2)
     except:
       print('File %s not writeable'%filename)
 
     filename = 'statistics_stations_game_%d.json'%self.gameID
     try:
       with open(filename, 'w') as f:
-        json.dump(self.statisticsStations, f)
+        json.dump(self.statisticsStations, f, indent=2)
     except:
       print('File %s not writeable'%filename)
 
@@ -697,7 +698,9 @@ class Game():
             body_name = file_lower[:hyphen].strip()
             self.images_Body[sub_folder].append(pygame.image.load(filename))
             self.images_Body[sub_folder][-1].set_colorkey(self.bg_color)
-
+    
+    self.LoadBodyImages()
+    
     self.systemBodies = Bodies.GetSystemBodies(self, self.currentSystem)
     self.starSystems = Systems.GetSystems(self)
 
@@ -855,3 +858,22 @@ class Game():
       value = tuple[1]
       ts = int(tuple[0])
       self.statisticsWealth[str(ts)] = value
+
+
+  def LoadBodyImages(self):
+    filename = 'body_imagesp_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.assigned_body_images = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
+
+  def SaveBodyImages(self):
+    filename = 'body_imagesp_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.assigned_body_images, f, indent=2)
+    except:
+      print('File %s not found'%filename)
+
