@@ -53,7 +53,7 @@ class EventsScreen(Screen):
           if (cursorPos == None):
             break
           pygame.draw.line(self.surface, Utils.DODGER_BLUE, (cursorPos[0],cursorPos[1]+15), (cursorPos[0]+label_size[0],cursorPos[1]+15))
-          print(texts[i]+' - '+ links_to[link_index])
+          #print(texts[i]+' - '+ links_to[link_index])
           bb = (cursorPos,label_size)
           gui_cl = self.game.MakeClickable(links_to[link_index], bb, self.game.FollowEvent, par=[texts[i]]+parameters, parent=links_to[link_index])
           link_index += 1
@@ -116,22 +116,35 @@ class EventsScreen(Screen):
       pass
     elif (id == 28):
       #28	SO-09 Mantis Shrimp Mk.2 001 Damage Report:   Ship Destroyed
-      results, links = self.SplitData(text, searchTokens = [' Damage Report:   Ship Destroyed'])
-      links_to = ['Ship']
+      tokens = [' Damage Report:   Ship Destroyed']
+      if (self.CheckTokensInText(text, tokens)):
+        results, links = self.SplitData(text, searchTokens = tokens)
+        links_to = ['Ship']
+        links[1] = False
+        links[-1] = False
+      else:
+        tokens = ['A ', ' on ', ' has ']
+        if (self.CheckTokensInText(text, tokens)):
+          results, links = self.SplitData(text, searchTokens = tokens)
+          links_to = ['Ship']
+          links[1] = False
+          links[-1] = False
       ##28	A 10cm Railgun V10/C1 on PDC-12 Napoleon Mk.2 004 (PDC Alpha Centauri) has been damaged due to a maintenance failure. Insufficient maintenance supplies were available to effect an immediate repair. The ship has 1 maintenance supplies remaining. Current Maintenance Clock: 11,86 years
-      results, links = self.SplitData(text, searchTokens = ['A ', ' on ', ' has '])
-      links_to = ['Ship']
-      links[1] = False
-      links[-1] = False
       pass
     elif (id == 42):
       #42	FT-06 Berlin 006 cannot cycle order LP1  (Earth): Intra-system Jump to LP2  (Jupiter) as it does not start in the same system as the last current order ends. The cycle orders request has been removed
       #42	FT-32 Dresden 009 has cycle orders set but only has one order set up. As this can lead to an endless loop the cycle orders request has been removed
-      results, links = self.SplitData(text, searchTokens = [' cannot cycle order '])
-      results, links = self.SplitData(text, searchTokens = [' has cycle orders '])
-      links_to = ['Ship']
-      links[-1] = False
-      pass
+      tokens = [' cannot cycle order ']
+      if (self.CheckTokensInText(text, tokens)):
+        results, links = self.SplitData(text, searchTokens = tokens)
+        links_to = ['Ship']
+        links[-1] = False
+      else:
+        tokens = [' has cycle orders ']
+        if (self.CheckTokensInText(text, tokens)):
+          results, links = self.SplitData(text, searchTokens = tokens)
+          links_to = ['Ship']
+          links[-1] = False
     elif (id == 45):
       #45	FT EE 01 has completed orders. Orbiting Epsilon Eridani II
       results, links = self.SplitData(text, searchTokens = [' has completed orders.', ' Orbiting '])
@@ -227,6 +240,14 @@ class EventsScreen(Screen):
       pass
     elif (id == 99):
       # Scientist Fabian Dahlberg has developed a severe medical problem that has forced him to retire. Assignment prior to retirement: Unassigned
+      results, links = self.SplitData(text, searchTokens = [' has developed a severe medical problem that has forced him to retire. Assignment prior to retirement: '])
+      if (results[-1].find('Unassigned') > -1):
+        results = []
+        links = []
+      else:
+        links_to = []
+        links[0] = False
+        links[2] = False
       pass
     elif (id == 122):
       #122	PDC-09 Napoleon Mk.2 001 has completed her overhaul
@@ -374,7 +395,15 @@ class EventsScreen(Screen):
       pass
     elif (id == 292):
       #'Sergeant Carroll Berlingeri has retired from the service at the age of 46. Current Assignment: Unassigned')
-      pass
+      results, links = self.SplitData(text, searchTokens = [' has retired from the service at the age of ', '. Current Assignment: '])
+      if (results[-1].find('Unassigned') > -1):
+        results = []
+        links = []
+      else:
+        links_to = []
+        links[0] = False
+        links[2] = False
+        links[4] = False
     elif (id == 321):
       #321	GEV-01 Proxima Centauri 001 has exceeded its deployment time.
       results, links = self.SplitData(text, searchTokens = [' has exceeded its deployment time.'])
@@ -392,11 +421,11 @@ class EventsScreen(Screen):
       links_to = ['Ship']
       links[-1] = False
       pass
-    if (len(links) > 0):
-      if (links[-1] == False):
-        results[-2]+=results[-1]
-        del results[-1]
-        del links[-1]
+    #if (len(links) > 0):
+    #  if (links[-1] == False):
+    #    results[-2]+=results[-1]
+    #    del results[-1]
+    #    del links[-1]
     return results, links, links_to
 
 
