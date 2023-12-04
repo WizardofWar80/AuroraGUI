@@ -265,6 +265,12 @@ class Game():
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = True, latching=False, tooltip = 'Decrease Volume')
     self.GUI_Elements[idGUI].SetImages(self.images_GUI, 'vol_down_small')
 
+    # because the screen switching logic relies on the top menu bar we add a non-clickable hidden button here
+    idGUI += 1
+    bb = (0,0,0,0)
+    name = 'Colony'
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, None, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
+
     #from pygame import mixer  # Load the popular external library
 
 
@@ -275,8 +281,10 @@ class Game():
     if type(value) is int:
       id = value
     else:
-      for id in self.GUI_Elements:
-        if (self.GUI_Elements[id].name == value):
+      id = -1
+      for check_id in self.GUI_Elements:
+        if (self.GUI_Elements[check_id].name == value):
+          id = check_id
           break
     if (id in self.GUI_Elements):
       thisElement = self.GUI_Elements[id]
@@ -771,18 +779,21 @@ class Game():
 
   def FollowEvent(self, parameters, parent, mousepos):
     # parents: ['Ship', 'Body', 'Fleet','Missile', 'Contact','Research', 'Xenos', 'System']
-    [name, SystemID, Xcor, Ycor, IDType, PopulationID] = parameters
+    [name, SystemID, Xcor, Ycor, IDType, ID] = parameters
 
     if (parent == 'Body'):
       if (SystemID != 0):
         self.currentSystem = SystemID
         self.GetNewLocalData(SystemID)
-        if (Xcor == Ycor):
-          body = Bodies.GetBodyFromName(self, name)
-          if (body):
-            (Xcor,Ycor) = body['Pos']
-        self.systemScreen.ZoomTo((Xcor, Ycor), 409600)
-        self.SwitchScreens('System')
+        #if (Xcor == Ycor):
+        #  body = Bodies.GetBodyFromName(self, name)
+        #  if (body):
+        #    (Xcor,Ycor) = body['Pos']
+        #self.systemScreen.ZoomTo((Xcor, Ycor), 409600)
+        #self.SwitchScreens('System')
+        self.colonyDetailsScreen.bodyID = ID
+        self.colonyDetailsScreen.systemID = SystemID
+        self.SwitchScreens('Colony')
     elif (parent == 'Fleet'):
       if (SystemID != 0):
         self.currentSystem = SystemID

@@ -429,9 +429,9 @@ class BodiesScreen(Screen):
     if (row is not None) and (col is not None):
       if row > 0 and col == 1:
         if (value is not None):
-          #body = Bodies.GetBodyFromName(value)
+          body = Bodies.GetBodyFromName(self.game, value)
           #print(value)
-          self.game.FollowEvent([value, self.game.currentSystem, 0, 0, 0, 0], 'Body')
+          self.game.FollowEvent([value, self.game.currentSystem, 0, 0, 'BodyID', body['ID']], 'Body', mouse_pos)
 
 
   def OpenSystemDropdown(self, parameter, parent, mousepos):
