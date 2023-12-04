@@ -468,8 +468,8 @@ def GetSystemBodies(game, currentSystem):
         colonized = True
       if (game.colonies[body[0]]['Installations']):
         industrialized = True
-      if (sum_minerals > 0):
-        resources = True
+    if (sum_minerals > 0):
+      resources = True
       terraforming = colony['Terraforming']
     colonizable = True if colonyCost < 10000 else False
     dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV

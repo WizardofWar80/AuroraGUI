@@ -490,18 +490,6 @@ class SystemScreen(Screen):
       return False
 
 
-  #def DrawGUI(self):
-  #  if (self.reDraw_GUI):
-  #    for GUI_ID in self.GUI_Elements:
-  #      element = self.GUI_Elements[GUI_ID]
-  #      if (element.visible):
-  #        element.Draw(self.surface)
-  #    self.reDraw_GUI = False
-  #    return True
-  #  else:
-  #    return False
-
-
   def DrawSystem(self):
     Bodies.Draw(self)
     Systems.DrawSystemJumpPoints(self)

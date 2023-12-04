@@ -79,11 +79,13 @@ class BodiesScreen(Screen):
   def InitGUI(self):
     self.table.scrollbar.clickable.enabled = True
     idGUI = 0
-
+    reverse_order_columns = [5,6,8,9,10,11,12,13,14,15,16,17,18]
+    col_index = 0
     for cell in self.table.cells[0]:
       gui_cl = self.game.MakeClickable(cell.value, cell.rect, self.SortTableGUI, par=idGUI, parent=self.GUI_Table_identifier)
-      self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, cell.value, cell.rect, gui_cl, 'Button', enabled = True if idGUI == 0 else False, radioButton = True, radioGroup = self.GUI_Table_radioGroup, state = 0)
+      self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, cell.value, cell.rect, gui_cl, 'Button', enabled = True if idGUI == 0 else False, radioButton = True, radioGroup = self.GUI_Table_radioGroup, state = 1 if (col_index in reverse_order_columns) else 0)
       idGUI += 1
+      col_index += 1
 
     gui_cl = self.game.MakeClickable('Complete Bodies Table', self.table.rect, double_click_call_back = self.GetBodyFromInsideTable, parent='Complete Bodies Table')
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Table', self.table.rect, gui_cl, 'Button')
@@ -115,14 +117,14 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Colonies'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showColonizedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showColonizedBodies, tooltip='Always show colonized bodies')
 
     idGUI += 1
     x += size+5
     bb = (x,y,size,size)
     name = 'Filter Resources'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button')
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', tooltip='Show bodies without resources')
     showBodiesGUI = self.GUI_Elements[idGUI]
 
     idGUI += 1
@@ -130,7 +132,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'LargeWorlds'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessLargeWorlds)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessLargeWorlds, tooltip='Show large worlds without resources')
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -138,7 +140,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'SmallWorlds'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessSmallWorlds)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessSmallWorlds, tooltip='Show small worlds without resources')
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -146,7 +148,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Comets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessComets)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessComets, tooltip='Show comets without resources')
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -154,7 +156,7 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Asteroids'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier, enabled = False)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessAsteroids)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', parent=showBodiesGUI.GetID(), enabled = self.showResourcelessAsteroids, tooltip='Show asteroids without resources')
     showBodiesGUI.AddChildren(idGUI)
 
     idGUI += 1
@@ -163,21 +165,21 @@ class BodiesScreen(Screen):
     bb = (x,y,size,size)
     name = 'Show Installations'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showIndustrializedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showIndustrializedBodies, tooltip='Always show bodies with installations')
 
     idGUI += 1
     x += size+5
     bb = (x,y,size,size)
     name = 'Show Unsurveyed'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showUnsurveyedBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showUnsurveyedBodies, tooltip='Always show unsurveyed bodies')
 
     idGUI += 1
     x += size+5
     bb = (x,y,size,size)
     name = 'Show LowColonyCost'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showLowCCBodies)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.showLowCCBodies, tooltip='Always show bodies with low colony costs')
 
 
   def UpdateGUI(self):
@@ -389,6 +391,10 @@ class BodiesScreen(Screen):
             pass
           else:
             element.Draw(self.surface)
+      for GUI_ID in self.GUI_Elements:
+        element = self.GUI_Elements[GUI_ID]
+        if (element.visible):
+          element.DrawTooltip(self.surface)
       self.reDraw_GUI = False
       return True
     else:
