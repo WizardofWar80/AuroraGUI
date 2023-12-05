@@ -10,9 +10,10 @@ import Systems
 import Designations
 
 class BodiesScreen(Screen):
-  def __init__(self, game, events):
+  def __init__(self, game, events, name):
     self.reDraw = True
     self.reDraw_GUI = True
+    self.name = name
     self.game = game
     self.width = game.width
     self.height = game.height
@@ -302,7 +303,7 @@ class BodiesScreen(Screen):
     row = 0
     header = ['AU', 'Name', 'Type', 'S', 'CC', 'Pop','Pop Cap', 'Colonizable']
     for id in Utils.MineralNames:
-      header.append(Utils.MineralNames[id][:2])
+      header.append(Utils.MineralNames[id][:])
     header.append('TF')
     self.table.AddRow(row, header, [True]*len(header))
 
@@ -403,6 +404,10 @@ class BodiesScreen(Screen):
 
   def GetDrawConditions(self, body):
     if (body['Colonized'] and self.showColonizedBodies):
+      return True
+    if (body['Unsurveyed'] and self.showUnsurveyedBodies):
+      return True
+    if (body['Industrialized'] and self.showIndustrializedBodies ):
       return True
     elif (body['Resources']):
       return True

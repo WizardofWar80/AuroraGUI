@@ -147,8 +147,18 @@ class EventsScreen(Screen):
           links[-1] = False
     elif (id == 45):
       #45	FT EE 01 has completed orders. Orbiting Epsilon Eridani II
-      results, links = self.SplitData(text, searchTokens = [' has completed orders.', ' Orbiting '])
-      links_to = ['Ship', 'Body']
+      #45 'FT-01 Allosaurus 001 has completed orders. 305m km from Ceres at bearing 162°'
+      tokens = [' has completed orders.', ' Orbiting ']
+      if (self.CheckTokensInText(text, tokens)):
+        results, links = self.SplitData(text, searchTokens = tokens)
+        links_to = ['Ship', 'Body']
+      else:
+        tokens = [' has completed orders.', ' km from ', ' at bearing ']
+        if (self.CheckTokensInText(text, tokens)):
+          results, links = self.SplitData(text, searchTokens = tokens)
+          links_to = ['Ship', 'Body']
+          links[2] = False
+          links[-1] = False
       pass
     elif (id == 46):
       #46	Dresden 009 has insufficient fuel to complete the orders of its parent fleet

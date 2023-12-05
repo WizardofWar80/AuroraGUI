@@ -27,6 +27,7 @@ import GalaxyScreen
 import XenosScreen
 import EventsScreen
 import Designations
+import DevelopmentScreen
 import os
 
 class Game():
@@ -79,7 +80,7 @@ class Game():
     #self.currentScreen = 'Bodies'
     self.GUI_identifier = 'Global GUI'
     self.GUI_Elements = {}
-    self.GUI_Top_Anchor = (300,10)
+    self.GUI_Top_Anchor = (150,10)
     self.GUI_Top_Button_Size = (130,30)
     self.lastScreen = None
     self.statisticsPopulation = {}
@@ -138,17 +139,18 @@ class Game():
       Designations.Init(self)
       self.GetNewData()
 
-    self.systemScreen       = SystemScreen.SystemScreen(self, eventsclass)
-    self.bodiesScreen       = BodiesScreen.BodiesScreen(self, eventsclass)
-    self.economyScreen      = EconomyScreen.EconomyScreen(self, eventsclass)
-    self.colonyDetailsScreen= ColonyDetailsScreen.ColonyDetailsScreen(self, eventsclass)
-    self.coloniesScreen     = ColoniesScreen.ColoniesScreen(self, eventsclass)
-    self.surveyScreen       = SurveyScreen.SurveyScreen(self, eventsclass)
-    self.researchScreen     = ResearchScreen.ResearchScreen(self, eventsclass)
-    self.terraformingScreen = TerraformingScreen.TerraformingScreen(self, eventsclass)
-    self.galaxyScreen       = GalaxyScreen.GalaxyScreen(self, eventsclass)
-    self.xenosScreen        = XenosScreen.XenosScreen(self, eventsclass)
-    self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass)
+    self.systemScreen       = SystemScreen.SystemScreen(self, eventsclass, 'System view')
+    self.bodiesScreen       = BodiesScreen.BodiesScreen(self, eventsclass, 'Bodies')
+    self.economyScreen      = EconomyScreen.EconomyScreen(self, eventsclass, 'Economy')
+    self.colonyDetailsScreen= ColonyDetailsScreen.ColonyDetailsScreen(self, eventsclass, 'Colony')
+    self.coloniesScreen     = ColoniesScreen.ColoniesScreen(self, eventsclass, 'Colonies')
+    self.surveyScreen       = SurveyScreen.SurveyScreen(self, eventsclass, 'Survey')
+    self.researchScreen     = ResearchScreen.ResearchScreen(self, eventsclass, 'Research')
+    self.terraformingScreen = TerraformingScreen.TerraformingScreen(self, eventsclass, 'Terraforming')
+    self.galaxyScreen       = GalaxyScreen.GalaxyScreen(self, eventsclass, 'Galaxy')
+    self.xenosScreen        = XenosScreen.XenosScreen(self, eventsclass, 'Xenos')
+    self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass, 'Events')
+    self.developmentScreen  = DevelopmentScreen.DevelopmentScreen(self, eventsclass, 'Development')
 
     self.playList = []
     self.currentSong = 0
@@ -215,6 +217,13 @@ class Game():
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Terraforming'
+    gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[0]+5
+    bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
+    name = 'Development'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
@@ -593,6 +602,10 @@ class Game():
         self.terraformingScreen.ResetGUI()
         #self.terraformingScreen.UpdateData()
       reblit |= self.terraformingScreen.Draw()
+    elif (self.currentScreen == 'Development'):
+      if (self.lastScreen != self.currentScreen):
+        self.developmentScreen.ResetGUI()
+      reblit |= self.developmentScreen.Draw()
     elif (self.currentScreen == 'Events'):
       if (self.lastScreen != self.currentScreen):
         self.eventsScreen.ResetGUI()
@@ -625,6 +638,8 @@ class Game():
       self.researchScreen.reDraw = True
     elif (screen_name == 'Terraforming'):
       self.terraformingScreen.reDraw = True
+    elif (screen_name == 'Development'):
+      self.developmentScreen.reDraw = True
     elif (screen_name == 'Galaxy'):
       self.galaxyScreen.reDraw = True
     elif (screen_name == 'Events'):
@@ -637,7 +652,7 @@ class Game():
       self.lastGameTime = self.gameTime
       self.GetNewData()
       self.SetRedrawFlag(self.currentScreen)
-      date_time = datetime.fromtimestamp(self.gameTime)
+      date_time = datetime.fromtimestamp(self.gameTime+self.gameTimestampStart)
       print('New game data! %s'%date_time.strftime("%b %d %Y"))
       self.SaveGameLog()
 

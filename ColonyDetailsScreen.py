@@ -7,9 +7,10 @@ from Screen import Screen
 from operator import itemgetter
 
 class ColonyDetailsScreen(Screen):
-  def __init__(self, game, events):
+  def __init__(self, game, events, name):
     self.reDraw = True
     self.reDraw_GUI = True
+    self.name = name
     self.game = game
     self.width = game.width
     self.height = game.height

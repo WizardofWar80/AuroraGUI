@@ -34,10 +34,10 @@
     "showUnsurveyedLocations": true,
     "showXenosBodies": true,
     "highlightColonizedBodies": true,
-    "highlightIndustrializedBodies": true,
+    "highlightIndustrializedBodies": false,
     "highlightUnsurveyedBodies": true,
     "highlightEnemyBodies": true,
-    "highlightResourcefulBodies": true,
+    "highlightResourcefulBodies": false,
     "highlightXenosBodies": true,
     "highlightArtifactsBodies": true
   }

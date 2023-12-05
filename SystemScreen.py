@@ -14,9 +14,10 @@ import Systems
 from Screen import Screen
 
 class SystemScreen(Screen):
-  def __init__(self, game, events):
+  def __init__(self, game, events, name):
     self.reDraw = True
     self.reDraw_GUI = True
+    self.name = name
     self.reDraw_FleetInfoWindow = True
     self.reDraw_InfoWindow = True
     self.reDraw_MapWindow = True

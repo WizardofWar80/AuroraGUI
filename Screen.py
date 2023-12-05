@@ -1,9 +1,11 @@
 import pygame
+import Utils
 
 class Screen():
-  def __init__(self, game, events):
+  def __init__(self, game, events, name):
     self.reDraw = True
     self.reDraw_GUI = True
+    self.name = name
     self.game = game
     self.width = game.width
     self.height = game.height
@@ -44,6 +46,7 @@ class Screen():
       #  self.Events.ClearClickables()
       self.reDraw_GUI = True
       self.surface.fill(self.bg_color)
+      Utils.DrawText2Surface(self.surface, self.name, (self.width/2-50,100), 30, Utils.WHITE)
 
     reblit |= self.DrawGUI()
 

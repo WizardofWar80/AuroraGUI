@@ -42,6 +42,7 @@
     <Compile Include="Designations.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DevelopmentScreen.py" />
     <Compile Include="EconomyScreen.py">
       <SubType>Code</SubType>
     </Compile>
