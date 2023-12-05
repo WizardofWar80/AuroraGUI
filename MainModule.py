@@ -500,9 +500,9 @@ class Game():
 
   def InitGases(self):
     gases = {}
-    results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel from DIM_Gases;''').fetchall()
+    results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel, Symbol from DIM_Gases;''').fetchall()
     for result in results:
-      gases[result[0]] = {'Name':result[1], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000}
+      gases[result[0]] = {'Name':result[1], 'Symbol': result[4], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000}
     return gases
 
 

@@ -609,6 +609,26 @@ def GetFormattedNumber(number):
     else:
       return '%1.1f'%(round(number,1))
 
+def GetFormattedNumber2(number):
+  if number is None:
+    return None
+  if (abs(number) > 0.99):
+    fraction = abs(round(number,0)-number)
+    if (abs(fraction) < 0.1):
+      return round(number,0)
+    else:
+      return round(number,1)
+  else:
+    if number == 0.0:
+      return 0
+    if (abs(number) < 0.001):
+      return round(number,4)
+    elif (abs(number) < 0.01):
+      return round(number,3)
+    elif (abs(number) < 0.1):
+      return round(number,2)
+    else:
+      return round(number,1)
 
 def ConvertNumber2kMGT(value, coarse = False):
   if (type(value) is int) or (type(value) is float):

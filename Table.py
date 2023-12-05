@@ -5,6 +5,8 @@ import Scrollbar
 class Cell():
   def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120), align = 'left', bold = False):
     self.value = value
+    self.prefix = ''
+    self.suffix = ''
     self.sortvalue = sortvalue
     self.type = type
     self.x = x
@@ -27,8 +29,13 @@ class Cell():
     self.Render()
 
 
+  def SetValue(self, value):
+    self.value = value
+    self.prefix = ''
+    self.suffix = ''
+
   def Render(self):
-    self.text_render = self.font.render(str(self.value), 0, self.text_color)
+    self.text_render = self.font.render(str(self.prefix)+str(self.value)+str(self.suffix), 0, self.text_color)
     self.text_size = self.text_render.get_rect().size
 
 
@@ -47,23 +54,75 @@ class Cell():
 
   def Format(self, f):
     if (f['Operation'] == 'Above'):
-      if (self.value is not None):
+      if (self.value is not None) and (self.value is not ''):
         if (self.type is not 'string' ):
           if (self.value > f['threshold']):
             self.text_color=f['text_color']
             self.Render()
+          elif ('else_color' in f):
+            self.text_color=f['else_color']
+            self.Render()
+    if (f['Operation'] == 'Above+'):
+      if (self.value is not None) and (self.value is not ''):
+        if (self.type is not 'string' ):
+          if (self.value > f['threshold']):
+            self.text_color=f['text_color']
+            self.suffix=' ^'
+            self.Render()
+          elif ('else_color' in f):
+            self.text_color=f['else_color']
+            self.Render()
     elif (f['Operation'] == 'Below'):
-      if (self.value is not None):
+      if (self.value is not None) and (self.value is not ''):
         if (self.type is not 'string' ):
           if (self.value < f['threshold']):
             self.text_color=f['text_color']
             self.Render()
+          elif ('else_color' in f):
+            self.text_color=f['else_color']
+            self.Render()
+    elif (f['Operation'] == 'Below-'):
+      if (self.value is not None) and (self.value is not ''):
+        if (self.type is not 'string' ):
+          if (self.value < f['threshold']):
+            self.text_color=f['text_color']
+            self.suffix=' v'
+            self.Render()
+          elif ('else_color' in f):
+            self.text_color=f['else_color']
+            self.Render()
     elif (f['Operation'] == 'Between'):
-      if (self.value is not None):
+      if (self.value is not None) and (self.value is not ''):
         if (self.type is not 'string' ):
           if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
             self.text_color=f['text_color']
             self.Render()
+          else:
+            if (self.value <= f['threshold_low']):
+              if ('too_low_color' in f):
+                self.text_color=f['too_low_color']
+              self.Render()
+            else:
+              if ('too_high_color' in f):
+                self.text_color=f['too_high_color']
+              self.Render()
+    elif (f['Operation'] == 'Between+-'):
+      if (self.value is not None) and (self.value is not ''):
+        if (self.type is not 'string' ):
+          if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
+            self.text_color=f['text_color']
+            self.Render()
+          else:
+            if (self.value <= f['threshold_low']):
+              if ('too_low_color' in f):
+                self.text_color=f['too_low_color']
+              self.suffix=' v'
+              self.Render()
+            else:
+              if ('too_high_color' in f):
+                self.text_color=f['too_high_color']
+              self.suffix=' ^'
+              self.Render()
     elif (f['Operation'] == 'Align'):
       self.SetAlignment(align = f['value'])      
 
@@ -86,11 +145,14 @@ class Table():
     self.in_cell_pad_y = 3
     self.max_cell_sizes = []
     self.maxScroll = min(0,self.max_rows-self.num_rows)
-    self.colFormats = [[],[],[],[],[],
-                       [],[],[],[],[],
-                       [],[],[],[],[],
-                       [],[],[],[],[]
-                       ]
+    #self.colFormats = [[],[],[],[],[],
+    #                   [],[],[],[],[],
+    #                   [],[],[],[],[],
+    #                   [],[],[],[],[]
+    #                   ]
+    self.colFormats = []
+    for i in range(self.num_cols):
+      self.colFormats.append([])
     self.scrollbar = None
 
 
@@ -170,6 +232,8 @@ class Table():
         if (updateCells):
           self.cells[index][c].screenpos = screenpos
           self.cells[index][c].value = data[c]
+          self.cells[index][c].prefix = ''
+          self.cells[index][c].suffix = ''
           self.cells[index][c].type = self.GetType(data[c])
           self.cells[index][c].SetWidth(col_width)
           self.cells[index][c].bold = bold
@@ -202,13 +266,14 @@ class Table():
     offset = 0
     if (self.num_rows > 0):
       for col in range(self.num_cols):
-        col_width = self.cells[0][col].width
-        delta = self.max_cell_sizes[col] - col_width
-        if (delta < 0):
-          delta = 0
-        if (delta > 0) or (offset > 0):
-          self.FormatColumn(col, column_width=col_width+delta, latPos = offset+self.anchor[0])
-        offset+=col_width+delta
+        if (col < len(self.cells[0])):
+          col_width = self.cells[0][col].width
+          delta = self.max_cell_sizes[col] - col_width
+          if (delta < 0):
+            delta = 0
+          if (delta > 0) or (offset > 0):
+            self.FormatColumn(col, column_width=col_width+delta, latPos = offset+self.anchor[0])
+          offset+=col_width+delta
 
 
   def FormatCell(self, r, c, text_color = None, bg_color = None, text_size = None, border_color = None, bold = False, column_width = None, latOffset = None, latPos = None, align = None):
