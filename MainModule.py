@@ -90,6 +90,7 @@ class Game():
     self.statisticsStations = {}
     self.statisticsWealth = {}
     self.options = {}
+    self.terraformingHistory = {}
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -138,6 +139,7 @@ class Game():
       self.gases = self.InitGases()
       Designations.Init(self)
       self.GetNewData()
+      #self.SaveTerraformingHistory()
 
     self.systemScreen       = SystemScreen.SystemScreen(self, eventsclass, 'System view')
     self.bodiesScreen       = BodiesScreen.BodiesScreen(self, eventsclass, 'Bodies')
@@ -160,7 +162,6 @@ class Game():
     self.LoadImages(images_file_list)
     self.InitGUI()
     
-
 
   def InitGUI(self):
     idGUI = 1
@@ -655,6 +656,7 @@ class Game():
       date_time = datetime.fromtimestamp(self.gameTime+self.gameTimestampStart)
       print('New game data! %s'%date_time.strftime("%b %d %Y"))
       self.SaveGameLog()
+      self.SaveTerraformingHistory()
 
 
   def GetNewData(self):
@@ -668,6 +670,7 @@ class Game():
     self.GetWealthData()
     self.SaveStatistics()
     self.GetNewLocalData(self.currentSystem)
+    self.UpdateTerraformingHistory()
 
 
   def GetNewLocalData(self, currentSystem):
@@ -934,3 +937,99 @@ class Game():
     except Exception as e:
       print('File %s not found'%filename)
       print (e)
+
+
+  def LoadTerraformingHistory(self):
+    filename = 'terraforming_history_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'r') as f:
+        self.terraformingHistory = json.load(f)
+    except:
+      print('File %s not found'%filename)
+
+
+  def SaveTerraformingHistory(self):
+    filename = 'terraforming_history_game_%d.json'%self.gameID
+    try:
+      with open(filename, 'w') as f:
+        json.dump(self.terraformingHistory, f, indent=2)
+    except Exception as e:
+      print('File %s not found'%filename)
+      print (e)
+
+
+  def UpdateTerraformingHistory(self):
+    systems = {}
+    for colonyID in self.colonies:
+      colony = self.colonies[colonyID]
+      if colony['SystemID'] not in systems:
+        systems[colony['SystemID']] = []
+      systems[colony['SystemID']].append(colonyID)
+
+    for systemID in systems:
+      system = systems[systemID]
+      bodies = Bodies.GetSystemBodies(self, systemID)
+
+      systemName = self.starSystems[systemID]['Name']
+
+      if (systemName not in self.terraformingHistory):
+        self.terraformingHistory[systemName] = {}
+        self.terraformingHistory[systemName]['ID'] = systemID
+
+      for colonyID in system:
+        colony = self.colonies[colonyID]
+        body = bodies[colonyID]
+        colonyName = colony['Name']
+        bodyName = body['Name']
+        if (bodyName not in self.terraformingHistory[systemName]):
+          self.terraformingHistory[systemName][bodyName] = {}
+        if ('ColonyCost' not in self.terraformingHistory[systemName][bodyName]):
+          self.terraformingHistory[systemName][bodyName]['ColonyCost']={}
+        timestampString = str(int(self.gameTime))
+        if (timestampString not in self.terraformingHistory[systemName][bodyName]['ColonyCost']):
+          self.terraformingHistory[systemName][bodyName]['ColonyCost'][timestampString]=body['ColonyCost']
+        if ('Gases' not in self.terraformingHistory[systemName][bodyName]):
+          self.terraformingHistory[systemName][bodyName]['Gases']={}
+
+        bodyGases = self.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(self.gameID, colonyID)).fetchall()
+        breatheGas = ''
+        breathelevel = 0
+        for gasID in self.gases:
+          if (gasID > 0):
+            percentage = 0
+            atm = 0
+            for bodyGas in bodyGases:
+              id = bodyGas[0]
+              if (id == gasID):
+                percentage = bodyGas[1]
+                atm = bodyGas[2]
+                gasSymbol = self.gases[gasID]['Symbol']
+                if (gasSymbol not in self.terraformingHistory[systemName][bodyName]['Gases']):
+                  self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]={}
+                if (timestampString not in self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]):
+                  self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol][timestampString] = atm
+                if (self.gases[gasID]['Name'] == 'Oxygen'):
+                  breathelevel=percentage
+
+                break
+        if (breathelevel > 0):
+          if ('BreathAtmosPercentage' not in self.terraformingHistory[systemName][bodyName]):
+            self.terraformingHistory[systemName][bodyName]['BreathAtmosPercentage']={}
+          if (timestampString not in self.terraformingHistory[systemName][bodyName]['BreathAtmosPercentage']):
+            self.terraformingHistory[systemName][bodyName]['BreathAtmosPercentage'][timestampString]=breathelevel
+
+        if ('AtmosPressure' not in self.terraformingHistory[systemName][bodyName]):
+          self.terraformingHistory[systemName][bodyName]['AtmosPressure']={}
+        if (timestampString not in self.terraformingHistory[systemName][bodyName]['AtmosPressure']):
+          self.terraformingHistory[systemName][bodyName]['AtmosPressure'][timestampString]=body['AtmosPressure']
+
+        if ('Temperature' not in self.terraformingHistory[systemName][bodyName]):
+          self.terraformingHistory[systemName][bodyName]['Temperature']={}
+        if (timestampString not in self.terraformingHistory[systemName][bodyName]['Temperature']):
+          self.terraformingHistory[systemName][bodyName]['Temperature'][timestampString]=body['Temperature']
+
+        if ('Hydrosphere' not in self.terraformingHistory[systemName][bodyName]):
+          self.terraformingHistory[systemName][bodyName]['Hydrosphere']={}
+        if (timestampString not in self.terraformingHistory[systemName][bodyName]['Hydrosphere']):
+          self.terraformingHistory[systemName][bodyName]['Hydrosphere'][timestampString]=body['Hydrosphere']
+

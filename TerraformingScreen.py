@@ -60,7 +60,6 @@ class TerraformingScreen(Screen):
     self.table.Scrollbar()
 
 
-
   def FormatTable(self, table):
     color_red = Utils.RED
     color_blue = Utils.LIGHT_BLUE
@@ -170,6 +169,7 @@ class TerraformingScreen(Screen):
         body = bodies[colonyID]
 
         systemName = colony['System']
+        bodyName = body['Name']
         colonyName = colony['Name']
         au = body['Distance2Center']
         tf = colony['Terraforming']['Active']
@@ -184,7 +184,7 @@ class TerraformingScreen(Screen):
         colonyCost = round(body['ColonyCost'],1)
         if (colonyCost > -1):
           #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
-          unsortedIDs.append([au, colonyName, systemName, colonyCost, tf_string])
+          unsortedIDs.append([au, bodyName, systemName, colonyCost, tf_string])
           bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(self.game.gameID, colonyID)).fetchall()
           for gasID in self.game.gases:
             if (gasID > 0):
@@ -343,7 +343,6 @@ class TerraformingScreen(Screen):
     return reblit
 
 
-
   def ExitScreen(self):
     self.table.scrollbar.clickable.enabled = False
 
@@ -369,3 +368,5 @@ class TerraformingScreen(Screen):
             if (otherElement.radioButton):
               if (otherElement.radioGroup == thisGroup):
                 otherElement.enabled = False
+
+
