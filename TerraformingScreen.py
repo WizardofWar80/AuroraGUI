@@ -65,46 +65,52 @@ class TerraformingScreen(Screen):
     color_red = Utils.RED
     color_blue = Utils.LIGHT_BLUE
     color_green = Utils.LIGHT_GREEN
-
-    table.AddFormat(1, {'Operation':'Align', 'value':'center'} )
+    table.AddFormat(0, {'Operation':'Align', 'value':'center'} )
     table.AddFormat(2, {'Operation':'Align', 'value':'center'} )
     table.AddFormat(3, {'Operation':'Align', 'value':'center'} )
     table.AddFormat(4, {'Operation':'Align', 'value':'center'} )
-    table.AddFormat(5, {'Operation':'Align', 'value':'center'} )
-    table.AddFormat(6, {'Operation':'Align', 'value':'center'} )
-
+    
+    #table.AddFormat(4, {'Operation':'Align', 'value':'center'} )
+    #table.AddFormat(5, {'Operation':'Align', 'value':'center'} )
+    #table.AddFormat(6, {'Operation':'Align', 'value':'center'} )
+    last_index = 4
     gasIndex = 1
     for gasID in self.game.gases:
       if (gasID > 0):
         if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-          table.AddFormat(6+gasIndex, {'Operation':'Between', 'threshold_low':self.breatheMinAtm, 
+          table.AddFormat(last_index+gasIndex, {'Operation':'Between', 'threshold_low':self.breatheMinAtm, 
                                                               'threshold_high':self.breatheMaxAtm, 
                                                               'text_color':color_green, 
                                                               'too_low_color': color_blue, 
                                                               'too_high_color':color_red} )
-          table.AddFormat(6+gasIndex, {'Operation':'Align', 'value':'center'} )
+          table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
           gasIndex+=1
-          table.AddFormat(6+gasIndex, {'Operation':'Above', 'threshold':self.safeLevel, 'text_color':color_red, 'else_color':color_green} )
+          table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.safeLevel, 'text_color':color_red, 'else_color':color_green} )
         else:
           if (self.game.gases[gasID]['DangerousLevel'] > 0):
-            table.AddFormat(6+gasIndex, {'Operation':'Above', 'threshold':self.game.gases[gasID]['DangerousLevel'], 'text_color':color_red, 'else_color':color_green} )
-        table.AddFormat(6+gasIndex, {'Operation':'Align', 'value':'center'} )
+            table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.game.gases[gasID]['DangerousLevel'], 'text_color':color_red, 'else_color':color_green} )
+        table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
         gasIndex+=1
-    table.AddFormat(29, {'Operation':'Between', 'threshold_low':self.minTemp,
+
+    table.AddFormat(last_index+gasIndex, {'Operation':'Below', 'threshold':self.maxAtm, 'text_color':color_green, 'else_color':color_red} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+    gasIndex+=1
+    table.AddFormat(last_index+gasIndex, {'Operation':'Between', 'threshold_low':self.minTemp,
                                                 'threshold_high':self.maxTemp, 
                                                 'text_color':color_green, 
                                                 'too_low_color': color_blue, 
                                                 'too_high_color':color_red} )
 
-    table.AddFormat(29, {'Operation':'Align', 'value':'center'} )
-    table.AddFormat(30, {'Operation':'Below', 'threshold':20, 'text_color':color_blue, 'else_color':color_green} )
-    table.AddFormat(30, {'Operation':'Align', 'value':'center'} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+    gasIndex+=1
+    table.AddFormat(last_index+gasIndex, {'Operation':'Below', 'threshold':20, 'text_color':color_blue, 'else_color':color_green} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     
 
   def InitGUI(self):
     self.table.scrollbar.clickable.enabled = True
     idGUI = 0
-    reverse_order_columns = [3,4,5,6,7,8,9,10,11,12]
+    reverse_order_columns = [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]
     col_index = 0
     for cell in self.table.cells[0]:
       gui_cl = self.game.MakeClickable(cell.value, cell.rect, self.SortTableGUI, par=idGUI, parent=self.GUI_Table_identifier)
@@ -165,15 +171,20 @@ class TerraformingScreen(Screen):
 
         systemName = colony['System']
         colonyName = colony['Name']
+        au = body['Distance2Center']
         tf = colony['Terraforming']['Active']
         state = gas = target = ''
+        tf_string = ''
         if (tf):
           state = colony['Terraforming']['State']
           gas = colony['Terraforming']['Gas']['Symbol']
           target = colony['Terraforming']['TargetATM']
+          tf_string = state+' '+ gas+' to '+ str(Utils.GetFormattedNumber2(target))
+
         colonyCost = round(body['ColonyCost'],1)
         if (colonyCost > -1):
-          unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
+          #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
+          unsortedIDs.append([au, colonyName, systemName, colonyCost, tf_string])
           bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(self.game.gameID, colonyID)).fetchall()
           for gasID in self.game.gases:
             if (gasID > 0):
@@ -189,6 +200,7 @@ class TerraformingScreen(Screen):
               unsortedIDs[-1].append(atm)
               if (self.game.gases[gasID]['Name'] == 'Oxygen'):
                 unsortedIDs[-1].append(percentage)
+          unsortedIDs[-1].append(body['AtmosPressure'])
           unsortedIDs[-1].append(body['Temperature'])
           unsortedIDs[-1].append(body['Hydrosphere'])
           index+=1
@@ -197,7 +209,8 @@ class TerraformingScreen(Screen):
     sortedIDs = sorted(unsortedIDs, key=itemgetter(id), reverse=rev)
       
     row = 0
-    header = ['Name', 'System', 'Cost', 'Terraforming', 'TF State', 'TF Gas', 'Target ATM']
+    #header = ['Name', 'System', 'Cost', 'Active', 'TF State', 'TF Gas', 'Target']
+    header = ['AU', 'Name', 'System', 'Cost', 'Terraforming']
 
     for gasID in self.game.gases:
       if (gasID > 0):
@@ -205,8 +218,10 @@ class TerraformingScreen(Screen):
         if (self.game.gases[gasID]['Name'] == 'Oxygen'):
           header.append(self.game.gases[gasID]['Symbol']+' %')
 
+    header.append('atm')
     header.append('Temp')
     header.append('Water %')
+    
 
     self.table.AddRow(row, header, [True]*len(header))
 
@@ -217,16 +232,18 @@ class TerraformingScreen(Screen):
     printed_row = []
     for row_sorted in sortedIDs:
       if (sortedRowIndex + self.table.scroll_position >= 0) and (row < self.table.max_rows):
-        printed_row = [row_sorted[0],# Name
-                       row_sorted[1],# System
-                       row_sorted[2],# Cost
-                       row_sorted[3] if row_sorted[3] else '',# Terraforming
-                       row_sorted[4],# TF State
-                       row_sorted[5],# TF Gas
-                       row_sorted[6] # Target ATM
+        printed_row = [int(round(row_sorted[0],0)) if (row_sorted[0]>= 10) else round(row_sorted[0],1),# AU
+                       row_sorted[1], # Name
+                       row_sorted[2], # System
+                       row_sorted[3], # Cost
+                       row_sorted[4]  # Terraforming
+                       #row_sorted[3] if row_sorted[3] else '',# Terraforming
+                       #row_sorted[4],# TF State
+                       #row_sorted[5],# TF Gas
+                       #row_sorted[6] # Target ATM
                        ]
         for i in range(len(printed_row),len(row_sorted)):
-          if (i == 16):
+          if (i == 14):
             printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
           else:
             if (row_sorted[i] == 0):

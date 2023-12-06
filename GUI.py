@@ -136,17 +136,18 @@ class GUI():
 
   def DrawTooltip(self, surface):
     if (self.clickable and self.clickable.hover):
-      tooltip_position = (self.clickable.mousepos[0]+13,self.clickable.mousepos[1])
-      #tooltip_position = (self.rect[0]+self.rect[2]+self.labelOffset[0], self.rect[1]+self.labelOffset[1])
-      text_width = len(self.tooltip)*10
-      while (tooltip_position[0] > surface.get_rect()[2]-text_width-25):
-        tooltip_position = (tooltip_position[0]-10,self.clickable.mousepos[1]+15)
+      if (self.name.find('Table') == -1):
+        tooltip_position = (self.clickable.mousepos[0]+13,self.clickable.mousepos[1])
+        #tooltip_position = (self.rect[0]+self.rect[2]+self.labelOffset[0], self.rect[1]+self.labelOffset[1])
+        text_width = len(self.tooltip)*10
+        while (tooltip_position[0] > surface.get_rect()[2]-text_width-25):
+          tooltip_position = (tooltip_position[0]-10,self.clickable.mousepos[1]+15)
         
-      while (tooltip_position[1] < 10):
-        tooltip_position = (tooltip_position[0],tooltip_position[1]+10)
-      while (tooltip_position[1] > surface.get_rect()[3]-20):
-        tooltip_position = (tooltip_position[0],tooltip_position[1]-10)
-      Utils.DrawText2Surface(surface, self.tooltip, tooltip_position, 20, Utils.GRAY, transparent=False)
+        while (tooltip_position[1] < 10):
+          tooltip_position = (tooltip_position[0],tooltip_position[1]+10)
+        while (tooltip_position[1] > surface.get_rect()[3]-20):
+          tooltip_position = (tooltip_position[0],tooltip_position[1]-10)
+        Utils.DrawText2Surface(surface, self.tooltip, tooltip_position, 20, Utils.GRAY, transparent=False)
 
 
   def ClearContent(self):
