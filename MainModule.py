@@ -91,6 +91,7 @@ class Game():
     self.statisticsWealth = {}
     self.options = {}
     self.terraformingHistory = {}
+    
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -503,7 +504,7 @@ class Game():
     gases = {}
     results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel, Symbol from DIM_Gases;''').fetchall()
     for result in results:
-      gases[result[0]] = {'Name':result[1], 'Symbol': result[4], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000}
+      gases[result[0]] = {'Name':result[1], 'Symbol': result[4], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000000}
     return gases
 
 
@@ -666,11 +667,13 @@ class Game():
     self.cc_cost_reduction = Colonies.GetCCreduction(self)
     self.fleets = Fleets.GetFleets(self)
     self.installations = Colonies.GetInstallationInfo(self)
+    self.terraformerID = self.GetInstallationIDbyName('Terraforming Installation')
     self.colonies = Colonies.GetColonies(self)
     self.GetWealthData()
     self.SaveStatistics()
     self.GetNewLocalData(self.currentSystem)
     self.UpdateTerraformingHistory()
+    self.terraformingRate = self.db.execute('''SELECT TerraformingRate from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
 
 
   def GetNewLocalData(self, currentSystem):
@@ -1033,3 +1036,10 @@ class Game():
         if (timestampString not in self.terraformingHistory[systemName][bodyName]['Hydrosphere']):
           self.terraformingHistory[systemName][bodyName]['Hydrosphere'][timestampString]=body['Hydrosphere']
 
+
+  def GetInstallationIDbyName(self, name):
+    for id in self.installations:
+      if self.installations[id]['Name'].lower() == name.lower():
+        return id
+
+    return None

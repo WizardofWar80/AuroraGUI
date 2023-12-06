@@ -273,7 +273,16 @@ def GetDrawConditions(context, thing2Draw, body):
   return draw, color, min_size, min_dist
 
 
-def CalculateColonyCost(game, bodyID, currentTemp, atm, hydro, gravity, tidalMultiplier):
+def GetTidalMultiplier(body):
+  t = 1
+
+  if (body['Tidal locked'] == True and body['Class'] == 'Planet'):
+    t = .2
+
+  return t
+
+
+def CalculateColonyCost(game, body):
   tempFactor = 0
   breathFactor = 0
   dangerAtmFactor = 0
@@ -289,7 +298,6 @@ def CalculateColonyCost(game, bodyID, currentTemp, atm, hydro, gravity, tidalMul
   breathAtmLevel = 0
   #gravity = body['Gravity']#.91
 
-
   # Species levels
   minTemp = -10
   maxTemp = 38
@@ -301,30 +309,33 @@ def CalculateColonyCost(game, bodyID, currentTemp, atm, hydro, gravity, tidalMul
   minGravity = 0.1
   maxGravity = 1.9
     
-  if (gravity > maxGravity):
-    return None
+  if (body['Gravity'] > maxGravity):
+    return None, {}
 
   # Gas Giants, Super Jovians and worlds with a gravity higher than species tolerance cannot be colonised and therefore have no colony cost. 
 
   # Temperature: If the temperature is outside of the species tolerance, the colony cost factor for temperature is equal to the number of degrees above or below the species tolerance divided by half the total species range. For example, if the species range is from 0C to 30C and the temperature is 75C, the colony cost factor would be 45 / 15 = 3.00. The colony cost factor for tide-locked planets is 20% of normal, so in the example given the colony cost factor would be reduced to 0.60.
-  if (currentTemp > minTemp) and (currentTemp < maxTemp):
+  if (body['Temperature'] > minTemp) and (body['Temperature'] < maxTemp):
     tempFactor = 0
   else:
-    speciesTempDelta = min(abs(minTemp-currentTemp), abs(maxTemp-currentTemp))
-    tempFactor = speciesTempDelta / (maxTemp-minTemp) * 2 * tidalMultiplier
+    speciesTempDelta = min(abs(minTemp-body['Temperature']), abs(maxTemp-body['Temperature']))
+
+    tidal_multiplier = GetTidalMultiplier(body)
+
+    tempFactor = speciesTempDelta / (maxTemp-minTemp) * 2 * tidal_multiplier
       
 
   # Hydrosphere Extent: If less than twenty percent of a body is covered with water (less than 20% Hydro Extent), the colony cost factor for hydro extent is (20 - Hydro Extent) / 10, which is a range from zero to 2.00.
-  if (hydro >= 20):
+  if (body['Hydrosphere'] >= 20):
     waterFactor = 0
   else:
     waterFactor = 2
 
   # Atmospheric Pressure: If the atmospheric pressure is above species tolerance, the colony cost factor for pressure is equal to pressure / species max pressure; with a minimum of 2.00. For example, if a species has a pressure tolerance of 4 atm and the pressure is 10 atm, the colony cost factor would be 2.50. If the pressure was 6 atm, the colony cost factor would be 2.00, as that is the minimum.
-  atmFactor = max(2,atm/maxAtm) if (atm > maxAtm) else 0
+  atmFactor = max(2,body['AtmosPressure']/maxAtm) if (body['AtmosPressure'] > maxAtm) else 0
 
   # Dangerous Gas: If a dangerous gas is present in the atmosphere and the concentration is above the danger level, the colony cost factor for dangerous gases will either be 2.00 or 3.00, depending on the gas. Different gases require different concentrations before becoming 'dangerous'. Halogens such as Chlorine, Bromine or Flourine are the most dangerous at 1 ppm, followed by Nitrogen Dioxide and Sulphur Dioxide at 5 ppm. Hydrogen Sulphide is 20 ppm, Carbon Monoxide and Ammonia are 50 ppm, Hydrogen, Methane (if an oxygen breather) and Oxygen (if a Methane breather) are at 500 ppm and Carbon Dioxide is at 5000 ppm (0.5% of atmosphere). Note that Carbon Dioxide was not classed as a dangerous gas in VB6 Aurora. These gases are not lethal at those concentrations but are dangerous enough that infrastructure would be required to avoid sustained exposure.
-  bodyGases = game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(game.gameID, bodyID)).fetchall()
+  bodyGases = game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(game.gameID, body['ID'])).fetchall()
   # gases[results[0]] = {'Name':results[1], 'DangerFactor':results[2], 'DangerousLevel':results[3]/1000}
   dangerAtmFactor = 0
   for bodyGas in bodyGases:
@@ -348,7 +359,33 @@ def CalculateColonyCost(game, bodyID, currentTemp, atm, hydro, gravity, tidalMul
 
   cc = max([tempFactor, breathFactor, dangerAtmFactor, atmFactor, waterFactor])
 
-  return cc * (1-game.cc_cost_reduction)
+  return cc * (1-game.cc_cost_reduction), {'tempFactor':tempFactor, 'breathFactor':breathFactor, 'dangerAtmFactor':dangerAtmFactor, 'atmFactor':atmFactor, 'waterFactor':waterFactor}
+
+
+def GetPopulationCapacityAndColonyCost(game, body):
+  popCapacity = 0
+  colonyCost = float('inf')
+  ccDetails = {}
+  if (body['Type'] != 'Planet Gas Giant' and body['Type'] != 'Planet Super Jovian'):
+    hydroMultiPlier = 1
+    if (body['Hydrosphere'] > 75):
+      hydroMultiPlier = -0.0396*body['Hydrosphere']+3.97
+
+    tidalMultiPlier = GetTidalMultiplier(body)
+
+    surfaceArea = 4*body['RadiusBody']*body['RadiusBody']*math.pi
+    surfAreaEarth =  511185932.52 
+    popCapacity = 12000*surfaceArea/surfAreaEarth
+    # todo: Add population desnsity multiplier from race
+
+    popCapacity = popCapacity*hydroMultiPlier*tidalMultiPlier
+    popCapacity = round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1) if popCapacity < 10 else int(round(popCapacity,0))
+    if (popCapacity < 0.05):
+      popCapacity = 0.05
+
+    colonyCost, ccDetails = CalculateColonyCost(game, body)
+
+  return popCapacity, colonyCost, ccDetails
 
 
 def GetSystemBodies(game, currentSystem):
@@ -413,29 +450,8 @@ def GetSystemBodies(game, currentSystem):
     gHFactor = body[24]
     density = body[25]
     gravity = body[26]
-    tidalMultiPlier = 1
-
-    if (bodyType == 'Planet Gas Giant' or bodyType == 'Planet Super Jovian'):
-      popCapacity = 0
-      colonyCost = float('inf')
-    else:
-      hydroMultiPlier = 1
-      if (hydro > 75):
-        hydroMultiPlier = -0.0396*hydro+3.97
-      if (tidalLock and bodyClass == 'Planet'):
-        tidalMultiPlier = .2
-      surfaceArea = 4*r*r*math.pi
-      surfAreaEarth =  511185932.52 
-      popCapacity = 12000*surfaceArea/surfAreaEarth
-      # todo: Add population desnsity multiplier from race
-
-      popCapacity = popCapacity*hydroMultiPlier*tidalMultiPlier
-      popCapacity = round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1) if popCapacity < 10 else int(round(popCapacity,0))
-      if (popCapacity < 0.05):
-        popCapacity = 0.05
-
-      colonyCost = CalculateColonyCost(game, body[0], temp, atm, hydro, gravity, tidalMultiPlier)
-
+    dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
+    
     if (bodyClass == 'Moon'):
       orbit = orbit * Utils.AU_INV
     image = None
@@ -471,18 +487,27 @@ def GetSystemBodies(game, currentSystem):
     if (sum_minerals > 0):
       resources = True
       terraforming = colony['Terraforming']
-    colonizable = True if colonyCost < 10000 else False
-    dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
+
+    
     bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
     
-    systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 'Bearing':body[7],
-                            'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity, 'Temperature':temp, 'Population Capacity':popCapacity, 'AtmosPressure':atm, 'ColonyCost':colonyCost, 'Colonizable':colonizable,
-                            'Hydrosphere':hydro, 'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'Density':density, 'Tidal locked':tidalLock, 
-                            'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Image':image, 'Colonized':colonized, 'Resources':resources,
-                            'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Distance2Center':dist2Center, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming }
+    systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 
+                           'Bearing':body[7], 'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity,
+                           'Temperature':temp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Density':density, 
+                           'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Distance2Center':dist2Center, 
+                           'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor,  'Image':image,
+                           'Colonized':colonized,'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 
+                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming }
     systemBodies[body[0]]['Deposits'] = deposits
+
+    popCapacity, colonyCost, ccDetails = GetPopulationCapacityAndColonyCost(game, systemBodies[body[0]])
+    systemBodies[body[0]]['ColonyCost'] = colonyCost
+    systemBodies[body[0]]['Population Capacity'] = popCapacity
+    systemBodies[body[0]]['Colonizable'] = True if colonyCost < 10000 else False
+
     if (save_new_images_generated):
       game.SaveBodyImages()
+
   return systemBodies
 
 

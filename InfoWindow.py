@@ -169,13 +169,9 @@ def Draw(context):
                   if (installation['Amount'] > 0):
                     DrawTextWithTabs(context.window_info, '%4d'%amount, _indentLevel+1, name, 40, context.window_info_scoll_pos)
         
-        fleetsInOrbit = False
-        for fleetID in game.fleets[game.currentSystem]:
-          fleet = game.fleets[game.currentSystem][fleetID]
-          if (fleet['Orbit']['Body'] == game.highlighted_body_ID and fleet['Orbit']['Distance'] == 0):
-            fleetsInOrbit = True
-            break
-        if fleetsInOrbit:
+        fleetIDs = Fleets.GetIDsOfFleetsInOrbit(game, game.currentSystem, game.highlighted_body_ID, type = 'Body')
+
+        if len(fleetIDs) > 0:
           #if (not context.info_cat_eco_expanded):
           cursorPos = (cursorPos[0], cursorPos[1])
           expRect = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
@@ -184,10 +180,9 @@ def Draw(context):
           pygame.draw.line(context.window_info, Utils.WHITE, (cursorPos[0],cursorPos[1]-2),(cursorPos[0]+200,cursorPos[1]-2),1)
           if (context.info_cat_orbit_expanded):
             # orbiting fleets
-            for fleetID in game.fleets[game.currentSystem]:
+            for fleetID in fleetIDs:
               fleet = game.fleets[game.currentSystem][fleetID]
-              if (fleet['Orbit']['Body'] == game.highlighted_body_ID and fleet['Orbit']['Distance'] == 0):
-                DrawFleet(context, fleet, _indentLevel)
+              DrawFleet(context, fleet, _indentLevel)
 
     context.surface.blit(context.window_info, context.window_info_anchor)
     context.reDraw_InfoWindow = False

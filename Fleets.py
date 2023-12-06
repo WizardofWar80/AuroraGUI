@@ -126,6 +126,8 @@ def GetFleets(game):
     fleetSuppliesCapacity = 0
     fleetMagazineCapacity = 0
     fleetIsStation = True
+    fleetHarvesters = 0
+    fleetTerraformers = 0
     for ship in ships_table:
       name = ship[3]
       fuel = ship[16]
@@ -143,6 +145,8 @@ def GetFleets(game):
       magazineCapacity = shipClass[37]
       plannedDeployment = shipClass[52]
       enginePower = shipClass[22]
+      numTerraformers = shipClass[68]
+      numHarvesters = shipClass[31]
       deploymentTime = (game.gameTime-ship[23])/3600/24/365.25*12
       maintenanceLife = (game.gameTime-ship[22])/3600/24/365.25
       components = GetShipComponents(game, shipClassID)
@@ -153,7 +157,7 @@ def GetFleets(game):
       oneYearMSPCost = GetMaintainanceForYears(1,AFR,avgMaintCost)
       fiveYearMSPCost = GetMaintainanceForYears(5,AFR,avgMaintCost)
       maintenanceLifeTime = GetMaintenanceLifetime(MSP, oneYearMSPCost)
-      fleets[systemID][fleetId]['Ships'].append({'ID':ship[0], 'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost, 'Commercial':commercial, 'Military':not commercial, 'Station':True if enginePower==0 else False})
+      fleets[systemID][fleetId]['Ships'].append({'ID':ship[0], 'Name':name, 'ClassName':shipClassName, 'ClassID': shipClassID, 'Fuel':fuel, 'Fuel Capacity':fuelCapacity, 'Supplies':supplies, 'Supplies Capacity':suppliesCapacity, 'Magazine Capacity':magazineCapacity, 'Size':size, 'PlannedDeployment':plannedDeployment, 'DeploymentTime':deploymentTime, 'MaintenanceClock':maintenanceLife, 'Maintenance Life':maintenanceLifeTime, 'AFR':AFR, '1YR':oneYearMSPCost, 'Commercial':commercial, 'Military':not commercial, 'Station':True if enginePower==0 else False, 'Terraformers':numTerraformers, 'Harvesters':numHarvesters})
       fleetFuel += fuel
       fleetFuelCapacity += fuelCapacity
       fleetSupplies += supplies
@@ -164,12 +168,16 @@ def GetFleets(game):
       else:
         total_num_stations += 1
       fleetIsStation &= (enginePower==0)
+      fleetHarvesters+=numHarvesters
+      fleetTerraformers+=numTerraformers
     fleets[systemID][fleetId]['Fuel'] = fleetFuel
     fleets[systemID][fleetId]['Fuel Capacity'] = fleetFuelCapacity
     fleets[systemID][fleetId]['Supplies'] = fleetSupplies
     fleets[systemID][fleetId]['Supplies Capacity'] = fleetSuppliesCapacity
     fleets[systemID][fleetId]['Magazine Capacity'] = fleetMagazineCapacity
     fleets[systemID][fleetId]['Station'] = fleetIsStation
+    fleets[systemID][fleetId]['Harvesters'] = fleetHarvesters
+    fleets[systemID][fleetId]['Terraformers'] = fleetTerraformers
 
   game.statisticsShips[str(int(game.gameTime))] = total_num_ships
   game.statisticsStations[str(int(game.gameTime))] = total_num_stations
@@ -348,6 +356,7 @@ def GetOrders(game, fleetID):
     results.append(order[0])
   return results
 
+
 def GetCargo(game, fleet):
   #GameID	ShipID	CargoTypeID	CargoID	Amount	SpeciesID	StartingPop	Neutral
   #   92	47169      	2         	7	    0.8     	0	      11001     	0
@@ -371,3 +380,14 @@ def GetCargo(game, fleet):
       else:
         results[cargoID]['Amount'] += cargoAmount
   return results
+
+
+def GetIDsOfFleetsInOrbit(game, systemID, bodyID, type = 'Body'):
+  fleetIDs = []
+  fleetsInOrbit = False
+  for fleetID in game.fleets[systemID]:
+    fleet = game.fleets[systemID][fleetID]
+    if (fleet['Orbit']['Body'] == bodyID and fleet['Orbit']['Distance'] == 0):
+      fleetIDs.append(fleetID)
+  
+  return fleetIDs

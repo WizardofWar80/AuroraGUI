@@ -8,6 +8,7 @@ from operator import itemgetter
 import Utils
 import Colonies
 import Bodies
+import Fleets
 
 class TerraformingScreen(Screen):
   def __init__(self, game, events, name):
@@ -38,7 +39,7 @@ class TerraformingScreen(Screen):
     self.GUI_Elements = {}
     self.GUI_identifier = 'Terraforming'
     self.images_GUI = {}
-    self.table = Table.Table(self, 1, 31, anchor = (20,50), col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
+    self.table = Table.Table(self, 1, 35, anchor = (20,50), col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
 
     self.GUI_Table_Header_Anchor = self.table.anchor
     self.GUI_Table_identifier = 'Terraforming Table'
@@ -94,15 +95,26 @@ class TerraformingScreen(Screen):
     table.AddFormat(last_index+gasIndex, {'Operation':'Below', 'threshold':self.maxAtm, 'text_color':color_green, 'else_color':color_red} )
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     gasIndex+=1
-    table.AddFormat(last_index+gasIndex, {'Operation':'Between', 'threshold_low':self.minTemp,
-                                                'threshold_high':self.maxTemp, 
-                                                'text_color':color_green, 
-                                                'too_low_color': color_blue, 
-                                                'too_high_color':color_red} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Between',  'threshold_low':self.minTemp,
+                                                                  'threshold_high':self.maxTemp, 
+                                                                  'text_color':color_green, 
+                                                                  'too_low_color': color_blue, 
+                                                                  'too_high_color':color_red} )
 
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     gasIndex+=1
     table.AddFormat(last_index+gasIndex, {'Operation':'Below', 'threshold':20, 'text_color':color_blue, 'else_color':color_green} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+    gasIndex+=1
+    table.AddFormat(last_index+gasIndex, {'Operation':'Between',  'threshold_low':0.99,
+                                                                  'threshold_high':1.01, 
+                                                                  'text_color':color_green, 
+                                                                  'too_low_color': color_blue, 
+                                                                  'too_high_color':color_red} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+    gasIndex+=1
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+    gasIndex+=1
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     
 
@@ -180,6 +192,14 @@ class TerraformingScreen(Screen):
           gas = colony['Terraforming']['Gas']['Symbol']
           target = colony['Terraforming']['TargetATM']
           tf_string = state+' '+ gas+' to '+ str(Utils.GetFormattedNumber2(target))
+        
+        numTerraformers = 0
+        if (self.game.terraformerID in colony['Installations']):
+          numTerraformers = colony['Installations'][self.game.terraformerID]['Amount']
+
+        fleetIDs = Fleets.GetIDsOfFleetsInOrbit(self.game, systemID, body['ID'], type = 'Body')
+        for fleetID in fleetIDs:
+          numTerraformers += self.game.fleets[systemID][fleetID]['Terraformers']
 
         colonyCost = round(body['ColonyCost'],1)
         if (colonyCost > -1):
@@ -203,6 +223,9 @@ class TerraformingScreen(Screen):
           unsortedIDs[-1].append(body['AtmosPressure'])
           unsortedIDs[-1].append(body['Temperature'])
           unsortedIDs[-1].append(body['Hydrosphere'])
+          unsortedIDs[-1].append(body['GHFactor'])
+          unsortedIDs[-1].append(numTerraformers)
+          unsortedIDs[-1].append(numTerraformers*self.game.terraformingRate)
           index+=1
 
     id, rev = self.GetTableSortState()
@@ -211,17 +234,20 @@ class TerraformingScreen(Screen):
     row = 0
     #header = ['Name', 'System', 'Cost', 'Active', 'TF State', 'TF Gas', 'Target']
     header = ['AU', 'Name', 'System', 'Cost', 'Terraforming']
-
+    breathGasSymbol = ''
     for gasID in self.game.gases:
       if (gasID > 0):
         header.append(self.game.gases[gasID]['Symbol'])
         if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-          header.append(self.game.gases[gasID]['Symbol']+' %')
+          breathGasSymbol=self.game.gases[gasID]['Symbol']+' %'
+          header.append(breathGasSymbol)
 
     header.append('atm')
     header.append('Temp')
     header.append('Water %')
-    
+    header.append('GHF')
+    header.append('# TFs')
+    header.append('TF rate/a')
 
     self.table.AddRow(row, header, [True]*len(header))
 
@@ -243,7 +269,9 @@ class TerraformingScreen(Screen):
                        #row_sorted[6] # Target ATM
                        ]
         for i in range(len(printed_row),len(row_sorted)):
-          if (i == 14):
+          if (header[i] == 'GHF'):
+            printed_row.append(round(row_sorted[i],2))
+          elif (header[i] == breathGasSymbol):
             printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
           else:
             if (row_sorted[i] == 0):
@@ -370,3 +398,33 @@ class TerraformingScreen(Screen):
                 otherElement.enabled = False
 
 
+#Change to Greenhouse Gas and Dust Mechanics
+
+#The new mechanics for the effect of greenhouses gases and dust on temperature are calculated using the following formulae:
+
+#Greenhouse Factor =  1 + (Atmospheric Pressure / 10) + Pressure of Greenhouse Gases
+#If Greenhouse Factor > 3 Then Greenhouse Factor = 3
+
+#Anti-Greenhouse Factor =  1 + (Dust Level / 20000) + Pressure of Anti-Greenhouse Gases
+#If Anti-Greenhouse Factor > 3 Then Anti-Greenhouse Factor = 3
+
+#Surface Temperature (K)  = (Base Temperature (K) * Greenhouse Factor * Albedo) / Anti-Greenhouse Factor
+
+
+#1)   The base terraforming technologies have their atm rates reduced by 75% at the lower tech levels. The rate of tech increase has improved so the higher tech levels are reduced by around 60%. The starting racial tech rate per module/installation is 0.00025 atm per year.
+
+#2)   Smaller planets are much faster to terraform. The terraforming rate in atm is modified by Earth Surface Area / Planet Surface Area. For example, the rate at which atm is added to Mars is 3.5x faster than on Earth (90% of VB6 Aurora speed), Ganymede is 6x faster and Luna is almost 14x faster (3.4x faster than VB6)
+
+#3)   System Bodies with gravity of less than 0.1G cannot retain atmosphere and therefore cannot be terraformed
+
+#4)   Carbon Dioxide is now a dangerous gas.
+
+#5)   Water is now a significant factor in terraforming planets. Any planet with less than 20% water has a colony cost factor for water equal to (20 - Hydro Extent) / 10 (see colony cost rules).
+
+#6)   Water vapour can be added to the atmosphere just like any other gas.
+
+#7)   Water vapour will condense out of the atmosphere at a rate of 0.1 atm per year and increase the planet's Hydro Extent
+
+#8)   Each 1% of Hydro Extent requires 0.025 atm of water vapour. This means that creating 20% Hydro Extent would require 0.5 atm of water vapour (this will be much faster on smaller worlds because the speed at which water vapour atm is added is linked to surface area). With this in mind, existing water becomes an important factor in the speed at which terraforming can be accomplished, especially on larger worlds.
+
+#9)   Water will also evaporate into the atmosphere. The evaporation cycle follows condensation and will stabilise water vapour in the atmosphere of a planet with liquid water at a level of: Atmospheric Pressure * (Hydro Extent / 100) * 0.01 atm. The resulting atm * 20 is the % of the planet's surface that loses water. As the water vapour is removed from the atmosphere, it will replenish from the surface water. This is to allow the removal of water from ocean worlds to create more living space.
