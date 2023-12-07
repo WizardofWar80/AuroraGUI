@@ -20,7 +20,7 @@ class Scrollbar():
     self.color = Utils.LIGHT_GRAY
     self.upArrow = pygame.Rect(self.rect[0], self.rect[1], self.width, self.width)
     self.dnArrow = pygame.Rect(self.rect[0], self.rect[1]+self.height-self.width, self.width, self.width)
-    self.bar_height = (self.visible_range/self.total_range)*(self.height-2*self.width)
+    self.bar_height = (self.visible_range/max(1,self.total_range))*(self.height-2*self.width)
     self.clickable = self.game.MakeClickable('Scrollbar', self.rect, self.Click, parent=self, persistent = True)
     horiz_bar_pos = self.current_position*(self.height-2*self.width-self.bar_height)+self.rect[1]+self.width
     self.barRect = pygame.Rect(self.rect[0]+2, horiz_bar_pos+1, self.width-4, self.bar_height-1)
@@ -39,11 +39,11 @@ class Scrollbar():
     if (visible_range is not None):
       self.visible_range = visible_range
       self.invisible_range = self.total_range-self.visible_range
-      self.bar_height = (self.visible_range/self.total_range)*(self.height-2*self.width)
+      self.bar_height = (self.visible_range/max(1,self.total_range))*(self.height-2*self.width)
     if (total_range is not None):
       self.total_range = total_range
       self.invisible_range = self.total_range-self.visible_range
-      self.bar_height = (self.visible_range/self.total_range)*(self.height-2*self.width)
+      self.bar_height = (self.visible_range/max(1,self.total_range))*(self.height-2*self.width)
     if (current_position is not None):
       self.current_position = current_position/max(1,self.invisible_range)
     self.MoveBar()
@@ -80,13 +80,13 @@ class Scrollbar():
   def Click(self, par, parent, mousepos):
     if (self.upArrow.collidepoint(mousepos)):
       self.parent.scroll_position+=1
-      self.current_position=-self.parent.scroll_position/self.invisible_range
+      self.current_position=-self.parent.scroll_position/max(1,self.invisible_range)
       # todo, make this use a function pointer instead
       self.MoveBar()
       self.parent.context.UpdateTable()
     elif (self.dnArrow.collidepoint(mousepos)):
       self.parent.scroll_position-=1
-      self.current_position=-self.parent.scroll_position/self.invisible_range
+      self.current_position=-self.parent.scroll_position/max(1,self.invisible_range)
       # todo, make this use a function pointer instead
       self.MoveBar()
       self.parent.context.UpdateTable()
@@ -100,7 +100,7 @@ class Scrollbar():
         scrollbar_inside_start = self.upArrow[1] + self.upArrow[3]
         percentage = (mousepos[1] - scrollbar_inside_start)/(self.barRect[1]-scrollbar_inside_start)
         self.parent.scroll_position = -int(ticks_above*percentage)
-        self.current_position=-self.parent.scroll_position/self.invisible_range
+        self.current_position=-self.parent.scroll_position/max(1,self.invisible_range)
         self.MoveBar()
         # todo, make this use a function pointer instead
         self.parent.context.UpdateTable()
@@ -108,7 +108,7 @@ class Scrollbar():
         scrollbar_inside_end = self.dnArrow[1]
         percentage = (mousepos[1] - (self.barRect[1]+self.barRect[3]))/(scrollbar_inside_end-(self.barRect[1]+self.barRect[3]))
         self.parent.scroll_position=-(ticks_above+int(ticks_below*percentage)+1)
-        self.current_position=-self.parent.scroll_position/self.invisible_range
+        self.current_position=-self.parent.scroll_position/max(1,self.invisible_range)
         # todo, make this use a function pointer instead
         self.MoveBar()
         self.parent.context.UpdateTable()

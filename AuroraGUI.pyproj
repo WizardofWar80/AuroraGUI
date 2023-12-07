@@ -93,6 +93,9 @@
     <Compile Include="SystemScreen.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SystemTableScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Table.py">
       <SubType>Code</SubType>
     </Compile>

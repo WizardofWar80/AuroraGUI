@@ -138,7 +138,7 @@ class TerraformingScreen(Screen):
       col_index += 1
 
     gui_cl = self.game.MakeClickable('Complete Terraforming Table', self.table.rect, parent='Complete Terraforming Table')
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Terraforming Table', self.table.rect, gui_cl, 'Button')
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, self.GUI_Table_identifier, self.table.rect, gui_cl, 'Button')
     self.GUI_table_ID = idGUI
     idGUI += 1
 

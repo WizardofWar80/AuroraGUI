@@ -2,6 +2,7 @@ import Utils
 import pygame
 import math
 import random
+import Fleets
 
 gameInstance = None
 
@@ -344,12 +345,13 @@ def CalculateColonyCost(game, body):
     atm = bodyGas[2]
 
     if id in game.gases:
-      if (game.gases[id]['DangerFactor'] > 0):
-        if (atm > game.gases[id]['DangerousLevel']):
-          dangerAtmFactor = max(game.gases[id]['DangerFactor'], dangerAtmFactor)
       if (game.gases[id]['Name'] == 'Oxygen'):
         breathAtm = atm
         breathAtmLevel = percentage
+      else:
+        if (game.gases[id]['DangerFactor'] > 0):
+          if (atm > game.gases[id]['DangerousLevel']):
+            dangerAtmFactor = max(game.gases[id]['DangerFactor'], dangerAtmFactor)
 
   # Breathable Gas: If the atmosphere does not have a sufficient amount of breathable gas, the colony cost factor for breathable gas is 2.00. If the gas is available in sufficient quantities but exceeds 30% of atmospheric pressure, the colony cost factor is also 2.00.
   if (breathAtm >= breatheMinAtm and breathAtm <= breatheMaxAtm and breathAtmLevel < safeLevel):
@@ -393,7 +395,7 @@ def GetSystemBodies(game, currentSystem):
   save_new_images_generated = False
   body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity, AGHFactor, Albedo, TectonicActivity, RuinID, RuinRaceID, RadiationLevel, DustLevel, AbandonedFactories, DominantTerrain, GroundMineralSurvey from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
   
-          # Mass
+      # Mass
       # Orbit
       # hours / day
       # day / year
@@ -498,7 +500,11 @@ def GetSystemBodies(game, currentSystem):
       resources = True
       terraforming = colony['Terraforming']
 
-    
+    numHarvesters = 0
+    fleetIDs = Fleets.GetIDsOfFleetsInOrbit(gameInstance, currentSystem, body[0], type = 'Body')
+    for fleetID in fleetIDs:
+      numHarvesters += gameInstance.fleets[currentSystem][fleetID]['Harvesters']
+          
     bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
     
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 
@@ -507,8 +513,7 @@ def GetSystemBodies(game, currentSystem):
                            'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Distance2Center':dist2Center, 
                            'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'AGHFactor':aGHFactor, 'Image':image,
                            'Colonized':colonized,'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 
-                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming,'Tectonic activity':tectonicActivity, 'RuinID':ruinID, 'RuinRaceID':ruinRaceID, 'RadiationLevel':radiationLevel, 'DustLevel':dustLevel, 'Abandoned Factories':abandonedFactories, 'Dominant Terrain':dominantTerrain, 'GroundMineralSurvey':groundMineralSurvey }
-
+                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming, 'Tectonic activity':tectonicActivity, 'RuinID':ruinID, 'RuinRaceID':ruinRaceID, 'RadiationLevel':radiationLevel, 'DustLevel':dustLevel, 'Abandoned Factories':abandonedFactories, 'Dominant Terrain':dominantTerrain, 'GroundMineralSurvey':groundMineralSurvey, 'Large Deposits':True if sum_minerals > 100000 else False, 'Harvesters':numHarvesters}
     systemBodies[body[0]]['Deposits'] = deposits
 
     popCapacity, colonyCost, ccDetails = GetPopulationCapacityAndColonyCost(game, systemBodies[body[0]])

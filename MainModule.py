@@ -28,6 +28,7 @@ import XenosScreen
 import EventsScreen
 import Designations
 import DevelopmentScreen
+import SystemTableScreen
 import os
 
 class Game():
@@ -81,7 +82,7 @@ class Game():
     self.GUI_identifier = 'Global GUI'
     self.GUI_Elements = {}
     self.GUI_Top_Anchor = (150,10)
-    self.GUI_Top_Button_Size = (130,30)
+    self.GUI_Top_Button_Size = (100,30)
     self.lastScreen = None
     self.statisticsPopulation = {}
     self.statisticsStockpile = {}
@@ -154,6 +155,7 @@ class Game():
     self.xenosScreen        = XenosScreen.XenosScreen(self, eventsclass, 'Xenos')
     self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass, 'Events')
     self.developmentScreen  = DevelopmentScreen.DevelopmentScreen(self, eventsclass, 'Development')
+    self.systemTableScreen  = SystemTableScreen.SystemTableScreen(self, eventsclass, 'Systems')
 
     self.playList = []
     self.currentSong = 0
@@ -190,6 +192,13 @@ class Game():
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
+    name = 'Systems'
+    gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[0]+5
+    bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Economy'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
@@ -218,14 +227,14 @@ class Game():
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
-    name = 'Terraforming'
+    name = 'Terraform'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
-    name = 'Development'
+    name = 'Develop'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
@@ -587,6 +596,10 @@ class Game():
         self.coloniesScreen.ResetGUI()
         #self.coloniesScreen.UpdateData()
       reblit |= self.coloniesScreen.Draw()
+    elif (self.currentScreen == 'Systems'):
+      if (self.lastScreen != self.currentScreen):
+        self.systemTableScreen.ResetGUI()
+      reblit |= self.systemTableScreen.Draw()
     elif (self.currentScreen == 'Colony'):
       if (self.lastScreen != self.currentScreen):
         self.colonyDetailsScreen.ResetGUI()
@@ -612,12 +625,12 @@ class Game():
         self.galaxyScreen.ResetGUI()
         #self.galaxyScreen.UpdateData()
       reblit |= self.galaxyScreen.Draw()
-    elif (self.currentScreen == 'Terraforming'):
+    elif (self.currentScreen == 'Terraform'):
       if (self.lastScreen != self.currentScreen):
         self.terraformingScreen.ResetGUI()
         #self.terraformingScreen.UpdateData()
       reblit |= self.terraformingScreen.Draw()
-    elif (self.currentScreen == 'Development'):
+    elif (self.currentScreen == 'Develop'):
       if (self.lastScreen != self.currentScreen):
         self.developmentScreen.ResetGUI()
       reblit |= self.developmentScreen.Draw()
@@ -647,13 +660,15 @@ class Game():
       self.colonyDetailsScreen.reDraw = True
     elif (screen_name == 'Colonies'):
       self.coloniesScreen.reDraw = True
+    elif (screen_name == 'Systems'):
+      self.systemTableScreen.reDraw = True
     elif (screen_name == 'Xenos'):
       self.xenosScreen.reDraw = True
     elif (screen_name == 'Research'):
       self.researchScreen.reDraw = True
-    elif (screen_name == 'Terraforming'):
+    elif (screen_name == 'Terraform'):
       self.terraformingScreen.reDraw = True
-    elif (screen_name == 'Development'):
+    elif (screen_name == 'Develop'):
       self.developmentScreen.reDraw = True
     elif (screen_name == 'Galaxy'):
       self.galaxyScreen.reDraw = True
@@ -687,7 +702,7 @@ class Game():
     self.GetNewLocalData(self.currentSystem)
     self.UpdateTerraformingHistory()
     self.terraformingRate = self.db.execute('''SELECT TerraformingRate from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
-
+    self.systemFlags = self.GetSystemFlags()
 
   def GetNewLocalData(self, currentSystem):
     self.surveyLocations = Systems.GetSurveyLocations(self, currentSystem)
@@ -1061,3 +1076,72 @@ class Game():
     for name in names:
       miningNames.append(name[0])
     return miningNames
+
+
+  def GetSystemFlags(self):
+    #header = ['#', 'System', 'Designation', 'Ideal Worlds', 'Colonies', 'Large Deposits', 'Sorium Gas Giants', 'Fuel harvesting', 'Mining', 'Jump Points', 'Jump Gates', 'Survey Points', 'Unexplored JPs','Artifacts', 'Ground Survey Potentials']
+    mineIDs = []
+    for id in self.installations:
+      if ((self.installations[id]['Name'].lower().find('convert') == -1) and 
+         ( (self.installations[id]['Name'].lower().find('mine') > -1) or (self.installations[id]['Name'].lower().find('mining') > -1) ) ):
+        mineIDs.append(id)
+
+    flags = {}
+    index = 0
+    for systemID in self.starSystems:
+      surveyPoints = Systems.GetSurveyLocations(self, systemID)
+      numSPs = 0
+      for spID in surveyPoints:
+        if (not surveyPoints[spID]['Surveyed']):
+          numSPs += 1
+      systemJPs = Systems.GetSystemJumpPoints(self, systemID)
+      numGates = 0
+      numUnexploredJPs = 0
+      for jpID in systemJPs:
+        if systemJPs[jpID]['Gate']:
+          numGates+=1
+        if not systemJPs[jpID]['Explored']:
+          numUnexploredJPs+=1
+
+      flags[systemID] = {'#':index, 
+                         'Name':self.starSystems[systemID]['Name'],
+                         'Designation':Designations.designations['Systems'][str(systemID)], 
+                         'Ideal Worlds':0, 
+                         'Colonies':0, 
+                         'Large Deposits':0, 
+                         'Sorium Gas Giants':0, 
+                         'Fuel harvesting':0, 
+                         'Mining':0, 
+                         'Jump Points':len(systemJPs),
+                         'Jump Gates':numGates, 
+                         'Survey Points':numSPs,
+                         'Unexplored JPs':numUnexploredJPs,
+                         'Artifacts':0, 
+                         'Ground Survey Potentials':0}
+      index+=1
+      #system = self.starSystems[systemID]
+      bodies = Bodies.GetSystemBodies(self, systemID)
+      for bodyID in bodies:
+        body = bodies[bodyID]
+        if (body['Colonized']):
+          flags[systemID]['Colonies']+=1
+        if (body['ColonyCost'] == 0):
+          flags[systemID]['Ideal Worlds']+=1
+        if ((body['Deposits']['Sorium']['Amount'] > 0) and (body['Type'] == 'Planet Gas Giant' or body['Type'] == 'Planet Super Jovian')):
+          flags[systemID]['Sorium Gas Giants']+=1
+          if (body['Harvesters']>0):
+            flags[systemID]['Fuel harvesting']+=1
+        if (body['Large Deposits']):
+          flags[systemID]['Large Deposits']+=1
+          if (body['Industrialized']):
+            if(self.colonies[bodyID]['Installations']):
+              for id in mineIDs:
+                if id in self.colonies[bodyID]['Installations']:
+                  if self.colonies[bodyID]['Installations'][id]['Amount'] > 0:
+                    flags[systemID]['Mining']+=1
+                    break
+        if (body['Artifacts']):
+          flags[systemID]['Artifacts']+=1
+
+      
+    return flags

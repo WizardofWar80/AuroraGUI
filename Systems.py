@@ -99,7 +99,7 @@ def GetSystemJumpPoints(game, currentSystem):
   jp_table = [list(x) for x in game.db.execute('''SELECT * from FCT_RaceJumpPointSurvey WHERE GameID = %d AND RaceID = %d;'''%(game.gameID, game.myRaceID))]
   raceJPs = {}
   for JP in jp_table:
-    raceJPs[JP[2]] = {'found':JP[3], 'explored':JP[4]}
+    raceJPs[JP[2]] = {'found':JP[4], 'explored':JP[3]}
   jp_table = [list(x) for x in game.db.execute('''SELECT * from FCT_JumpPoint WHERE GameID = %d AND SystemID = %d;'''%(game.gameID, currentSystem))]
   JPs = {}
   index = 1

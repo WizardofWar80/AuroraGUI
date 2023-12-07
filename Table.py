@@ -128,7 +128,7 @@ class Cell():
 
 
 class Table():
-  def __init__(self, context, rows, cols, header = True, row_height = 20, col_widths = 50, anchor = (0,0)):
+  def __init__(self, context, rows, cols, header = True, row_height = 20, col_widths = 50, anchor = (0,0), align = 'left'):
     self.context = context
     self.header = header
     self.cells = []
@@ -138,6 +138,7 @@ class Table():
     self.max_rows = 25
     self.num_rows = rows
     self.num_cols = cols
+    self.align = align
     self.rect = pygame.Rect(anchor[0], anchor[1], 50*cols,row_height*(min(rows, self.max_rows)))
     self.scroll_position = 0
     #self.InitTable()
@@ -241,7 +242,7 @@ class Table():
           self.cells[index][c].text_color = self.cells[index][c].default_text_color
           cell_text_sizes.append(self.cells[index][c].text_size[0])
         else:
-          self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]), x = c, y = row, bold = bold))
+          self.cells[index].append(Cell(screenpos, col_width, self.row_height, value = data[c], type = self.GetType(data[c]), x = c, y = row, bold = bold, align = ('left' if row == 0 else self.align)))
           cell_text_sizes.append(self.cells[index][-1].text_size[0])
         if (self.header and row == 0):
           cell_text_sizes[-1] += 10
