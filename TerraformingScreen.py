@@ -159,6 +159,9 @@ class TerraformingScreen(Screen):
     name = 'Terraforming'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.hideNoTerraformingActive, tooltip='Hide with no terraforming')
+    self.GUI_Elements[idGUI].SetImages(self.game.images_GUI, 'no_TF_enabled', 'no_TF_disabled')
+    #no_TF_disabled.png
+    #no_TF_disabled.png
 
     idGUI += 1
     x += size+5
@@ -166,6 +169,7 @@ class TerraformingScreen(Screen):
     name = 'Civilian'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideCivilian, tooltip='Hide civilian colonies')
+    self.GUI_Elements[idGUI].SetImages(self.game.images_GUI, 'no_civilian_enabled', 'no_civilian_disabled')
 
     idGUI += 1
     x += size+5
@@ -173,6 +177,7 @@ class TerraformingScreen(Screen):
     name = 'High ColonyCost'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideHighCCBodies, tooltip='Hide high colony costs')
+    self.GUI_Elements[idGUI].SetImages(self.game.images_GUI, 'no_highcc_enabled', 'no_highcc_disabled')
     
     idGUI += 1
     x += size+5
@@ -180,6 +185,7 @@ class TerraformingScreen(Screen):
     name = 'Comets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideComets, tooltip='Hide comets')
+    self.GUI_Elements[idGUI].SetImages(self.game.images_GUI, 'no_comet_enabled', 'no_comet_disabled')
 
     idGUI += 1
     x += size+5
@@ -187,6 +193,7 @@ class TerraformingScreen(Screen):
     name = 'Asteroids'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideAsteroids, tooltip='Hide asteroids')
+    self.GUI_Elements[idGUI].SetImages(self.game.images_GUI, 'no_asteroid_enabled', 'no_asteroid_disabled')
 
 
   def UpdateDevelopmentData(self):

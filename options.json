@@ -45,7 +45,7 @@
     "hideNoTerraformingActive": false,
     "hideCivilian": true,
     "hideHighCCBodies": false,
-    "hideComets": false,
-    "hideAsteroids": false
+    "hideComets": true,
+    "hideAsteroids": true
   }
 }
