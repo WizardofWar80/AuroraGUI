@@ -18,18 +18,21 @@ def GetColonies(game):
 
   colonies_table = [list(x) for x in game.db.execute('''SELECT * from FCT_Population WHERE GameID = %d AND RaceID = %d ORDER BY Population DESC;'''%(game.gameID,game.myRaceID))]
   for colony in colonies_table:
+    colonyName = colony[4]
     system_name = Systems.GetSystemName(game, colony[29])
     systemBodyID = colony[30]
     stockpile_sum = 0
     stockpile_minerals_sum = 0
+    purchaseCivilianMinerals=colony[8]
     pop = colony[24]
     fuel = colony[13]
     supplies = colony[18]
     total_population += pop
-    colonies[systemBodyID] = {'Name':colony[4],'Pop':round(pop,2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colony[17], 'Stockpile':{'Fuel':int(round(fuel)),'Supplies':int(round(supplies))}}
+    colonies[systemBodyID] = {'Name':colonyName,'Pop':round(pop,2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colony[17], 'Stockpile':{'Fuel':int(round(fuel)),'Supplies':int(round(supplies))}}
     total_stockpile['Fuel'] += fuel
     total_stockpile['Supplies'] += supplies
     stockpile_sum = int(round(colony[13]) + round(colony[18]))
+    
     for mineralID in Utils.MineralNames:
       mineral = Utils.MineralNames[mineralID]
       amount = int(round(colony[34+mineralID-1],0))
@@ -54,6 +57,8 @@ def GetColonies(game):
       if (id in game.installations):
         name = game.installations[id]['Name']
       colonies[systemBodyID]['Installations'][id] = {'Name':name, 'Amount':amount}
+
+    colonies[systemBodyID]['Civilian'] = CheckCivilianColony(game, colonyName, purchaseCivilianMinerals)
 
     game.statisticsPopulation[str(int(game.gameTime))] = total_population
     for name in total_stockpile:
@@ -98,3 +103,14 @@ def GetCCreduction(game):
     else:
       break
   return number
+
+
+def CheckCivilianColony(game, colonyName, purchaseCivilianMinerals):
+  if (purchaseCivilianMinerals):
+    return True
+
+  for miningName in game.civilianMiningNames:
+    if (colonyName.find(miningName) > -1):
+      return True
+  
+  return False

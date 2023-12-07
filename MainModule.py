@@ -91,7 +91,6 @@ class Game():
     self.statisticsWealth = {}
     self.options = {}
     self.terraformingHistory = {}
-    
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -138,9 +137,10 @@ class Game():
       self.colonies = None
       self.stellarTypes = Bodies.GetStellarTypes(self)  
       self.gases = self.InitGases()
+      self.civilianMiningNames = self.InitCivMinNames()
       Designations.Init(self)
       self.GetNewData()
-      #self.SaveTerraformingHistory()
+      self.SaveTerraformingHistory()
 
     self.systemScreen       = SystemScreen.SystemScreen(self, eventsclass, 'System view')
     self.bodiesScreen       = BodiesScreen.BodiesScreen(self, eventsclass, 'Bodies')
@@ -451,6 +451,12 @@ class Game():
     self.systemScreen.highlightXenosBodies =  self.options['SystemScreen']['highlightXenosBodies']           
     self.systemScreen.highlightArtifactsBodies = self.options['SystemScreen']['highlightArtifactsBodies']       
 
+    self.terraformingScreen.hideNoTerraformingActive = self.options['TerraformingScreen']['hideNoTerraformingActive']
+    self.terraformingScreen.hideCivilian = self.options['TerraformingScreen']['hideCivilian']
+    self.terraformingScreen.hideHighCCBodies = self.options['TerraformingScreen']['hideHighCCBodies']
+    self.terraformingScreen.hideComets = self.options['TerraformingScreen']['hideComets']
+    self.terraformingScreen.hideAsteroids = self.options['TerraformingScreen']['hideAsteroids'] 
+
 
   def SaveOptions(self):
     self.options['Audio'] = {'Music':self.music, 'Volume':pygame.mixer.music.get_volume()}
@@ -492,6 +498,13 @@ class Game():
                                     'highlightXenosBodies':self.systemScreen.highlightXenosBodies,
                                     'highlightArtifactsBodies':self.systemScreen.highlightArtifactsBodies
                                     }
+
+    self.options['TerraformingScreen'] = {'hideNoTerraformingActive':self.terraformingScreen.hideNoTerraformingActive,
+                                          'hideCivilian':self.terraformingScreen.hideCivilian,
+                                          'hideHighCCBodies':self.terraformingScreen.hideHighCCBodies,
+                                          'hideComets':self.terraformingScreen.hideComets,
+                                          'hideAsteroids':self.terraformingScreen.hideAsteroids}
+
     filename = 'options.json'
     try:
       with open(filename, 'w') as f:
@@ -1016,25 +1029,14 @@ class Game():
 
                 break
         if (breathelevel > 0):
-          if ('BreathAtmosPercentage' not in self.terraformingHistory[systemName][bodyName]):
-            self.terraformingHistory[systemName][bodyName]['BreathAtmosPercentage']={}
-          if (timestampString not in self.terraformingHistory[systemName][bodyName]['BreathAtmosPercentage']):
-            self.terraformingHistory[systemName][bodyName]['BreathAtmosPercentage'][timestampString]=breathelevel
+          self.AddDataToTfHistory(systemName, bodyName, 'BreathAtmosPercentage', breathelevel, timestampString)
 
-        if ('AtmosPressure' not in self.terraformingHistory[systemName][bodyName]):
-          self.terraformingHistory[systemName][bodyName]['AtmosPressure']={}
-        if (timestampString not in self.terraformingHistory[systemName][bodyName]['AtmosPressure']):
-          self.terraformingHistory[systemName][bodyName]['AtmosPressure'][timestampString]=body['AtmosPressure']
-
-        if ('Temperature' not in self.terraformingHistory[systemName][bodyName]):
-          self.terraformingHistory[systemName][bodyName]['Temperature']={}
-        if (timestampString not in self.terraformingHistory[systemName][bodyName]['Temperature']):
-          self.terraformingHistory[systemName][bodyName]['Temperature'][timestampString]=body['Temperature']
-
-        if ('Hydrosphere' not in self.terraformingHistory[systemName][bodyName]):
-          self.terraformingHistory[systemName][bodyName]['Hydrosphere']={}
-        if (timestampString not in self.terraformingHistory[systemName][bodyName]['Hydrosphere']):
-          self.terraformingHistory[systemName][bodyName]['Hydrosphere'][timestampString]=body['Hydrosphere']
+        self.AddDataToTfHistory(systemName, bodyName, 'AtmosPressure', body['AtmosPressure'], timestampString)
+        self.AddDataToTfHistory(systemName, bodyName, 'Temperature', body['Temperature'], timestampString)
+        self.AddDataToTfHistory(systemName, bodyName, 'Hydrosphere', body['Hydrosphere'], timestampString)
+        self.AddDataToTfHistory(systemName, bodyName, 'GHFactor', body['GHFactor'], timestampString)
+        self.AddDataToTfHistory(systemName, bodyName, 'AGHFactor', body['AGHFactor'], timestampString)
+        self.AddDataToTfHistory(systemName, bodyName, 'Albedo', body['Albedo'], timestampString)
 
 
   def GetInstallationIDbyName(self, name):
@@ -1043,3 +1045,19 @@ class Game():
         return id
 
     return None
+
+
+  def AddDataToTfHistory(self, systemName, bodyName, variable_name, variable_value, timestampString):
+    if (variable_name not in self.terraformingHistory[systemName][bodyName]):
+      self.terraformingHistory[systemName][bodyName][variable_name]={}
+    if (timestampString not in self.terraformingHistory[systemName][bodyName][variable_name]):
+      self.terraformingHistory[systemName][bodyName][variable_name][timestampString]=variable_value
+
+
+  def InitCivMinNames(self):
+    names = self.db.execute('''SELECT MiningName from DIM_MiningNames;''').fetchall()
+
+    miningNames = []
+    for name in names:
+      miningNames.append(name[0])
+    return miningNames

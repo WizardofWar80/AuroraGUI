@@ -40,5 +40,12 @@
     "highlightResourcefulBodies": false,
     "highlightXenosBodies": true,
     "highlightArtifactsBodies": true
+  },
+  "TerraformingScreen": {
+    "hideNoTerraformingActive": false,
+    "hideCivilian": true,
+    "hideHighCCBodies": false,
+    "hideComets": false,
+    "hideAsteroids": false
   }
 }

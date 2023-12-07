@@ -148,6 +148,8 @@ class GUI():
         while (tooltip_position[1] > surface.get_rect()[3]-20):
           tooltip_position = (tooltip_position[0],tooltip_position[1]-10)
         Utils.DrawText2Surface(surface, self.tooltip, tooltip_position, 20, Utils.GRAY, transparent=False)
+        return True
+    return False
 
 
   def ClearContent(self):

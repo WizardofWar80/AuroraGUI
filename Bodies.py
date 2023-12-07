@@ -391,8 +391,7 @@ def GetPopulationCapacityAndColonyCost(game, body):
 def GetSystemBodies(game, currentSystem):
   systemBodies = {}
   save_new_images_generated = False
-  body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year
-, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
+  body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity, AGHFactor, Albedo, TectonicActivity, RuinID, RuinRaceID, RadiationLevel, DustLevel, AbandonedFactories, DominantTerrain, GroundMineralSurvey from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
   
           # Mass
       # Orbit
@@ -450,6 +449,17 @@ def GetSystemBodies(game, currentSystem):
     gHFactor = body[24]
     density = body[25]
     gravity = body[26]
+    aGHFactor = body[27]
+    albedo = body[28]
+    tectonicActivity = body[29]
+    ruinID = body[30]
+    ruinRaceID = body[31]
+    radiationLevel = body[32]
+    dustLevel = body[33]
+    abandonedFactories = body[34]
+    dominantTerrain = body[35]
+    groundMineralSurvey = body[36]
+
     dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
     
     if (bodyClass == 'Moon'):
@@ -493,11 +503,12 @@ def GetSystemBodies(game, currentSystem):
     
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 
                            'Bearing':body[7], 'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity,
-                           'Temperature':temp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Density':density, 
+                           'Temperature':temp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Albedo':albedo, 'Density':density, 
                            'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Distance2Center':dist2Center, 
-                           'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor,  'Image':image,
+                           'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'AGHFactor':aGHFactor, 'Image':image,
                            'Colonized':colonized,'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 
-                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming }
+                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming,'Tectonic activity':tectonicActivity, 'RuinID':ruinID, 'RuinRaceID':ruinRaceID, 'RadiationLevel':radiationLevel, 'DustLevel':dustLevel, 'Abandoned Factories':abandonedFactories, 'Dominant Terrain':dominantTerrain, 'GroundMineralSurvey':groundMineralSurvey }
+
     systemBodies[body[0]]['Deposits'] = deposits
 
     popCapacity, colonyCost, ccDetails = GetPopulationCapacityAndColonyCost(game, systemBodies[body[0]])

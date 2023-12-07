@@ -38,7 +38,7 @@ class BodiesScreen(Screen):
     self.images_GUI = {}
     #self.InitGUI()
   #def Init2(self, game, events):
-    self.table = Table.Table(self, 1, 20, anchor = (20,50), col_widths = [10,10,10,10,10,10,10])
+    self.table = Table.Table(self, 1, 20, anchor = (20,60), col_widths = [10,10,10,10,10,10,10])
 
     self.showColonizedBodies = True
     self.showIndustrializedBodies = True
@@ -240,6 +240,7 @@ class BodiesScreen(Screen):
     reblit = False
     # clear screen
     if (self.reDraw):
+      print('redraw bodies table')
       self.UpdateTable()
       #if (self.Events):
       #  self.Events.ClearClickables()

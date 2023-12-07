@@ -37,7 +37,7 @@ class DevelopmentScreen(Screen):
     self.GUI_Elements = {}
     self.GUI_identifier = 'Development'
     self.images_GUI = {}
-    self.table = Table.Table(self, 1, 15, anchor = (20,50), col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
+    self.table = Table.Table(self, 1, 15, anchor = (20,60), col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
 
     self.GUI_Table_Header_Anchor = self.table.anchor
     self.GUI_Table_identifier = 'Development Table'

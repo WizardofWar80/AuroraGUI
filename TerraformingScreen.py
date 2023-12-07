@@ -39,7 +39,7 @@ class TerraformingScreen(Screen):
     self.GUI_Elements = {}
     self.GUI_identifier = 'Terraforming'
     self.images_GUI = {}
-    self.table = Table.Table(self, 1, 35, anchor = (20,50), col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
+    self.table = Table.Table(self, 1, 35, anchor = (20,60), col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
 
     self.GUI_Table_Header_Anchor = self.table.anchor
     self.GUI_Table_identifier = 'Terraforming Table'
@@ -49,6 +49,12 @@ class TerraformingScreen(Screen):
     self.GUI_table_ID = 0
     self.GUI_ID_dropdown_systems = 1
     self.GUI_ID_dropdown_designations = 2
+
+    self.hideNoTerraformingActive = False
+    self.hideCivilian = True
+    self.hideHighCCBodies = False
+    self.hideComets = True
+    self.hideAsteroids = True
 
     self.breatheGas = 'Oxygen'
     self.breatheMinAtm = 0.1
@@ -106,11 +112,13 @@ class TerraformingScreen(Screen):
     table.AddFormat(last_index+gasIndex, {'Operation':'Below', 'threshold':20, 'text_color':color_blue, 'else_color':color_green} )
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     gasIndex+=1
-    table.AddFormat(last_index+gasIndex, {'Operation':'Between',  'threshold_low':0.99,
-                                                                  'threshold_high':1.01, 
-                                                                  'text_color':color_green, 
-                                                                  'too_low_color': color_blue, 
-                                                                  'too_high_color':color_red} )
+    #table.AddFormat(last_index+gasIndex, {'Operation':'Between',  'threshold_low':0.99,
+    #                                                              'threshold_high':1.01, 
+    #                                                              'text_color':color_green, 
+    #                                                              'too_low_color': color_blue, 
+    #                                                              'too_high_color':color_red} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+    gasIndex+=1
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     gasIndex+=1
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
@@ -143,6 +151,42 @@ class TerraformingScreen(Screen):
     #self.GUI_ID_dropdown_systems = idGUI
     #self.GUI_Elements[idGUI].dropdownSelection = Systems.GetIndexOfCurrentSystem(self.game)
     #idGUI += 1
+
+    size = 32
+    x = self.GUI_Bottom_Anchor[0]
+    y = self.GUI_Bottom_Anchor[1]
+    bb = (x,y,size,size)
+    name = 'Terraforming'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.hideNoTerraformingActive, tooltip='Hide with no terraforming')
+
+    idGUI += 1
+    x += size+5
+    bb = (x,y,size,size)
+    name = 'Civilian'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideCivilian, tooltip='Hide civilian colonies')
+
+    idGUI += 1
+    x += size+5
+    bb = (x,y,size,size)
+    name = 'High ColonyCost'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideHighCCBodies, tooltip='Hide high colony costs')
+    
+    idGUI += 1
+    x += size+5
+    bb = (x,y,size,size)
+    name = 'Comets'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideComets, tooltip='Hide comets')
+
+    idGUI += 1
+    x += size+5
+    bb = (x,y,size,size)
+    name = 'Asteroids'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name, bb, gui_cl, 'Button', enabled = self.hideAsteroids, tooltip='Hide asteroids')
 
 
   def UpdateDevelopmentData(self):
@@ -179,54 +223,55 @@ class TerraformingScreen(Screen):
       for colonyID in system:
         colony = self.game.colonies[colonyID]
         body = bodies[colonyID]
-
-        systemName = colony['System']
-        bodyName = body['Name']
-        colonyName = colony['Name']
-        au = body['Distance2Center']
-        tf = colony['Terraforming']['Active']
-        state = gas = target = ''
-        tf_string = ''
-        if (tf):
-          state = colony['Terraforming']['State']
-          gas = colony['Terraforming']['Gas']['Symbol']
-          target = colony['Terraforming']['TargetATM']
-          tf_string = state+' '+ gas+' to '+ str(Utils.GetFormattedNumber2(target))
+        if (self.GetDrawConditions(body, colony)):
+          systemName = colony['System']
+          bodyName = body['Name']
+          colonyName = colony['Name']
+          au = body['Distance2Center']
+          tf = colony['Terraforming']['Active']
+          state = gas = target = ''
+          tf_string = ''
+          if (tf):
+            state = colony['Terraforming']['State']
+            gas = colony['Terraforming']['Gas']['Symbol']
+            target = colony['Terraforming']['TargetATM']
+            tf_string = state+' '+ gas+' to '+ str(Utils.GetFormattedNumber2(target))
         
-        numTerraformers = 0
-        if (self.game.terraformerID in colony['Installations']):
-          numTerraformers = colony['Installations'][self.game.terraformerID]['Amount']
+          numTerraformers = 0
+          if (self.game.terraformerID in colony['Installations']):
+            numTerraformers = colony['Installations'][self.game.terraformerID]['Amount']
 
-        fleetIDs = Fleets.GetIDsOfFleetsInOrbit(self.game, systemID, body['ID'], type = 'Body')
-        for fleetID in fleetIDs:
-          numTerraformers += self.game.fleets[systemID][fleetID]['Terraformers']
+          fleetIDs = Fleets.GetIDsOfFleetsInOrbit(self.game, systemID, body['ID'], type = 'Body')
+          for fleetID in fleetIDs:
+            numTerraformers += self.game.fleets[systemID][fleetID]['Terraformers']
 
-        colonyCost = round(body['ColonyCost'],1)
-        if (colonyCost > -1):
-          #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
-          unsortedIDs.append([au, bodyName, systemName, colonyCost, tf_string])
-          bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(self.game.gameID, colonyID)).fetchall()
-          for gasID in self.game.gases:
-            if (gasID > 0):
-              percentage = 0
-              atm = 0
-              for bodyGas in bodyGases:
-                id = bodyGas[0]
-                if (id == gasID):
-                  percentage = bodyGas[1]
-                  atm = bodyGas[2]
-                  break
+          colonyCost = round(body['ColonyCost'],1)
+          if (colonyCost > -1):
+            #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
+            unsortedIDs.append([au, bodyName, systemName, colonyCost, tf_string])
+            bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(self.game.gameID, colonyID)).fetchall()
+            for gasID in self.game.gases:
+              if (gasID > 0):
+                percentage = 0
+                atm = 0
+                for bodyGas in bodyGases:
+                  id = bodyGas[0]
+                  if (id == gasID):
+                    percentage = bodyGas[1]
+                    atm = bodyGas[2]
+                    break
 
-              unsortedIDs[-1].append(atm)
-              if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-                unsortedIDs[-1].append(percentage)
-          unsortedIDs[-1].append(body['AtmosPressure'])
-          unsortedIDs[-1].append(body['Temperature'])
-          unsortedIDs[-1].append(body['Hydrosphere'])
-          unsortedIDs[-1].append(body['GHFactor'])
-          unsortedIDs[-1].append(numTerraformers)
-          unsortedIDs[-1].append(numTerraformers*self.game.terraformingRate)
-          index+=1
+                unsortedIDs[-1].append(atm)
+                if (self.game.gases[gasID]['Name'] == 'Oxygen'):
+                  unsortedIDs[-1].append(percentage)
+            unsortedIDs[-1].append(body['AtmosPressure'])
+            unsortedIDs[-1].append(body['Temperature'])
+            unsortedIDs[-1].append(body['Hydrosphere'])
+            unsortedIDs[-1].append(body['GHFactor'])
+            unsortedIDs[-1].append(body['AGHFactor'])
+            unsortedIDs[-1].append(numTerraformers)
+            unsortedIDs[-1].append(numTerraformers*self.game.terraformingRate)
+            index+=1
 
     id, rev = self.GetTableSortState()
     sortedIDs = sorted(unsortedIDs, key=itemgetter(id), reverse=rev)
@@ -246,6 +291,7 @@ class TerraformingScreen(Screen):
     header.append('Temp')
     header.append('Water %')
     header.append('GHF')
+    header.append('AGHF')
     header.append('# TFs')
     header.append('TF rate/a')
 
@@ -269,7 +315,7 @@ class TerraformingScreen(Screen):
                        #row_sorted[6] # Target ATM
                        ]
         for i in range(len(printed_row),len(row_sorted)):
-          if (header[i] == 'GHF'):
+          if (header[i] == 'GHF' or header[i] == 'AGHF'):
             printed_row.append(round(row_sorted[i],2))
           elif (header[i] == breathGasSymbol):
             printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
@@ -289,7 +335,6 @@ class TerraformingScreen(Screen):
 
     self.table.scrollbar.Update(total_range = len(sortedIDs), current_position = -self.table.scroll_position)
     self.table.Realign()
-
     
     if (self.GUI_Elements == {}):
       self.InitGUI()
@@ -397,6 +442,45 @@ class TerraformingScreen(Screen):
               if (otherElement.radioGroup == thisGroup):
                 otherElement.enabled = False
 
+
+  def ToggleGUI_Element_ByName(self, name):
+    if (name == 'Terraforming'):
+      self.hideNoTerraformingActive = not self.hideNoTerraformingActive
+    elif (name == 'Civilian'):
+      self.hideCivilian = not self.hideCivilian
+    elif (name == 'High ColonyCost'):
+      self.hideHighCCBodies = not self.hideHighCCBodies
+    elif (name == 'Asteroids'):
+      self.hideAsteroids = not self.hideAsteroids
+    elif (name == 'Comets'):
+      self.hideComets = not self.hideComets
+    
+
+  def GetDrawConditions(self, body, colony):
+    #self.hideNoTerraformingActive = False
+    #self.hideCivilian = True
+    #self.hideHighCCBodies = False
+    #self.hideComets = True
+    #self.hideAsteroids = True
+
+    if (colony['Terraforming']['Active']):
+      ret_value = True
+    else:
+      ret_value = True
+      if (colony['Civilian'] and self.hideCivilian):
+        ret_value = False
+      elif ((body['ColonyCost'] > 10) and self.hideHighCCBodies ):
+        ret_value = False
+      elif (body['Class'] == 'Asteroid') and (self.hideAsteroids):
+        ret_value = False
+      elif (body['Class'] == 'Comet') and (self.hideComets):
+        ret_value = False
+
+      if (ret_value):
+        if ((colony['Terraforming']['Active'] == False) and self.hideNoTerraformingActive):
+          ret_value = False
+
+    return ret_value
 
 #Change to Greenhouse Gas and Dust Mechanics
 
