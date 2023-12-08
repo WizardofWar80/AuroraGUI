@@ -28,14 +28,14 @@ def GetColonies(game):
     fuel = colony[13]
     supplies = colony[18]
     total_population += pop
-    colonies[systemBodyID] = {'Name':colonyName,'Pop':round(pop,2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colony[17], 'Stockpile':{'Fuel':int(round(fuel)),'Supplies':int(round(supplies))}}
+    colonies[systemBodyID] = {'Name':colonyName,'Pop':Utils.Round(pop,2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colony[17], 'Stockpile':{'Fuel':int(round(fuel)),'Supplies':int(round(supplies))}}
     total_stockpile['Fuel'] += fuel
     total_stockpile['Supplies'] += supplies
-    stockpile_sum = int(round(colony[13]) + round(colony[18]))
+    stockpile_sum = int(Utils.Round(colony[13]) + Utils.Round(colony[18]))
     
     for mineralID in Utils.MineralNames:
       mineral = Utils.MineralNames[mineralID]
-      amount = int(round(colony[34+mineralID-1],0))
+      amount = int(Utils.Round(colony[34+mineralID-1],0))
       colonies[systemBodyID]['Stockpile'][mineral] = amount
       stockpile_minerals_sum += amount
       total_stockpile[mineral] += amount

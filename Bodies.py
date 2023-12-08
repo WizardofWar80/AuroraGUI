@@ -350,7 +350,7 @@ def CalculateColonyCost(game, body):
         breathAtmLevel = percentage
       else:
         if (game.gases[id]['DangerFactor'] > 0):
-          if (atm > game.gases[id]['DangerousLevel']):
+          if (percentage > game.gases[id]['DangerousLevel']):
             dangerAtmFactor = max(game.gases[id]['DangerFactor'], dangerAtmFactor)
 
   # Breathable Gas: If the atmosphere does not have a sufficient amount of breathable gas, the colony cost factor for breathable gas is 2.00. If the gas is available in sufficient quantities but exceeds 30% of atmospheric pressure, the colony cost factor is also 2.00.
@@ -381,7 +381,7 @@ def GetPopulationCapacityAndColonyCost(game, body):
     # todo: Add population desnsity multiplier from race
 
     popCapacity = popCapacity*hydroMultiPlier*tidalMultiPlier
-    popCapacity = round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1) if popCapacity < 10 else int(round(popCapacity,0))
+    popCapacity = Utils.Round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1) if popCapacity < 10 else int(round(popCapacity,0))
     if (popCapacity < 0.05):
       popCapacity = 0.05
 

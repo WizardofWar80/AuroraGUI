@@ -130,6 +130,11 @@ RADIANS_TO_DEGREES = 57.2957795
 def Sqr(x):
   return x*x
 
+def Round(n, decimals=0):
+  expoN = n * 10 ** decimals
+  if abs(expoN) - abs(math.floor(expoN)) < 0.5:
+    return math.floor(expoN) / 10 ** decimals
+  return math.ceil(expoN) / 10 ** decimals
 
 def DrawTextAt(window, text, x, y, fonttype, fg):
   if (x > 0 and y > 0 and x < window.get_rect()[2] and y < window.get_rect()[3]):
@@ -581,69 +586,86 @@ def GetTimeScale(hours):
   if (timeframe > 3*365.2):
     timeframe /= 365.2
     unit = 'a'
-  fraction = abs(round(timeframe,1)-timeframe)
+  fraction = abs(Round(timeframe,1)-timeframe)
   if (fraction < 0.1):
-    return '%d %s'%(round(timeframe,0), unit)
+    return '%d %s'%(Round(timeframe,0), unit)
   else:
-    return '%2.1f %s'%(round(timeframe,1), unit)
+    return '%2.1f %s'%(Round(timeframe,1), unit)
 
 
 def GetFormattedNumber(number):
   if number is None:
     return '-'
   if (abs(number) > 0.99):
-    fraction = abs(round(number,1)-number)
+    fraction = abs(Round(number,1)-number)
     if (abs(fraction) < 0.1):
-      return '%d'%(round(number,0))
+      return '%d'%(Round(number,0))
     else:
-      return '%2.1f'%(round(number,1))
+      return '%2.1f'%(Round(number,1))
   else:
     if number == 0.0:
       return '0'
     if (abs(number) < 0.001):
       return '{:.1e}'.format(number)
     elif (abs(number) < 0.01):
-      return '%1.3f'%(round(number,3))
+      return '%1.3f'%(Round(number,3))
     elif (abs(number) < 0.1):
-      return '%1.2f'%(round(number,2))
+      return '%1.2f'%(Round(number,2))
     else:
-      return '%1.1f'%(round(number,1))
+      return '%1.1f'%(Round(number,1))
+
 
 def GetFormattedNumber2(number):
   if number is None:
     return None
   if (abs(number) > 0.99):
-    fraction = abs(round(number,0)-number)
+    fraction = abs(Round(number,0)-number)
     if (abs(fraction) < 0.1):
-      return round(number,0)
+      return Round(number,1)
     else:
-      return round(number,1)
+      return Round(number,2)
   else:
     if number == 0.0:
       return 0
     if (abs(number) < 0.001):
-      return round(number,4)
+      return Round(number,5)
     elif (abs(number) < 0.01):
-      return round(number,3)
+      return Round(number,4)
     elif (abs(number) < 0.1):
-      return round(number,2)
+      return Round(number,3)
     else:
-      return round(number,1)
+      return Round(number,2)
+
+
+def GetFormattedNumber3(number, significantDigits):
+  if number is None:
+    return None
+  str_num = str(number)
+  decimal_index = str_num.find('.')
+  digit = 0
+  if (decimal_index > -1):
+    for char_index in range(decimal_index+1, len(str_num)):
+      if (str_num[char_index] != '0'):
+        firstSignificanDigit = char_index
+        roundedNumber = round(number, digit+significantDigits)
+        return roundedNumber
+      digit += 1
+  return number
 
 def ConvertNumber2kMGT(value, coarse = False):
   if (type(value) is int) or (type(value) is float):
     if value > 999999999999.5:
-      return '%d T'%(int(round(value / 1000000000000,0)))
+      return '%d T'%(int(Round(value / 1000000000000,0)))
     if value > 999999999.5:
-      return '%d G'%(int(round(value / 1000000000,0)))
+      return '%d G'%(int(Round(value / 1000000000,0)))
     if value > 999999.5:
-      return '%d M'%(round(value / 1000000,0))
+      return '%d M'%(Round(value / 1000000,0))
     elif value > 999.5:
-      return '%d k'%(round(value / 1000,0))
+      return '%d k'%(Round(value / 1000,0))
     elif value > 9.99:
-      return '%d'%(int(round(value,0)))
+      return '%d'%(int(Round(value,0)))
     elif value > 0.01:
-      return '%d'%(round(value,2))
+      return '%d'%(Round(value,2))
     else:
       return '0'
   else:

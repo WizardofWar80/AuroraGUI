@@ -322,13 +322,13 @@ class BodiesScreen(Screen):
           colony = self.game.colonies[bodyID]
           pop = colony['Pop']
         row_format = [False, True if body['Colonized'] else False, False, False, False,False,False,]
-        data = [ int(round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
+        data = [ int(Utils.Round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
                 ,body['Name'] 
                 ,body['Type'] 
                 ,body['Status']
-                ,round(body['ColonyCost'],1)
-                ,f"{round(pop,2):,}" if pop > 0 else ''
-                ,f"{round(body['Population Capacity'],2):,}"
+                ,Utils.Round(body['ColonyCost'],1)
+                ,f"{Utils.Round(pop,2):,}" if pop > 0 else ''
+                ,f"{Utils.Round(body['Population Capacity'],2):,}"
                 ,body['Colonizable']
                 ]
         index = len(data)

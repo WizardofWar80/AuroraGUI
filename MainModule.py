@@ -107,13 +107,14 @@ class Game():
 
     #db_filename = 'D:\\Spiele\\Aurora4x\\AuroraDB - Copy.db'
     self.aurora_folder = 'D:\\Spiele\\Aurora4x\\'
-    db_filename = self.aurora_folder+'AuroraDB.db'
+    self.db_filename = self.aurora_folder+'AuroraDB.db'
+    self.db_last_timestamp = os.path.getmtime(self.db_filename)
     try:
-      db_connection = sqlite3.connect(db_filename)
+      db_connection = sqlite3.connect(self.db_filename)
       self.db = db_connection.cursor()
     except Exception as e:
       print(e)
-      self.logger.write('Error connecting to DB (%s): %s'%(db_filename, repr(e)))
+      self.logger.write('Error connecting to DB (%s): %s'%(self.db_filename, repr(e)))
 
     if (self.db):
       self.gameID, name, self.startYear = self.db.execute('''SELECT GameID, GameName, StartYear from FCT_Game''').fetchall()[-1]
@@ -140,6 +141,7 @@ class Game():
       self.gases = self.InitGases()
       self.civilianMiningNames = self.InitCivMinNames()
       Designations.Init(self)
+      self.LoadTerraformingHistory()
       self.GetNewData()
       self.SaveTerraformingHistory()
 
@@ -526,7 +528,7 @@ class Game():
     gases = {}
     results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel, Symbol from DIM_Gases;''').fetchall()
     for result in results:
-      gases[result[0]] = {'Name':result[1], 'Symbol': result[4], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000000}
+      gases[result[0]] = {'Name':result[1], 'Symbol': result[4], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000000*100}
     return gases
 
 
@@ -677,8 +679,9 @@ class Game():
 
 
   def CheckForNewDBData(self):
+    file_time = os.path.getmtime(self.db_filename)
     gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
-    if (gameTime != self.gameTime):
+    if (gameTime != self.gameTime) or (file_time > self.db_last_timestamp):
       self.lastGameTime = self.gameTime
       self.GetNewData()
       self.SetRedrawFlag(self.currentScreen)
@@ -686,6 +689,7 @@ class Game():
       print('New game data! %s'%date_time.strftime("%b %d %Y"))
       self.SaveGameLog()
       self.SaveTerraformingHistory()
+      self.db_last_timestamp = file_time
 
 
   def GetNewData(self):
@@ -701,8 +705,10 @@ class Game():
     self.SaveStatistics()
     self.GetNewLocalData(self.currentSystem)
     self.UpdateTerraformingHistory()
+    self.terraformingSpeed = self.db.execute('''SELECT TerraformingSpeed from FCT_Game WHERE GameID = %d;'''%(self.gameID)).fetchone()[0]/100
     self.terraformingRate = self.db.execute('''SELECT TerraformingRate from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
     self.systemFlags = self.GetSystemFlags()
+
 
   def GetNewLocalData(self, currentSystem):
     self.surveyLocations = Systems.GetSurveyLocations(self, currentSystem)
@@ -1017,7 +1023,9 @@ class Game():
         if ('ColonyCost' not in self.terraformingHistory[systemName][bodyName]):
           self.terraformingHistory[systemName][bodyName]['ColonyCost']={}
         timestampString = str(int(self.gameTime))
-        if (timestampString not in self.terraformingHistory[systemName][bodyName]['ColonyCost']):
+        lastEntryKey = list(self.terraformingHistory[systemName][bodyName]['ColonyCost'].keys())[-1]
+        if (body['ColonyCost'] != self.terraformingHistory[systemName][bodyName]['ColonyCost'][lastEntryKey]):
+        #if (timestampString not in self.terraformingHistory[systemName][bodyName]['ColonyCost']):
           self.terraformingHistory[systemName][bodyName]['ColonyCost'][timestampString]=body['ColonyCost']
         if ('Gases' not in self.terraformingHistory[systemName][bodyName]):
           self.terraformingHistory[systemName][bodyName]['Gases']={}
@@ -1037,7 +1045,9 @@ class Game():
                 gasSymbol = self.gases[gasID]['Symbol']
                 if (gasSymbol not in self.terraformingHistory[systemName][bodyName]['Gases']):
                   self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]={}
-                if (timestampString not in self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]):
+                lastEntryKey = list(self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol].keys())[-1]
+                if (atm != self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol][lastEntryKey]):
+                #if (timestampString not in self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]):
                   self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol][timestampString] = atm
                 if (self.gases[gasID]['Name'] == 'Oxygen'):
                   breathelevel=percentage

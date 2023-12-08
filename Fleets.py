@@ -315,7 +315,7 @@ def GetAverageMaintCost(components):
 
 
 def GetMaintainanceForYears(year, AFR, AMC):
-  return year*(year+1) * AFR * round(AMC,2) / 2
+  return year*(year+1) * AFR * Utils.Round(AMC,2) / 2
 
 
 def GetAFR(ShipSize, engSize):

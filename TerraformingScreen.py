@@ -9,6 +9,7 @@ import Utils
 import Colonies
 import Bodies
 import Fleets
+from math import pi as PI
 
 class TerraformingScreen(Screen):
   def __init__(self, game, events, name):
@@ -84,18 +85,18 @@ class TerraformingScreen(Screen):
     for gasID in self.game.gases:
       if (gasID > 0):
         if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-          table.AddFormat(last_index+gasIndex, {'Operation':'Between', 'threshold_low':self.breatheMinAtm, 
-                                                              'threshold_high':self.breatheMaxAtm, 
-                                                              'text_color':color_green, 
-                                                              'too_low_color': color_blue, 
-                                                              'too_high_color':color_red} )
+          table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.safeLevel, 'text_color':color_red, 'else_color':color_green} )
           table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
           gasIndex+=1
-          table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.safeLevel, 'text_color':color_red, 'else_color':color_green} )
+          table.AddFormat(last_index+gasIndex, {'Operation':'Between', 'threshold_low':self.breatheMinAtm, 
+                                                    'threshold_high':self.breatheMaxAtm, 
+                                                    'text_color':color_green, 
+                                                    'too_low_color': color_blue, 
+                                                    'too_high_color':color_red} )
         else:
           if (self.game.gases[gasID]['DangerousLevel'] > 0):
             table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.game.gases[gasID]['DangerousLevel'], 'text_color':color_red, 'else_color':color_green} )
-        table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+        table.AddFormat(last_index+gasIndex, {'Format':'Percent','Operation':'Align', 'value':'center'} )
         gasIndex+=1
 
     table.AddFormat(last_index+gasIndex, {'Operation':'Below', 'threshold':self.maxAtm, 'text_color':color_green, 'else_color':color_red} )
@@ -218,6 +219,7 @@ class TerraformingScreen(Screen):
     #self.table.max_cell_sizes = []
     index = 1
     systems = {}
+    surfAreaEarth =  511185932.52
     for colonyID in self.game.colonies:
       colony = self.game.colonies[colonyID]
       if colony['SystemID'] not in systems:
@@ -233,6 +235,7 @@ class TerraformingScreen(Screen):
         if (self.GetDrawConditions(body, colony)):
           systemName = colony['System']
           bodyName = body['Name']
+          radiusBody = body['RadiusBody']
           colonyName = colony['Name']
           au = body['Distance2Center']
           tf = colony['Terraforming']['Active']
@@ -243,7 +246,10 @@ class TerraformingScreen(Screen):
             gas = colony['Terraforming']['Gas']['Symbol']
             target = colony['Terraforming']['TargetATM']
             tf_string = state+' '+ gas+' to '+ str(Utils.GetFormattedNumber2(target))
-        
+
+          surfaceArea = 4*body['RadiusBody']*body['RadiusBody']*PI
+          terraformingBodyMultiplier = surfAreaEarth/surfaceArea
+
           numTerraformers = 0
           if (self.game.terraformerID in colony['Installations']):
             numTerraformers = colony['Installations'][self.game.terraformerID]['Amount']
@@ -252,7 +258,7 @@ class TerraformingScreen(Screen):
           for fleetID in fleetIDs:
             numTerraformers += self.game.fleets[systemID][fleetID]['Terraformers']
 
-          colonyCost = round(body['ColonyCost'],1)
+          colonyCost = Utils.Round(body['ColonyCost'],1)
           if (colonyCost > -1):
             #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
             unsortedIDs.append([au, bodyName, systemName, colonyCost, tf_string])
@@ -268,16 +274,16 @@ class TerraformingScreen(Screen):
                     atm = bodyGas[2]
                     break
 
-                unsortedIDs[-1].append(atm)
+                unsortedIDs[-1].append(percentage)
                 if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-                  unsortedIDs[-1].append(percentage)
+                  unsortedIDs[-1].append(atm)
             unsortedIDs[-1].append(body['AtmosPressure'])
             unsortedIDs[-1].append(body['Temperature'])
             unsortedIDs[-1].append(body['Hydrosphere'])
             unsortedIDs[-1].append(body['GHFactor'])
             unsortedIDs[-1].append(body['AGHFactor'])
             unsortedIDs[-1].append(numTerraformers)
-            unsortedIDs[-1].append(numTerraformers*self.game.terraformingRate)
+            unsortedIDs[-1].append(numTerraformers*self.game.terraformingRate*self.game.terraformingSpeed*terraformingBodyMultiplier)
             index+=1
 
     id, rev = self.GetTableSortState()
@@ -291,7 +297,7 @@ class TerraformingScreen(Screen):
       if (gasID > 0):
         header.append(self.game.gases[gasID]['Symbol'])
         if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-          breathGasSymbol=self.game.gases[gasID]['Symbol']+' %'
+          breathGasSymbol=self.game.gases[gasID]['Symbol']+' atm'
           header.append(breathGasSymbol)
 
     header.append('atm')
@@ -311,7 +317,7 @@ class TerraformingScreen(Screen):
     printed_row = []
     for row_sorted in sortedIDs:
       if (sortedRowIndex + self.table.scroll_position >= 0) and (row < self.table.max_rows):
-        printed_row = [int(round(row_sorted[0],0)) if (row_sorted[0]>= 10) else round(row_sorted[0],1),# AU
+        printed_row = [int(Utils.Round(row_sorted[0],0)) if (row_sorted[0]>= 10) else Utils.Round(row_sorted[0],1),# AU
                        row_sorted[1], # Name
                        row_sorted[2], # System
                        row_sorted[3], # Cost
@@ -323,14 +329,17 @@ class TerraformingScreen(Screen):
                        ]
         for i in range(len(printed_row),len(row_sorted)):
           if (header[i] == 'GHF' or header[i] == 'AGHF'):
-            printed_row.append(round(row_sorted[i],2))
+            printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
+            #printed_row.append(Utils.Round(row_sorted[i],2))
           elif (header[i] == breathGasSymbol):
-            printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
+            #printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
+            printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
           else:
             if (row_sorted[i] == 0):
               printed_row.append(None)
             else:
-              printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
+              #printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
+              printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],1))
 
         #self.table.AddRow(row, printed_row)
         self.table.AddRow(row, printed_row)

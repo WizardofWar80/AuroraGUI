@@ -135,8 +135,8 @@ class ColonyDetailsScreen(Screen):
       if ('Deposits' in body):
         stock = colony['Stockpile']['Fuel']
         if mineral in body['Deposits']:
-          deposit = f"{int(round(body['Deposits'][mineral]['Amount'],0)):,}"
-          acc = '(%1.1f)'%round(body['Deposits'][mineral]['Accessibility'],1)
+          deposit = f"{int(Utils.Round(body['Deposits'][mineral]['Amount'],0)):,}"
+          acc = '(%1.1f)'%Utils.Round(body['Deposits'][mineral]['Accessibility'],1)
           if (deposit == '0'):
             deposit = '-'
             acc = ''
@@ -211,8 +211,8 @@ class ColonyDetailsScreen(Screen):
 
     #        if (context.info_cat_deposits_expanded):
     #          for mineral in body['Deposits']:
-    #            amount = int(round(body['Deposits'][mineral]['Amount'],0))
-    #            acc = round(body['Deposits'][mineral]['Accessibility'],1)
+    #            amount = int(Utils.Round(body['Deposits'][mineral]['Amount'],0))
+    #            acc = Utils.Round(body['Deposits'][mineral]['Accessibility'],1)
     #            if (amount > 0):
     #              DrawTextWithTabs(context.window_info, mineral[:2]+':', _indentLevel+1, f"{amount:,}", 30, context.window_info_scoll_pos, text3 = '('+str(acc)+')', color3 = Utils.LIGHT_GREEN if acc >= 0.7 else Utils.RED if acc <= 0.3 else Utils.YELLOW, tab_dist2 = 110)
         
@@ -266,7 +266,7 @@ class ColonyDetailsScreen(Screen):
     #                supported_pop = amountInstallations / colonyCost / 100
     #              if (found_Installations):
     #                break
-    #          DrawTextWithTabs(context.window_info, 'Popul. Supported:', _indentLevel+1, f"{round(supported_pop,2):,} M", 130, context.window_info_scoll_pos)
+    #          DrawTextWithTabs(context.window_info, 'Popul. Supported:', _indentLevel+1, f"{Utils.Round(supported_pop,2):,} M", 130, context.window_info_scoll_pos)
     #          #DrawTextWithTabs(context.window_info, 'Annual Growth:', _indentLevel+1, '%1.2f%%'%(0), 130)
     #          req = 0
     #          act = 0

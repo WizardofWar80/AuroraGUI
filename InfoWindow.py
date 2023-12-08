@@ -71,8 +71,8 @@ def Draw(context):
 
           if (context.info_cat_deposits_expanded):
             for mineral in body['Deposits']:
-              amount = int(round(body['Deposits'][mineral]['Amount'],0))
-              acc = round(body['Deposits'][mineral]['Accessibility'],1)
+              amount = int(Utils.Round(body['Deposits'][mineral]['Amount'],0))
+              acc = Utils.Round(body['Deposits'][mineral]['Accessibility'],1)
               if (amount > 0):
                 DrawTextWithTabs(context.window_info, mineral[:2]+':', _indentLevel+1, f"{amount:,}", 30, context.window_info_scoll_pos, text3 = '('+str(acc)+')', color3 = Utils.LIGHT_GREEN if acc >= 0.7 else Utils.RED if acc <= 0.3 else Utils.YELLOW, tab_dist2 = 110)
         
@@ -126,7 +126,7 @@ def Draw(context):
                   supported_pop = amountInstallations / colonyCost / 100
                 if (found_Installations):
                   break
-            DrawTextWithTabs(context.window_info, 'Popul. Supported:', _indentLevel+1, f"{round(supported_pop,2):,} M", 130, context.window_info_scoll_pos)
+            DrawTextWithTabs(context.window_info, 'Popul. Supported:', _indentLevel+1, f"{Utils.Round(supported_pop,2):,} M", 130, context.window_info_scoll_pos)
             #DrawTextWithTabs(context.window_info, 'Annual Growth:', _indentLevel+1, '%1.2f%%'%(0), 130)
             req = 0
             act = 0
@@ -295,8 +295,8 @@ def DrawFleet(context, fleet, indentLevel = 0):
         game.MakeClickable(shipClass, expRect, left_click_call_back = context.ExpandShipClasses, par=shipClass, parent = context.window_info_identifier, anchor=context.window_info_anchor)
         DrawLineOfText(context.window_info, '%dx %s'%(shipClasses[ship['ClassName']]['Num'],shipClass), indentLevel+2)
         #if (ship['Military']):
-        #  DrawLineOfText(context.window_info, 'AFR: %d%%'%(int(round(ship['AFR']*100,0))), indentLevel+3)
-        #  DrawLineOfText(context.window_info, '1YR: %d MSP'%int(round(ship['1YR'],0)), indentLevel+3)
+        #  DrawLineOfText(context.window_info, 'AFR: %d%%'%(int(Utils.Round(ship['AFR']*100,0))), indentLevel+3)
+        #  DrawLineOfText(context.window_info, '1YR: %d MSP'%int(Utils.Round(ship['1YR'],0)), indentLevel+3)
 
       #if (shipClasses[ship['ClassName']] == 1):
         if(shipClass in context.GUI_expanded_fleets3):

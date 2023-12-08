@@ -53,78 +53,83 @@ class Cell():
 
 
   def Format(self, f):
-    if (f['Operation'] == 'Above'):
-      if (self.value is not None) and (self.value is not ''):
-        if (self.type is not 'string' ):
-          if (self.value > f['threshold']):
-            self.text_color=f['text_color']
-            self.Render()
-          elif ('else_color' in f):
-            self.text_color=f['else_color']
-            self.Render()
-    if (f['Operation'] == 'Above+'):
-      if (self.value is not None) and (self.value is not ''):
-        if (self.type is not 'string' ):
-          if (self.value > f['threshold']):
-            self.text_color=f['text_color']
-            self.suffix=' ^'
-            self.Render()
-          elif ('else_color' in f):
-            self.text_color=f['else_color']
-            self.Render()
-    elif (f['Operation'] == 'Below'):
-      if (self.value is not None) and (self.value is not ''):
-        if (self.type is not 'string' ):
-          if (self.value < f['threshold']):
-            self.text_color=f['text_color']
-            self.Render()
-          elif ('else_color' in f):
-            self.text_color=f['else_color']
-            self.Render()
-    elif (f['Operation'] == 'Below-'):
-      if (self.value is not None) and (self.value is not ''):
-        if (self.type is not 'string' ):
-          if (self.value < f['threshold']):
-            self.text_color=f['text_color']
-            self.suffix=' v'
-            self.Render()
-          elif ('else_color' in f):
-            self.text_color=f['else_color']
-            self.Render()
-    elif (f['Operation'] == 'Between'):
-      if (self.value is not None) and (self.value is not ''):
-        if (self.type is not 'string' ):
-          if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
-            self.text_color=f['text_color']
-            self.Render()
-          else:
-            if (self.value <= f['threshold_low']):
-              if ('too_low_color' in f):
-                self.text_color=f['too_low_color']
+    if ('Format' in f):
+      if (f['Format'] == 'Percent'):
+        if (self.value is not None) and (self.value is not ''):
+          self.suffix='%'
+    if ('Operation' in f):
+      if (f['Operation'] == 'Above'):
+        if (self.value is not None) and (self.value is not ''):
+          if (self.type is not 'string' ):
+            if (self.value > f['threshold']):
+              self.text_color=f['text_color']
               self.Render()
-            else:
-              if ('too_high_color' in f):
-                self.text_color=f['too_high_color']
+            elif ('else_color' in f):
+              self.text_color=f['else_color']
               self.Render()
-    elif (f['Operation'] == 'Between+-'):
-      if (self.value is not None) and (self.value is not ''):
-        if (self.type is not 'string' ):
-          if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
-            self.text_color=f['text_color']
-            self.Render()
-          else:
-            if (self.value <= f['threshold_low']):
-              if ('too_low_color' in f):
-                self.text_color=f['too_low_color']
-              self.suffix=' v'
-              self.Render()
-            else:
-              if ('too_high_color' in f):
-                self.text_color=f['too_high_color']
+      if (f['Operation'] == 'Above+'):
+        if (self.value is not None) and (self.value is not ''):
+          if (self.type is not 'string' ):
+            if (self.value > f['threshold']):
+              self.text_color=f['text_color']
               self.suffix=' ^'
               self.Render()
-    elif (f['Operation'] == 'Align'):
-      self.SetAlignment(align = f['value'])      
+            elif ('else_color' in f):
+              self.text_color=f['else_color']
+              self.Render()
+      elif (f['Operation'] == 'Below'):
+        if (self.value is not None) and (self.value is not ''):
+          if (self.type is not 'string' ):
+            if (self.value < f['threshold']):
+              self.text_color=f['text_color']
+              self.Render()
+            elif ('else_color' in f):
+              self.text_color=f['else_color']
+              self.Render()
+      elif (f['Operation'] == 'Below-'):
+        if (self.value is not None) and (self.value is not ''):
+          if (self.type is not 'string' ):
+            if (self.value < f['threshold']):
+              self.text_color=f['text_color']
+              self.suffix=' v'
+              self.Render()
+            elif ('else_color' in f):
+              self.text_color=f['else_color']
+              self.Render()
+      elif (f['Operation'] == 'Between'):
+        if (self.value is not None) and (self.value is not ''):
+          if (self.type is not 'string' ):
+            if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
+              self.text_color=f['text_color']
+              self.Render()
+            else:
+              if (self.value <= f['threshold_low']):
+                if ('too_low_color' in f):
+                  self.text_color=f['too_low_color']
+                self.Render()
+              else:
+                if ('too_high_color' in f):
+                  self.text_color=f['too_high_color']
+                self.Render()
+      elif (f['Operation'] == 'Between+-'):
+        if (self.value is not None) and (self.value is not ''):
+          if (self.type is not 'string' ):
+            if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
+              self.text_color=f['text_color']
+              self.Render()
+            else:
+              if (self.value <= f['threshold_low']):
+                if ('too_low_color' in f):
+                  self.text_color=f['too_low_color']
+                self.suffix=' v'
+                self.Render()
+              else:
+                if ('too_high_color' in f):
+                  self.text_color=f['too_high_color']
+                self.suffix=' ^'
+                self.Render()
+      elif (f['Operation'] == 'Align'):
+        self.SetAlignment(align = f['value'])      
 
 
 class Table():
