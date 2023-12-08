@@ -29,30 +29,54 @@ def DrawSystemFleets(context):
       col = context.color_Fleet
       if (game.highlighted_fleet_ID == fleetID):
         col = Utils.CYAN
-      if (fleet['Ships'] != [] or context.showEmptyFleets or (game.highlighted_fleet_ID == fleetID)):
+
+      moving = True
+      if (fleet['Station']):
+        moving = False
+        if (context.showStations):
+          show = True
+        else:
+          show = False
+      elif (fleet['Speed'] == 1 ):
+        moving = False
+        if (context.showStationaryFleets):
+          show = True
+        else:
+          show = False
+      elif (fleet['Ships'] == []):
+        moving = False
+        if (context.showEmptyFleets):
+          show = True
+        else:
+          show = False
+      else:
+        show = True
+      if (game.highlighted_fleet_ID == fleetID):
+        show = True
+
+      if (show):
         pos = context.WorldPos2ScreenPos(fleet['Position'])
-        if (fleet['Speed'] > 1 or context.showStationaryFleets or ((game.highlighted_fleet_ID == fleetID) and not fleet['Station'])):
-          if (context.show_FleetTraces):
-            prev_pos = context.WorldPos2ScreenPos(fleet['Position_prev'])
-            pygame.draw.line(context.surface, col, prev_pos, pos,1)
-          bb = Utils.DrawTriangle(context.surface,pos ,col, fleet['Heading'])
-          if (game.CheckClickableNotBehindGUI(bb)):
-            game.MakeClickable(fleet['Name'], bb, left_click_call_back = Select_Fleet, par=fleetID)
-          if (game.highlighted_fleet_ID == fleetID):
-            pygame.draw.rect(context.surface, col,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
-          #pygame.draw.circle(game.surface,col,(pos_x,pos_y),5,Utils.FILLED)
-          Utils.DrawText2Surface(context.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,col)
-          if (game.drawShipImages):
-            size = game.myRaceHullPic.get_size()
-            if (size[0]>size[1]):
-              ratio = size[1]/size[0]
-              scale = (50, 50*ratio)
-            else:
-              ratio = size[0]/size[1]
-              scale = (50, 50*ratio)
-            scaledSurface = pygame.transform.smoothscale(game.myRaceHullPic,scale)
-            image_offset = Utils.SubTuples(pos,scaledSurface.get_rect().center)
-            context.surface.blit(scaledSurface,image_offset)
+        if (context.show_FleetTraces) and moving:
+          prev_pos = context.WorldPos2ScreenPos(fleet['Position_prev'])
+          pygame.draw.line(context.surface, col, prev_pos, pos,1)
+        bb = Utils.DrawTriangle(context.surface,pos ,col, fleet['Heading'])
+        if (game.CheckClickableNotBehindGUI(bb)):
+          game.MakeClickable(fleet['Name'], bb, left_click_call_back = Select_Fleet, par=fleetID)
+        if (game.highlighted_fleet_ID == fleetID):
+          pygame.draw.rect(context.surface, col,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
+        #pygame.draw.circle(game.surface,col,(pos_x,pos_y),5,Utils.FILLED)
+        Utils.DrawText2Surface(context.surface,fleet['Name'],(pos[0]+10,pos[1]-6),12,col)
+        if (game.drawShipImages):
+          size = game.myRaceHullPic.get_size()
+          if (size[0]>size[1]):
+            ratio = size[1]/size[0]
+            scale = (50, 50*ratio)
+          else:
+            ratio = size[0]/size[1]
+            scale = (50, 50*ratio)
+          scaledSurface = pygame.transform.smoothscale(game.myRaceHullPic,scale)
+          image_offset = Utils.SubTuples(pos,scaledSurface.get_rect().center)
+          context.surface.blit(scaledSurface,image_offset)
 
         if(fleet['Station']):
           orbitingBody = fleet['Orbit']['Body']
@@ -125,7 +149,7 @@ def GetFleets(game):
     fleetSupplies = 0
     fleetSuppliesCapacity = 0
     fleetMagazineCapacity = 0
-    fleetIsStation = True
+    fleetIsStation = False
     fleetHarvesters = 0
     fleetTerraformers = 0
     for ship in ships_table:
@@ -167,7 +191,7 @@ def GetFleets(game):
         total_num_ships += 1
       else:
         total_num_stations += 1
-      fleetIsStation &= (enginePower==0)
+      fleetIsStation |= (enginePower==0)
       fleetHarvesters+=numHarvesters
       fleetTerraformers+=numTerraformers
     fleets[systemID][fleetId]['Fuel'] = fleetFuel
@@ -178,6 +202,8 @@ def GetFleets(game):
     fleets[systemID][fleetId]['Station'] = fleetIsStation
     fleets[systemID][fleetId]['Harvesters'] = fleetHarvesters
     fleets[systemID][fleetId]['Terraformers'] = fleetTerraformers
+    fleets[systemID][fleetId]['Tanker'] = fleetTerraformers
+    fleets[systemID][fleetId]['Refueling Hub'] = fleetTerraformers
 
   game.statisticsShips[str(int(game.gameTime))] = total_num_ships
   game.statisticsStations[str(int(game.gameTime))] = total_num_stations
@@ -212,65 +238,76 @@ def DrawFleetInfoWindow(context):
             if (commercial and military):
               break
           if (military and context.showMilitaryFleets) or (commercial and context.showCommercialFleets):
-            if (fleet['Ships'] != []):
-              expRect = Utils.DrawExpander(context.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
-              game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.systemScreen.ExpandFleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
-              label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
-            label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
-            if (label_pos):
-              game.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = Select_Fleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
-            if (fleet['Speed'] > 1) and label_pos:
-              speed = str(int(fleet['Speed'])) + 'km/s'
+            if (    fleet['Speed'] > 1
+                 or context.showStationaryFleets 
+                 or (context.showStations and fleet['Station'])):
+              if (fleet['Ships'] != []):
+                expRect = Utils.DrawExpander(context.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
+                game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.systemScreen.ExpandFleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
+                label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
+              label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
+              if (label_pos):
+                game.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = Select_Fleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
+              drawFuel = True
+              drawSupplies = True
+            
+              if (fleet['Station']) and (fleet['Harvesters'] == 0):
+                drawFuel = False
+              if (fleet['Speed'] > 1) and label_pos:
+                speed = str(int(fleet['Speed'])) + 'km/s'
+                label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,speed,(label_pos[0]+label_size[0],
+                                                                                                  label_pos[1]),15,color)
+              if (drawFuel):
+                icon_pos = (label_pos[0]+label_size[0], label_pos[1])
+                p = 0
+                if (fleet['Fuel Capacity'] > 0):
+                  p = fleet['Fuel']/fleet['Fuel Capacity']
 
-              speed_label_pos, speed_label_size = Utils.DrawText2Surface(context.window_fleet_info,speed,(label_pos[0]+label_size[0],
-                                                                                                label_pos[1]),15,color)
-              icon_pos = (speed_label_pos[0]+speed_label_size[0], speed_label_pos[1])
-              p = 0
-              if (fleet['Fuel Capacity'] > 0):
-                p = fleet['Fuel']/fleet['Fuel Capacity']
+                if ('fuel2' in game.images_GUI):
+                  icon_rect = Utils.DrawPercentageFilledImage(context.window_fleet_info, 
+                                                              game.images_GUI['fuel2'], 
+                                                              icon_pos, 
+                                                              p, 
+                                                              color_unfilled = Utils.DARK_GRAY, 
+                                                              color = Utils.MED_YELLOW, 
+                                                              color_low = Utils.RED, 
+                                                              perc_low = 0.3, 
+                                                              color_high = Utils.LIGHT_GREEN, 
+                                                              perc_high = 0.7)
+                label_pos = icon_pos
+                label_size = (icon_rect[2], icon_rect[3])
 
-              if ('fuel2' in game.images_GUI):
-                icon_rect = Utils.DrawPercentageFilledImage(context.window_fleet_info, 
-                                                            game.images_GUI['fuel2'], 
-                                                            icon_pos, 
-                                                            p, 
-                                                            color_unfilled = Utils.DARK_GRAY, 
-                                                            color = Utils.MED_YELLOW, 
-                                                            color_low = Utils.RED, 
-                                                            perc_low = 0.3, 
-                                                            color_high = Utils.LIGHT_GREEN, 
-                                                            perc_high = 0.7)
+              if (drawSupplies):
+                icon_pos = (label_pos[0]+label_size[0]+pad_x, label_pos[1])
+                p = 0
+                if (fleet['Supplies Capacity'] > 0):
+                  p = fleet['Supplies']/fleet['Supplies Capacity']
 
-              icon_pos = (icon_rect[0]+icon_rect[3]+pad_x, icon_rect[1])
-              p = 0
-              if (fleet['Supplies Capacity'] > 0):
-                p = fleet['Supplies']/fleet['Supplies Capacity']
+                if ('supplies' in game.images_GUI):
+                  icon_rect = Utils.DrawPercentageFilledImage(context.window_fleet_info, 
+                                                              game.images_GUI['supplies'], 
+                                                              icon_pos, 
+                                                              p, 
+                                                              color_unfilled = Utils.DARK_GRAY, 
+                                                              color = Utils.MED_YELLOW, 
+                                                              color_low = Utils.RED, 
+                                                              perc_low = 0.3, 
+                                                              color_high = Utils.LIGHT_GREEN, 
+                                                              perc_high = 0.7)
 
-              if ('supplies' in game.images_GUI):
-                icon_rect = Utils.DrawPercentageFilledImage(context.window_fleet_info, 
-                                                            game.images_GUI['supplies'], 
-                                                            icon_pos, 
-                                                            p, 
-                                                            color_unfilled = Utils.DARK_GRAY, 
-                                                            color = Utils.MED_YELLOW, 
-                                                            color_low = Utils.RED, 
-                                                            perc_low = 0.3, 
-                                                            color_high = Utils.LIGHT_GREEN, 
-                                                            perc_high = 0.7)
-
-            #print((pad_y+lineNr*line_height), fleet['Name'])
-            lineNr +=1
-            if (fleetID in context.GUI_expanded_fleets):
-              shipClasses = {}
-              for ship in fleet['Ships']:
-                if (ship['ClassName'] not in shipClasses):
-                  shipClasses[ship['ClassName']] = 1
-                else:
-                  shipClasses[ship['ClassName']] += 1
-              for shipClass in shipClasses:
-                label_pos = (expRect[0]+expRect[2]+5,(pad_y+lineNr*line_height))
-                label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
-                lineNr +=1
+              #print((pad_y+lineNr*line_height), fleet['Name'])
+              lineNr +=1
+              if (fleetID in context.GUI_expanded_fleets):
+                shipClasses = {}
+                for ship in fleet['Ships']:
+                  if (ship['ClassName'] not in shipClasses):
+                    shipClasses[ship['ClassName']] = 1
+                  else:
+                    shipClasses[ship['ClassName']] += 1
+                for shipClass in shipClasses:
+                  label_pos = (expRect[0]+expRect[2]+5,(pad_y+lineNr*line_height))
+                  label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,'%dx%s'%(shipClasses[ship['ClassName']],shipClass),label_pos,15,color)
+                  lineNr +=1
 
     context.surface.blit(context.window_fleet_info,context.window_fleet_info_anchor)
     context.reDraw_FleetInfoWindow = False

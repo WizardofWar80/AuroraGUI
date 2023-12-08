@@ -48,6 +48,7 @@ class SystemScreen(Screen):
     self.showMilitaryFleets = True
     self.showCommercialFleets = True
     self.showStationaryFleets = False
+    self.showStations = True
     self.showUnsurveyedLocations = True
     self.showSurveyedLocations = False
     self.show_FleetTraces = True
@@ -433,6 +434,14 @@ class SystemScreen(Screen):
     name = 'Show Stationary Fleets'
     gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showStationaryFleets)
+    
+    idGUI += 1
+    x += size+5
+    size = 32
+    bb = (x,y,size,size)
+    name = 'Show Stations'
+    gui_cl = self.game.MakeClickable(name, bb, self.ToggleGUI, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', enabled = self.showStations)
 
 
   def Draw(self):
@@ -615,6 +624,8 @@ class SystemScreen(Screen):
       self.showCommercialFleets = not self.showCommercialFleets
     elif (name == 'Show Stationary Fleets'):
       self.showStationaryFleets = not self.showStationaryFleets
+    elif (name == 'Show Stations'):
+      self.showStations = not self.showStations
 
 
   def Follow_Jumppoint(self, id, parent, mousepos):

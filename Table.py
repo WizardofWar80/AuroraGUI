@@ -3,7 +3,7 @@ import pygame
 import Scrollbar
 
 class Cell():
-  def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120), align = 'left', bold = False):
+  def __init__(self, pos, width, height, value = None, sortvalue = None, type = None, x = -1, y = -1, text_color = (255,255,255), bg_color = (0,0,0), text_size = 14, border_color = (120,120,120), align = 'left', bold = False, second_value = None):
     self.value = value
     self.prefix = ''
     self.suffix = ''
@@ -33,6 +33,7 @@ class Cell():
     self.value = value
     self.prefix = ''
     self.suffix = ''
+
 
   def Render(self):
     self.text_render = self.font.render(str(self.prefix)+str(self.value)+str(self.suffix), 0, self.text_color)
