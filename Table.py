@@ -134,14 +134,14 @@ class Cell():
 
 
 class Table():
-  def __init__(self, context, rows, cols, header = True, row_height = 20, col_widths = 50, anchor = (0,0), align = 'left'):
+  def __init__(self, context, rows, cols, header = True, row_height = 20, col_widths = 50, anchor = (0,0), align = 'left', max_rows = 25):
     self.context = context
     self.header = header
     self.cells = []
     self.row_height = row_height
     self.col_widths = col_widths
     self.anchor = anchor
-    self.max_rows = 25
+    self.max_rows = max_rows
     self.num_rows = rows
     self.num_cols = cols
     self.align = align

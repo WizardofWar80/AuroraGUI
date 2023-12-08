@@ -1020,13 +1020,14 @@ class Game():
         bodyName = body['Name']
         if (bodyName not in self.terraformingHistory[systemName]):
           self.terraformingHistory[systemName][bodyName] = {}
-        if ('ColonyCost' not in self.terraformingHistory[systemName][bodyName]):
-          self.terraformingHistory[systemName][bodyName]['ColonyCost']={}
         timestampString = str(int(self.gameTime))
-        lastEntryKey = list(self.terraformingHistory[systemName][bodyName]['ColonyCost'].keys())[-1]
-        if (body['ColonyCost'] != self.terraformingHistory[systemName][bodyName]['ColonyCost'][lastEntryKey]):
-        #if (timestampString not in self.terraformingHistory[systemName][bodyName]['ColonyCost']):
-          self.terraformingHistory[systemName][bodyName]['ColonyCost'][timestampString]=body['ColonyCost']
+        if ('ColonyCost' not in self.terraformingHistory[systemName][bodyName]):
+          self.terraformingHistory[systemName][bodyName]['ColonyCost']={timestampString:body['ColonyCost']}
+        else:
+          lastEntryKey = list(self.terraformingHistory[systemName][bodyName]['ColonyCost'].keys())[-1]
+          if (body['ColonyCost'] != self.terraformingHistory[systemName][bodyName]['ColonyCost'][lastEntryKey]):
+            self.terraformingHistory[systemName][bodyName]['ColonyCost'][timestampString]=body['ColonyCost']
+
         if ('Gases' not in self.terraformingHistory[systemName][bodyName]):
           self.terraformingHistory[systemName][bodyName]['Gases']={}
 
@@ -1044,11 +1045,12 @@ class Game():
                 atm = bodyGas[2]
                 gasSymbol = self.gases[gasID]['Symbol']
                 if (gasSymbol not in self.terraformingHistory[systemName][bodyName]['Gases']):
-                  self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]={}
-                lastEntryKey = list(self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol].keys())[-1]
-                if (atm != self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol][lastEntryKey]):
-                #if (timestampString not in self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]):
-                  self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol][timestampString] = atm
+                  self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol]={timestampString:atm}
+                else:
+                  lastEntryKey = list(self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol].keys())[-1]
+                  if (atm != self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol][lastEntryKey]):
+                    self.terraformingHistory[systemName][bodyName]['Gases'][gasSymbol][timestampString] = atm
+
                 if (self.gases[gasID]['Name'] == 'Oxygen'):
                   breathelevel=percentage
 
@@ -1074,9 +1076,11 @@ class Game():
 
   def AddDataToTfHistory(self, systemName, bodyName, variable_name, variable_value, timestampString):
     if (variable_name not in self.terraformingHistory[systemName][bodyName]):
-      self.terraformingHistory[systemName][bodyName][variable_name]={}
-    if (timestampString not in self.terraformingHistory[systemName][bodyName][variable_name]):
-      self.terraformingHistory[systemName][bodyName][variable_name][timestampString]=variable_value
+      self.terraformingHistory[systemName][bodyName][variable_name]={timestampString:variable_value}
+    else:
+      lastEntryKey = list(self.terraformingHistory[systemName][bodyName][variable_name].keys())[-1]
+      if (variable_value != self.terraformingHistory[systemName][bodyName][variable_name][lastEntryKey]):
+        self.terraformingHistory[systemName][bodyName][variable_name][timestampString]=variable_value
 
 
   def InitCivMinNames(self):

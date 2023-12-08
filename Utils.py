@@ -640,7 +640,7 @@ def GetFormattedNumber2(number):
 def GetFormattedNumber3(number, significantDigits):
   if number is None:
     return None
-  str_num = str(number)
+  str_num = '%.7f'%number #str(number)
   decimal_index = str_num.find('.')
   digit = 0
   if (decimal_index > -1):
@@ -651,6 +651,7 @@ def GetFormattedNumber3(number, significantDigits):
         return roundedNumber
       digit += 1
   return number
+
 
 def ConvertNumber2kMGT(value, coarse = False):
   if (type(value) is int) or (type(value) is float):
@@ -743,3 +744,48 @@ def GetObjectImage(game, system, bodyID, bodyClass, bodyType, temp, hydro, atm):
     #game.SaveBodyImages()
 
   return image, new_images_generated
+
+
+def DrawLineOfText(context, surface, line, indentLevel, offset = 0, color = WHITE, unscrollable = False, window_info_scoll_pos = 0, anchor = (0,0)):
+  label_size = None
+
+  if (unscrollable) and (context.lineNr < context.unscrollableLineNr):
+    context.cursorPos = (context.pad_x+(indentLevel*context.indentWidth)+offset+anchor[0], (context.pad_y+context.unscrollableLineNr*context.line_height)+anchor[1])
+    context.unscrollableLineNr += 1
+    context.cursorPos, label_size = DrawText2Surface(surface, line, cursorPos, context.textSize, color)
+    context.lineNr += 1
+    context.cursorPos = (context.pad_x+anchor[0],(context.pad_y+context.unscrollableLineNr*context.line_height)+anchor[1])
+  elif (context.lineNr >= context.unscrollableLineNr):
+    context.cursorPos = (context.pad_x+(indentLevel*context.indentWidth)+offset+anchor[0], (context.pad_y+(context.lineNr)*context.line_height)+anchor[1])
+    context.cursorPos, label_size = DrawText2Surface(surface, line, context.cursorPos, context.textSize, color)
+    context.lineNr += 1
+    context.cursorPos = (context.pad_x+anchor[0], (context.pad_y+context.lineNr*context.line_height)+anchor[1])
+  else:
+    context.lineNr += 1
+
+  return label_size
+
+
+def DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
+  label_size = None
+  
+  if (context.lineNr >= context.unscrollableLineNr):
+    context.cursorPos = (context.pad_x+(indentLevel*context.indentWidth)+anchor[0],(context.pad_y+(context.lineNr)*context.line_height)+anchor[1])
+    context.cursorPos, label_size = DrawText2Surface(surface, text1, context.cursorPos, context.textSize, color1)
+    if (context.cursorPos):
+      context.cursorPos, label_size = DrawText2Surface(surface, text2, (context.cursorPos[0]+tab_distance,context.cursorPos[1]), context.textSize, color2)
+  
+    if (text3):
+      context.cursorPos = (context.pad_x+(indentLevel*context.indentWidth)+offset+anchor[0],(context.pad_y+context.lineNr*context.line_height)+anchor[1])
+      context.cursorPos, label_size = DrawText2Surface(surface, text3, (context.cursorPos[0]+tab_dist2,context.cursorPos[1]), context.textSize, color3)
+      if (context.cursorPos) and (text4):
+        context.cursorPos = (context.pad_x+(indentLevel*context.indentWidth)+offset+anchor[0],(context.pad_y+context.lineNr*context.line_height)+anchor[1])
+        context.cursorPos, label_size = DrawText2Surface(surface, text4, (context.cursorPos[0]+tab_dist3,context.cursorPos[1]), context.textSize, color4)
+    else:
+      if (context.cursorPos) and (text4):
+        context.cursorPos = (context.pad_x+(indentLevel*context.indentWidth)+offset+anchor[0],(context.pad_y+context.lineNr*context.line_height)+anchor[1])
+        context.cursorPos, label_size = DrawText2Surface(surface, text4, (context.cursorPos[0]+tab_dist3,context.cursorPos[1]), context.textSize, color4)
+    context.cursorPos = (context.pad_x+anchor[0],(context.pad_y+(context.lineNr+1)*context.line_height)+anchor[1])
+  context.lineNr += 1
+
+  return label_size

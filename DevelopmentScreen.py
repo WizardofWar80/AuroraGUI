@@ -48,8 +48,17 @@ class DevelopmentScreen(Screen):
     self.GUI_ID_dropdown_systems = 1
     self.GUI_ID_dropdown_designations = 2
 
+    #self.pad_x = 5
+    #self.pad_y = 5
+    #self.lineNr = 0
+    #self.unscrollableLineNr = 0
+    #self.indentWidth = 17
+    #self.line_height = 20
+    #self.textSize = 14
+
     self.FormatTable(self.table)
     self.table.Scrollbar()
+
 
     self.installations = ['Construction Factory',
                           'Terraforming Installation',

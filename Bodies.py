@@ -361,7 +361,7 @@ def CalculateColonyCost(game, body):
 
   cc = max([tempFactor, breathFactor, dangerAtmFactor, atmFactor, waterFactor])
 
-  return cc * (1-game.cc_cost_reduction), {'tempFactor':tempFactor, 'breathFactor':breathFactor, 'dangerAtmFactor':dangerAtmFactor, 'atmFactor':atmFactor, 'waterFactor':waterFactor}
+  return cc * (1-game.cc_cost_reduction), {'Temp Factor':tempFactor, 'Breath Factor':breathFactor, 'Dangerous Atmosphere Factor':dangerAtmFactor, 'Atmospheric Pressure Factor':atmFactor, 'Water Factor':waterFactor}
 
 
 def GetPopulationCapacityAndColonyCost(game, body):
@@ -520,6 +520,7 @@ def GetSystemBodies(game, currentSystem):
     systemBodies[body[0]]['ColonyCost'] = colonyCost
     systemBodies[body[0]]['Population Capacity'] = popCapacity
     systemBodies[body[0]]['Colonizable'] = True if colonyCost < 10000 else False
+    systemBodies[body[0]]['ColonyCostDetails'] = ccDetails
 
     if (save_new_images_generated):
       game.SaveBodyImages()

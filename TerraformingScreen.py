@@ -40,7 +40,7 @@ class TerraformingScreen(Screen):
     self.GUI_Elements = {}
     self.GUI_identifier = 'Terraforming'
     self.images_GUI = {}
-    self.table = Table.Table(self, 1, 35, anchor = (20,60), col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
+    self.table = Table.Table(self, 1, 35, anchor = (20,60), max_rows=15, col_widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
 
     self.GUI_Table_Header_Anchor = self.table.anchor
     self.GUI_Table_identifier = 'Terraforming Table'
@@ -50,6 +50,8 @@ class TerraformingScreen(Screen):
     self.GUI_table_ID = 0
     self.GUI_ID_dropdown_systems = 1
     self.GUI_ID_dropdown_designations = 2
+    self.selectedBodyName = None
+    self.selectedRow = -1
 
     self.hideNoTerraformingActive = False
     self.hideCivilian = True
@@ -64,8 +66,21 @@ class TerraformingScreen(Screen):
     self.maxAtm = 4
     self.minTemp = -10
     self.maxTemp = 38
+    self.breathableGasAtmCol = 0
+    self.breathableGasLevelCol = 0
+    self.tableFirstGasColumn = 0
+    self.tableLastGasColumn = 0
     self.FormatTable(self.table)
     self.table.Scrollbar()
+
+    self.pad_x = 5
+    self.pad_y = 5
+    self.lineNr = 0
+    self.unscrollableLineNr = 0
+    self.indentWidth = 17
+    self.line_height = 20
+    self.textSize = 14
+
 
 
   def FormatTable(self, table):
@@ -80,25 +95,29 @@ class TerraformingScreen(Screen):
     #table.AddFormat(4, {'Operation':'Align', 'value':'center'} )
     #table.AddFormat(5, {'Operation':'Align', 'value':'center'} )
     #table.AddFormat(6, {'Operation':'Align', 'value':'center'} )
+    
     last_index = 4
     gasIndex = 1
+    self.tableFirstGasColumn = last_index+gasIndex
     for gasID in self.game.gases:
       if (gasID > 0):
         if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-          table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.safeLevel, 'text_color':color_red, 'else_color':color_green} )
-          table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
-          gasIndex+=1
           table.AddFormat(last_index+gasIndex, {'Operation':'Between', 'threshold_low':self.breatheMinAtm, 
                                                     'threshold_high':self.breatheMaxAtm, 
                                                     'text_color':color_green, 
                                                     'too_low_color': color_blue, 
                                                     'too_high_color':color_red} )
+          table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+          self.breathableGasAtmCol = last_index+gasIndex
+          gasIndex+=1
+          table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.safeLevel, 'text_color':color_red, 'else_color':color_green} )
+          self.breathableGasLevelCol = last_index+gasIndex
         else:
           if (self.game.gases[gasID]['DangerousLevel'] > 0):
             table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':self.game.gases[gasID]['DangerousLevel'], 'text_color':color_red, 'else_color':color_green} )
         table.AddFormat(last_index+gasIndex, {'Format':'Percent','Operation':'Align', 'value':'center'} )
         gasIndex+=1
-
+    self.tableLastGasColumn = last_index+gasIndex-1
     table.AddFormat(last_index+gasIndex, {'Operation':'Below', 'threshold':self.maxAtm, 'text_color':color_green, 'else_color':color_red} )
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     gasIndex+=1
@@ -138,7 +157,7 @@ class TerraformingScreen(Screen):
       idGUI += 1
       col_index += 1
 
-    gui_cl = self.game.MakeClickable('Complete Terraforming Table', self.table.rect, parent='Complete Terraforming Table')
+    gui_cl = self.game.MakeClickable('Complete Terraforming Table', self.table.rect, self.GetBodyFromInsideTable, parent='Complete Terraforming Table')
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, self.GUI_Table_identifier, self.table.rect, gui_cl, 'Button')
     self.GUI_table_ID = idGUI
     idGUI += 1
@@ -267,16 +286,17 @@ class TerraformingScreen(Screen):
               if (gasID > 0):
                 percentage = 0
                 atm = 0
+
                 for bodyGas in bodyGases:
                   id = bodyGas[0]
                   if (id == gasID):
                     percentage = bodyGas[1]
                     atm = bodyGas[2]
                     break
-
-                unsortedIDs[-1].append(percentage)
                 if (self.game.gases[gasID]['Name'] == 'Oxygen'):
                   unsortedIDs[-1].append(atm)
+                unsortedIDs[-1].append(percentage)
+
             unsortedIDs[-1].append(body['AtmosPressure'])
             unsortedIDs[-1].append(body['Temperature'])
             unsortedIDs[-1].append(body['Hydrosphere'])
@@ -295,10 +315,9 @@ class TerraformingScreen(Screen):
     breathGasSymbol = ''
     for gasID in self.game.gases:
       if (gasID > 0):
-        header.append(self.game.gases[gasID]['Symbol'])
         if (self.game.gases[gasID]['Name'] == 'Oxygen'):
-          breathGasSymbol=self.game.gases[gasID]['Symbol']+' atm'
-          header.append(breathGasSymbol)
+          header.append(self.game.gases[gasID]['Symbol']+' atm')
+        header.append(self.game.gases[gasID]['Symbol'])
 
     header.append('atm')
     header.append('Temp')
@@ -322,29 +341,20 @@ class TerraformingScreen(Screen):
                        row_sorted[2], # System
                        row_sorted[3], # Cost
                        row_sorted[4]  # Terraforming
-                       #row_sorted[3] if row_sorted[3] else '',# Terraforming
-                       #row_sorted[4],# TF State
-                       #row_sorted[5],# TF Gas
-                       #row_sorted[6] # Target ATM
                        ]
         for i in range(len(printed_row),len(row_sorted)):
           if (header[i] == 'GHF' or header[i] == 'AGHF'):
             printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
-            #printed_row.append(Utils.Round(row_sorted[i],2))
           elif (header[i] == breathGasSymbol):
-            #printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
             printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
           else:
             if (row_sorted[i] == 0):
               printed_row.append(None)
             else:
-              #printed_row.append(Utils.GetFormattedNumber2(row_sorted[i]))
               printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],1))
 
-        #self.table.AddRow(row, printed_row)
         self.table.AddRow(row, printed_row)
         row += 1
-        #self.table.num_rows += 1
         if (row >= self.table.max_rows):
           break
       sortedRowIndex += 1
@@ -417,6 +427,7 @@ class TerraformingScreen(Screen):
       self.surface.fill(self.bg_color)
       #self.tabs[self.active_tab].Draw(self.surface)
       reblit |= self.table.Draw()
+      self.DrawSelectedBody()
 
       self.GUI_Elements[self.GUI_table_ID].rect = self.table.rect
       self.GUI_Elements[self.GUI_table_ID].clickable.rect = self.table.rect
@@ -430,6 +441,61 @@ class TerraformingScreen(Screen):
     self.reDraw = False
     
     return reblit
+
+
+  def DrawSelectedBody(self):
+    anchor = (self.table.rect[0], self.table.rect[1]+self.table.row_height*self.table.max_rows+30)
+    pygame.draw.rect(self.surface, Utils.BLUE, (anchor,(800,500)), 1)
+    self.lineNr = 0
+    self.unscrollableLineNr = 0
+    tab1 = 200
+    tab2 = tab1+150
+    tab3 = tab2+100
+    tab4 = tab3+80
+    tab5 = 80
+    if (self.selectedBodyName) and (self.selectedRow > -1):
+      body = Bodies.GetBodyFromName(self.game, self.selectedBodyName)
+      Utils.DrawLineOfText(self, self.surface, self.selectedBodyName, 0, anchor = anchor)
+      #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
+      Utils.DrawTextWithTabs(self, self.surface, 'Colony Cost:', 0, str(Utils.GetFormattedNumber3(body['ColonyCost'],1)), tab1, anchor = anchor)
+      #{'Breath Factor':breathFactor, 'Dangerous Atmosphere Factor':dangerAtmFactor}
+      Utils.DrawTextWithTabs(self, self.surface, 'Atmospheric Pressure:', 0, str(Utils.GetFormattedNumber3(body['AtmosPressure'],2)), tab1, text3 = 'Max pressure: ', tab_dist2 = tab2, text4 = str(self.maxAtm), tab_dist3 = tab3, anchor = anchor)
+      self.lineNr -= 1
+      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Atmospheric Pressure Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+
+      Utils.DrawTextWithTabs(self, self.surface, 'Temperature:', 0, str(Utils.GetFormattedNumber3(body['Temperature'],2)), tab1, text3 = 'Temp Range: ', tab_dist2 = tab2, text4 = '%3.1f to %3.1f'%(self.minTemp, self.maxTemp), tab_dist3 = tab3, anchor = anchor)
+      self.lineNr -= 1
+      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Temp Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+
+      Utils.DrawTextWithTabs(self, self.surface, 'Hydrosphere:', 0, str(int(Utils.GetFormattedNumber3(body['Hydrosphere'],0)))+'%', tab1, text3 = 'Minimum: ', tab_dist2 = tab2, text4 = '20%', tab_dist3 = tab3, anchor = anchor)
+      self.lineNr -= 1
+      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Water Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+
+      gasAtm = self.table.cells[self.selectedRow][self.breathableGasAtmCol].value
+      Utils.DrawTextWithTabs(self, self.surface, 'Oxygen Atmospheric Pressure:', 0, str(Utils.GetFormattedNumber3(gasAtm,2)), tab1, text3 = 'Min/Max: ', tab_dist2 = tab2, text4 = '%1.1f to %1.1f'%(self.breatheMinAtm, self.breatheMaxAtm), tab_dist3 = tab3, anchor = anchor)
+      self.lineNr -= 1
+      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Breath Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+
+      gasLevel = self.table.cells[self.selectedRow][self.breathableGasLevelCol].value
+      Utils.DrawTextWithTabs(self, self.surface, 'Oxygen Level:', 0, str(Utils.GetFormattedNumber3(gasLevel,2))+'%', tab1, text3 = 'Max: ', tab_dist2 = tab2, text4 = str(self.safeLevel)+'%', tab_dist3 = tab3, anchor = anchor)
+      self.lineNr -= 1
+      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Breath Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+
+      bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d ORDER BY AtmosGasAmount Desc;'''%(self.game.gameID, body['ID'])).fetchall()
+      dangerAtmFactor = 0 
+      for bodyGas in bodyGases:
+        id = bodyGas[0]
+        if (self.game.gases[id]['Name'] != 'Oxygen'):
+          percentage = bodyGas[1]
+          atm = bodyGas[2]
+          gasDangerLevel = self.game.gases[id]['DangerousLevel']
+          gasDangerFactor = self.game.gases[id]['DangerFactor']
+          if (self.game.gases[id]['DangerFactor'] > 0):
+            if (percentage > gasDangerLevel):
+              dangerAtmFactor = max(gasDangerFactor, dangerAtmFactor)
+          Utils.DrawTextWithTabs(self, self.surface, self.game.gases[id]['Name']+':', 0, str(Utils.GetFormattedNumber3(atm,2))+' / '+str(Utils.GetFormattedNumber3(percentage,1))+'%', tab1, text3 = 'Max: ', tab_dist2 = tab2, text4 = str(Utils.GetFormattedNumber3(gasDangerLevel,1))+'%' if gasDangerFactor > 0 else '-', tab_dist3 = tab3, anchor = anchor)
+          self.lineNr -= 1
+          Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(gasDangerFactor,2)) if gasDangerFactor > 0 else '-', tab5, anchor = (anchor[0]+tab4,anchor[1]))
 
 
   def ExitScreen(self):
@@ -497,6 +563,18 @@ class TerraformingScreen(Screen):
           ret_value = False
 
     return ret_value
+
+
+  def GetBodyFromInsideTable(self, par, parent, mouse_pos):
+    selectedRow = -1
+    row, col, value = self.table.GetLocationInsideTable(mouse_pos)
+    if (row is not None) and (col is not None):
+      if row > 0 and col == 1:
+        if (self.selectedBodyName != value):
+          self.reDraw = True
+          self.selectedBodyName = value
+          self.selectedRow = row
+
 
 #Change to Greenhouse Gas and Dust Mechanics
 
