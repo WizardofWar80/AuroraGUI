@@ -81,7 +81,12 @@ class TerraformingScreen(Screen):
     self.line_height = 20
     self.textSize = 14
 
-
+    self.tab1 = 200
+    self.tab2 = self.tab1+150
+    self.tab3 = self.tab2+100
+    self.tab4 = self.tab3+80
+    self.tab5 = 80
+    self.tab6 = 120
 
   def FormatTable(self, table):
     color_red = Utils.RED
@@ -445,41 +450,37 @@ class TerraformingScreen(Screen):
 
   def DrawSelectedBody(self):
     anchor = (self.table.rect[0], self.table.rect[1]+self.table.row_height*self.table.max_rows+30)
-    pygame.draw.rect(self.surface, Utils.BLUE, (anchor,(800,500)), 1)
+    pygame.draw.rect(self.surface, Utils.BLUE, (anchor,(1000,500)), 1)
     self.lineNr = 0
     self.unscrollableLineNr = 0
-    tab1 = 200
-    tab2 = tab1+150
-    tab3 = tab2+100
-    tab4 = tab3+80
-    tab5 = 80
+
     if (self.selectedBodyName) and (self.selectedRow > -1):
       body = Bodies.GetBodyFromName(self.game, self.selectedBodyName)
       Utils.DrawLineOfText(self, self.surface, self.selectedBodyName, 0, anchor = anchor)
       #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
-      Utils.DrawTextWithTabs(self, self.surface, 'Colony Cost:', 0, str(Utils.GetFormattedNumber3(body['ColonyCost'],1)), tab1, anchor = anchor)
-      #{'Breath Factor':breathFactor, 'Dangerous Atmosphere Factor':dangerAtmFactor}
-      Utils.DrawTextWithTabs(self, self.surface, 'Atmospheric Pressure:', 0, str(Utils.GetFormattedNumber3(body['AtmosPressure'],2)), tab1, text3 = 'Max pressure: ', tab_dist2 = tab2, text4 = str(self.maxAtm), tab_dist3 = tab3, anchor = anchor)
-      self.lineNr -= 1
-      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Atmospheric Pressure Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+      cc = Utils.GetFormattedNumber3(body['ColonyCost'],1)
+      Utils.DrawTextWithTabs(self, self.surface, 'Colony Cost:', 0, str(cc), self.tab1, anchor = anchor,color2 = Utils.LIGHT_GREEN if cc < .1 else Utils.RED)
+      
+      remedy = 'remove gases below limit' if (body['AtmosPressure'] > self.maxAtm) else ''
+      self.DrawColorCodedColonyCosts('Atmospheric Pressure', body['AtmosPressure'], limit_text='Max pressure', limit_value=self.maxAtm, cc_factor=body['ColonyCostDetails']['Atmospheric Pressure Factor'], anchor=anchor, threshold_below = self.maxAtm, remedy = remedy)
 
-      Utils.DrawTextWithTabs(self, self.surface, 'Temperature:', 0, str(Utils.GetFormattedNumber3(body['Temperature'],2)), tab1, text3 = 'Temp Range: ', tab_dist2 = tab2, text4 = '%3.1f to %3.1f'%(self.minTemp, self.maxTemp), tab_dist3 = tab3, anchor = anchor)
-      self.lineNr -= 1
-      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Temp Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+      remedy = 'Add Aestusium to increase GH Factor' if (body['Temperature'] < self.minTemp) else 'Add Frigusium to increase Anti GH Factor' if (body['Temperature'] > self.maxTemp) else ''
+      self.DrawColorCodedColonyCosts('Temperature', body['Temperature'], limit_text='Temp Range', limit_value='%3.1f to %3.1f'%(self.minTemp, self.maxTemp), cc_factor=body['ColonyCostDetails']['Temp Factor'], anchor=anchor, threshold_below = self.minTemp, threshold = self.maxTemp, remedy = remedy)
 
-      Utils.DrawTextWithTabs(self, self.surface, 'Hydrosphere:', 0, str(int(Utils.GetFormattedNumber3(body['Hydrosphere'],0)))+'%', tab1, text3 = 'Minimum: ', tab_dist2 = tab2, text4 = '20%', tab_dist3 = tab3, anchor = anchor)
-      self.lineNr -= 1
-      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Water Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+      remedy = 'Add H2O' if (body['Hydrosphere'] < 20) else ''
+      self.DrawColorCodedColonyCosts('Hydrosphere', body['Hydrosphere'], limit_text='Minimum', limit_value='20%', cc_factor=body['ColonyCostDetails']['Water Factor'], anchor=anchor, threshold_min = 20, remedy = remedy)
 
       gasAtm = self.table.cells[self.selectedRow][self.breathableGasAtmCol].value
-      Utils.DrawTextWithTabs(self, self.surface, 'Oxygen Atmospheric Pressure:', 0, str(Utils.GetFormattedNumber3(gasAtm,2)), tab1, text3 = 'Min/Max: ', tab_dist2 = tab2, text4 = '%1.1f to %1.1f'%(self.breatheMinAtm, self.breatheMaxAtm), tab_dist3 = tab3, anchor = anchor)
-      self.lineNr -= 1
-      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Breath Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+      gasAtm = 0 if gasAtm is None else gasAtm
+      remedy = 'Add O2 to until minimum' if (gasAtm < self.breatheMinAtm) else 'Remove O2 until below maximum' if (gasAtm > self.breatheMaxAtm) else ''
+      self.DrawColorCodedColonyCosts('Oxygen Atmospheric Pressure', gasAtm, limit_text='Min/Max', limit_value='%1.1f to %1.1f'%(self.breatheMinAtm, self.breatheMaxAtm), cc_factor=body['ColonyCostDetails']['Breath Factor'], anchor=anchor, threshold_below = self.breatheMinAtm, threshold = self.breatheMaxAtm, remedy = remedy)
 
       gasLevel = self.table.cells[self.selectedRow][self.breathableGasLevelCol].value
-      Utils.DrawTextWithTabs(self, self.surface, 'Oxygen Level:', 0, str(Utils.GetFormattedNumber3(gasLevel,2))+'%', tab1, text3 = 'Max: ', tab_dist2 = tab2, text4 = str(self.safeLevel)+'%', tab_dist3 = tab3, anchor = anchor)
-      self.lineNr -= 1
-      Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(body['ColonyCostDetails']['Breath Factor'],2)), tab5, anchor = (anchor[0]+tab4,anchor[1]))
+      gasLevel = 0 if gasLevel is None else gasLevel
+
+      if (remedy == '') and gasLevel > 30:
+        remedy = 'Add other (non toxic) gases' if (gasLevel > 30) else ''
+      self.DrawColorCodedColonyCosts('Oxygen Safe Level', gasLevel, limit_text='Maximum', limit_value=str(self.safeLevel)+'%', cc_factor=body['ColonyCostDetails']['Breath Factor'], anchor=anchor, threshold_below = 30, remedy = remedy)
 
       bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d ORDER BY AtmosGasAmount Desc;'''%(self.game.gameID, body['ID'])).fetchall()
       dangerAtmFactor = 0 
@@ -493,10 +494,9 @@ class TerraformingScreen(Screen):
           if (self.game.gases[id]['DangerFactor'] > 0):
             if (percentage > gasDangerLevel):
               dangerAtmFactor = max(gasDangerFactor, dangerAtmFactor)
-          Utils.DrawTextWithTabs(self, self.surface, self.game.gases[id]['Name']+':', 0, str(Utils.GetFormattedNumber3(atm,2))+' / '+str(Utils.GetFormattedNumber3(percentage,1))+'%', tab1, text3 = 'Max: ', tab_dist2 = tab2, text4 = str(Utils.GetFormattedNumber3(gasDangerLevel,1))+'%' if gasDangerFactor > 0 else '-', tab_dist3 = tab3, anchor = anchor)
-          self.lineNr -= 1
-          Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(gasDangerFactor,2)) if gasDangerFactor > 0 else '-', tab5, anchor = (anchor[0]+tab4,anchor[1]))
 
+          remedy = 'remove gas below limit' if (percentage > gasDangerLevel) and (gasDangerLevel > 0) else ''
+          self.DrawColorCodedColonyCosts(self.game.gases[id]['Name'], percentage, value_text = str(Utils.GetFormattedNumber3(atm,2))+' / '+str(Utils.GetFormattedNumber3(percentage,1))+'%', limit_text='Maximum', limit_value=gasDangerLevel if gasDangerLevel != 0 else '-', cc_factor=gasDangerFactor, anchor=anchor, threshold = gasDangerLevel if gasDangerLevel != 0 else 9999, remedy = remedy)
 
   def ExitScreen(self):
     self.table.scrollbar.clickable.enabled = False
@@ -575,7 +575,36 @@ class TerraformingScreen(Screen):
           self.selectedBodyName = value
           self.selectedRow = row
 
+  #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
+  def DrawColorCodedColonyCosts(self, category_name, value, limit_text, limit_value, cc_factor, anchor, value_text = None, threshold_below = None, threshold = None, threshold_min = None, remedy = ''):
+    if (value == None):
+      value = 0
+    _color2 = Utils.LIGHT_GREEN if cc_factor < 0.001 else Utils.RED
+    if (threshold_below is not None):
+      if (threshold is not None):
+        _color = Utils.LIGHT_GREEN
+        if value < threshold_below:
+          _color = Utils.LIGHT_BLUE
+        elif value > threshold:
+          _color = Utils.RED
 
+        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor, color2 = _color)
+      else:
+        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.LIGHT_GREEN if value < threshold_below else Utils.RED)
+    else:
+      if (threshold is not None):
+        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.RED if value > threshold else Utils.LIGHT_GREEN)
+      else:
+        if (threshold_min is not None):
+
+          Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.LIGHT_BLUE if value < threshold_min else Utils.LIGHT_GREEN)
+        else:
+          _color = Utils.WHITE
+        
+          Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor, color2 = _color)
+    self.lineNr -= 1
+    Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(cc_factor,2)), self.tab5, color2 = _color2, anchor = (anchor[0]+self.tab4,anchor[1]), text3 = remedy, tab_dist2 = self.tab6)
+    
 #Change to Greenhouse Gas and Dust Mechanics
 
 #The new mechanics for the effect of greenhouses gases and dust on temperature are calculated using the following formulae:
