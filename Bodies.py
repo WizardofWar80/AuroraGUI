@@ -405,7 +405,7 @@ def GetSystemBodies(game, currentSystem):
       # Tidal locked
 
   for body in body_table:
-    body_name = body[1]
+    body_name = body[1] if body[1] is not None else ''
     planetNumber = body[2]
     orbitNumber = body[3]
     parentID = body[5]

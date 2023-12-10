@@ -149,6 +149,9 @@ class TerraformingScreen(Screen):
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
     gasIndex+=1
     table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center'} )
+    gasIndex+=1
+    table.AddFormat(last_index+gasIndex, {'Operation':'Align', 'value':'center', 'Suffix':' a'} )
+    table.AddFormat(last_index+gasIndex, {'Operation':'Above', 'threshold':100, 'text_color':color_red, 'else_color':Utils.WHITE} )
     
 
   def InitGUI(self):
@@ -265,11 +268,14 @@ class TerraformingScreen(Screen):
           tf = colony['Terraforming']['Active']
           state = gas = target = ''
           tf_string = ''
+          tfGasID = 0
           if (tf):
             state = colony['Terraforming']['State']
             gas = colony['Terraforming']['Gas']['Symbol']
             target = colony['Terraforming']['TargetATM']
+            tfGasID = colony['Terraforming']['GasID']
             tf_string = state+' '+ gas+' to '+ str(Utils.GetFormattedNumber2(target))
+
 
           surfaceArea = 4*body['RadiusBody']*body['RadiusBody']*PI
           terraformingBodyMultiplier = surfAreaEarth/surfaceArea
@@ -282,6 +288,8 @@ class TerraformingScreen(Screen):
           for fleetID in fleetIDs:
             numTerraformers += self.game.fleets[systemID][fleetID]['Terraformers']
 
+          tfRate = numTerraformers*self.game.terraformingRate*self.game.terraformingSpeed*terraformingBodyMultiplier
+          tfETA = None
           colonyCost = Utils.Round(body['ColonyCost'],1)
           if (colonyCost > -1):
             #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
@@ -298,6 +306,15 @@ class TerraformingScreen(Screen):
                     percentage = bodyGas[1]
                     atm = bodyGas[2]
                     break
+
+                if (tfGasID == id) and tf and tfRate > 0:
+                  delta = target - atm
+                  if delta < 0 and state == 'Remove':
+                    tfETA = -delta / tfRate
+                  elif delta > 0 and state == 'Add':
+                    tfETA = delta / tfRate
+                  else:
+                    tfETA = float('inf')
                 if (self.game.gases[gasID]['Name'] == 'Oxygen'):
                   unsortedIDs[-1].append(atm)
                 unsortedIDs[-1].append(percentage)
@@ -308,7 +325,8 @@ class TerraformingScreen(Screen):
             unsortedIDs[-1].append(body['GHFactor'])
             unsortedIDs[-1].append(body['AGHFactor'])
             unsortedIDs[-1].append(numTerraformers)
-            unsortedIDs[-1].append(numTerraformers*self.game.terraformingRate*self.game.terraformingSpeed*terraformingBodyMultiplier)
+            unsortedIDs[-1].append(tfRate)
+            unsortedIDs[-1].append(tfETA)
             index+=1
 
     id, rev = self.GetTableSortState()
@@ -331,6 +349,7 @@ class TerraformingScreen(Screen):
     header.append('AGHF')
     header.append('# TFs')
     header.append('TF rate/a')
+    header.append('ETA')
 
     self.table.AddRow(row, header, [True]*len(header))
 
@@ -352,6 +371,8 @@ class TerraformingScreen(Screen):
             printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
           elif (header[i] == breathGasSymbol):
             printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
+          elif (header[i] == 'ETA'):
+            printed_row.append(Utils.GetFormattedNumber4(row_sorted[i]))
           else:
             if (row_sorted[i] == 0):
               printed_row.append(None)

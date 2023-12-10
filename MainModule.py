@@ -1116,6 +1116,8 @@ class Game():
           numGates+=1
         if not systemJPs[jpID]['Explored']:
           numUnexploredJPs+=1
+      if (str(systemID) not in Designations.designations['Systems']):
+        Designations.Set(systemID,0)
 
       flags[systemID] = {'#':index, 
                          'Name':self.starSystems[systemID]['Name'],

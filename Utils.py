@@ -647,9 +647,22 @@ def GetFormattedNumber3(number, significantDigits):
     for char_index in range(decimal_index+1, len(str_num)):
       if (str_num[char_index] != '0'):
         firstSignificanDigit = char_index
-        roundedNumber = round(number, digit+significantDigits)
+        roundedNumber = Round(number, digit+significantDigits)
         return roundedNumber
       digit += 1
+  return number
+
+
+def GetFormattedNumber4(number):
+  if type(number) is float:
+    str_num = '%.7f'%number #str(number)
+    decimal_index = str_num.find('.')
+    digit = 0
+    if (decimal_index > -1):
+      if (decimal_index > 1):
+        number = int(Round(number, 0))
+      else:
+        number = Round(number, 1)
   return number
 
 

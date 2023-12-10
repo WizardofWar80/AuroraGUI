@@ -2320,5 +2320,17 @@
       "bodytype": "Asteroids",
       "index": 4
     }
+  },
+  "12233": {
+    "1096856": {
+      "bodytype": "Comets",
+      "index": 0
+    }
+  },
+  "12232": {
+    "1096798": {
+      "bodytype": "Planets_h",
+      "index": 11
+    }
   }
 }

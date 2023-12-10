@@ -58,6 +58,9 @@ class Cell():
       if (f['Format'] == 'Percent'):
         if (self.value is not None) and (self.value is not ''):
           self.suffix='%'
+    if ('Suffix' in f):
+      if (self.value is not None) and (self.value is not ''):
+        self.suffix= f['Suffix']
     if ('Operation' in f):
       if (f['Operation'] == 'Above'):
         if (self.value is not None) and (self.value is not ''):
