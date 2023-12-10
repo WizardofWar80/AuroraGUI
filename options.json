@@ -28,7 +28,7 @@
     "showOrbits_Moons": true,
     "showOrbits_Planets": true,
     "showOrbits_Stars": true,
-    "showStationaryFleets": false,
+    "showStationaryFleets": true,
     "showSurveyedLocations": false,
     "showUnsurveyedBodies": true,
     "showUnsurveyedLocations": true,
@@ -46,6 +46,6 @@
     "hideCivilian": true,
     "hideHighCCBodies": false,
     "hideComets": true,
-    "hideAsteroids": true
+    "hideAsteroids": false
   }
 }

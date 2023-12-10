@@ -9,6 +9,7 @@ import Utils
 import Colonies
 import Bodies
 import Fleets
+import Systems
 from math import pi as PI
 
 class TerraformingScreen(Screen):
@@ -87,6 +88,7 @@ class TerraformingScreen(Screen):
     self.tab4 = self.tab3+80
     self.tab5 = 80
     self.tab6 = 120
+    self.bodies = {}
 
   def FormatTable(self, table):
     color_red = Utils.RED
@@ -241,6 +243,7 @@ class TerraformingScreen(Screen):
   def UpdateTable(self):
     t1 = pygame.time.get_ticks()
     self.table.Clear()
+
     text_widths = []
     unsortedIDs = []
     #self.table.max_cell_sizes = []
@@ -255,7 +258,7 @@ class TerraformingScreen(Screen):
 
     for systemID in systems:
       system = systems[systemID]
-      bodies = Bodies.GetSystemBodies(self.game, systemID)
+      bodies = self.bodies[systemID]
       for colonyID in system:
         colony = self.game.colonies[colonyID]
         body = bodies[colonyID]
@@ -331,7 +334,7 @@ class TerraformingScreen(Screen):
 
     id, rev = self.GetTableSortState()
     sortedIDs = sorted(unsortedIDs, key=itemgetter(id), reverse=rev)
-      
+    
     row = 0
     #header = ['Name', 'System', 'Cost', 'Active', 'TF State', 'TF Gas', 'Target']
     header = ['AU', 'Name', 'System', 'Cost', 'Terraforming']
@@ -357,7 +360,7 @@ class TerraformingScreen(Screen):
     sortedRowIndex = 0
     self.table.maxScroll = min(0,self.table.max_rows-len(sortedIDs)-1)
     self.table.num_rows = 1
-    printed_row = []
+
     for row_sorted in sortedIDs:
       if (sortedRowIndex + self.table.scroll_position >= 0) and (row < self.table.max_rows):
         printed_row = [int(Utils.Round(row_sorted[0],0)) if (row_sorted[0]>= 10) else Utils.Round(row_sorted[0],1),# AU
@@ -387,7 +390,8 @@ class TerraformingScreen(Screen):
 
     self.table.scrollbar.Update(total_range = len(sortedIDs), current_position = -self.table.scroll_position)
     self.table.Realign()
-    
+
+
     if (self.GUI_Elements == {}):
       self.InitGUI()
     else:
@@ -446,7 +450,7 @@ class TerraformingScreen(Screen):
     reblit = False
     # clear screen
     if (self.reDraw):
-      self.UpdateTable()
+      #self.UpdateTable()
       #if (self.Events):
       #  self.Events.ClearClickables()
       self.reDraw_GUI = True
@@ -477,50 +481,53 @@ class TerraformingScreen(Screen):
 
     if (self.selectedBodyName) and (self.selectedRow > -1):
       body = Bodies.GetBodyFromName(self.game, self.selectedBodyName)
-      Utils.DrawLineOfText(self, self.surface, self.selectedBodyName, 0, anchor = anchor)
-      #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
-      cc = Utils.GetFormattedNumber3(body['ColonyCost'],1)
-      Utils.DrawTextWithTabs(self, self.surface, 'Colony Cost:', 0, str(cc), self.tab1, anchor = anchor,color2 = Utils.LIGHT_GREEN if cc < .1 else Utils.RED)
+      if (body):
+        Utils.DrawLineOfText(self, self.surface, self.selectedBodyName, 0, anchor = anchor)
+        #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
+        cc = Utils.GetFormattedNumber3(body['ColonyCost'],1)
+        Utils.DrawTextWithTabs(self, self.surface, 'Colony Cost:', 0, str(cc), self.tab1, anchor = anchor,color2 = Utils.LIGHT_GREEN if cc < .1 else Utils.RED)
       
-      remedy = 'remove gases below limit' if (body['AtmosPressure'] > self.maxAtm) else ''
-      self.DrawColorCodedColonyCosts('Atmospheric Pressure', body['AtmosPressure'], limit_text='Max pressure', limit_value=self.maxAtm, cc_factor=body['ColonyCostDetails']['Atmospheric Pressure Factor'], anchor=anchor, threshold_below = self.maxAtm, remedy = remedy)
+        remedy = 'remove gases below limit' if (body['AtmosPressure'] > self.maxAtm) else ''
+        self.DrawColorCodedColonyCosts('Atmospheric Pressure', body['AtmosPressure'], limit_text='Max pressure', limit_value=self.maxAtm, cc_factor=body['ColonyCostDetails']['Atmospheric Pressure Factor'], anchor=anchor, threshold_below = self.maxAtm, remedy = remedy)
 
-      remedy = 'Add Aestusium to increase GH Factor' if (body['Temperature'] < self.minTemp) else 'Add Frigusium to increase Anti GH Factor' if (body['Temperature'] > self.maxTemp) else ''
-      self.DrawColorCodedColonyCosts('Temperature', body['Temperature'], limit_text='Temp Range', limit_value='%3.1f to %3.1f'%(self.minTemp, self.maxTemp), cc_factor=body['ColonyCostDetails']['Temp Factor'], anchor=anchor, threshold_below = self.minTemp, threshold = self.maxTemp, remedy = remedy)
+        remedy = 'Add Aestusium to increase GH Factor' if (body['Temperature'] < self.minTemp) else 'Add Frigusium to increase Anti GH Factor' if (body['Temperature'] > self.maxTemp) else ''
+        self.DrawColorCodedColonyCosts('Temperature', body['Temperature'], limit_text='Temp Range', limit_value='%3.1f to %3.1f'%(self.minTemp, self.maxTemp), cc_factor=body['ColonyCostDetails']['Temp Factor'], anchor=anchor, threshold_below = self.minTemp, threshold = self.maxTemp, remedy = remedy)
 
-      remedy = 'Add H2O' if (body['Hydrosphere'] < 20) else ''
-      self.DrawColorCodedColonyCosts('Hydrosphere', body['Hydrosphere'], limit_text='Minimum', limit_value='20%', cc_factor=body['ColonyCostDetails']['Water Factor'], anchor=anchor, threshold_min = 20, remedy = remedy)
+        remedy = 'Add H2O' if (body['Hydrosphere'] < 20) else ''
+        self.DrawColorCodedColonyCosts('Hydrosphere', body['Hydrosphere'], limit_text='Minimum', limit_value='20%', cc_factor=body['ColonyCostDetails']['Water Factor'], anchor=anchor, threshold_min = 20, remedy = remedy)
 
-      gasAtm = self.table.cells[self.selectedRow][self.breathableGasAtmCol].value
-      gasAtm = 0 if gasAtm is None else gasAtm
-      remedy = 'Add O2 to until minimum' if (gasAtm < self.breatheMinAtm) else 'Remove O2 until below maximum' if (gasAtm > self.breatheMaxAtm) else ''
-      self.DrawColorCodedColonyCosts('Oxygen Atmospheric Pressure', gasAtm, limit_text='Min/Max', limit_value='%1.1f to %1.1f'%(self.breatheMinAtm, self.breatheMaxAtm), cc_factor=body['ColonyCostDetails']['Breath Factor'], anchor=anchor, threshold_below = self.breatheMinAtm, threshold = self.breatheMaxAtm, remedy = remedy)
+        gasAtm = self.table.cells[self.selectedRow][self.breathableGasAtmCol].value
+        gasAtm = 0 if gasAtm is None else gasAtm
+        remedy = 'Add O2 to until minimum' if (gasAtm < self.breatheMinAtm) else 'Remove O2 until below maximum' if (gasAtm > self.breatheMaxAtm) else ''
+        self.DrawColorCodedColonyCosts('Oxygen Atmospheric Pressure', gasAtm, limit_text='Min/Max', limit_value='%1.1f to %1.1f'%(self.breatheMinAtm, self.breatheMaxAtm), cc_factor=body['ColonyCostDetails']['Breath Factor'], anchor=anchor, threshold_below = self.breatheMinAtm, threshold = self.breatheMaxAtm, remedy = remedy)
 
-      gasLevel = self.table.cells[self.selectedRow][self.breathableGasLevelCol].value
-      gasLevel = 0 if gasLevel is None else gasLevel
+        gasLevel = self.table.cells[self.selectedRow][self.breathableGasLevelCol].value
+        gasLevel = 0 if gasLevel is None else gasLevel
 
-      if (remedy == '') and gasLevel > 30:
-        remedy = 'Add other (non toxic) gases' if (gasLevel > 30) else ''
-      self.DrawColorCodedColonyCosts('Oxygen Safe Level', gasLevel, limit_text='Maximum', limit_value=str(self.safeLevel)+'%', cc_factor=body['ColonyCostDetails']['Breath Factor'], anchor=anchor, threshold_below = 30, remedy = remedy)
+        if (remedy == '') and gasLevel > 30:
+          remedy = 'Add other (non toxic) gases' if (gasLevel > 30) else ''
+        self.DrawColorCodedColonyCosts('Oxygen Safe Level', gasLevel, limit_text='Maximum', limit_value=str(self.safeLevel)+'%', cc_factor=body['ColonyCostDetails']['Breath Factor'], anchor=anchor, threshold_below = 30, remedy = remedy)
 
-      bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d ORDER BY AtmosGasAmount Desc;'''%(self.game.gameID, body['ID'])).fetchall()
-      dangerAtmFactor = 0 
-      for bodyGas in bodyGases:
-        id = bodyGas[0]
-        if (self.game.gases[id]['Name'] != 'Oxygen'):
-          percentage = bodyGas[1]
-          atm = bodyGas[2]
-          gasDangerLevel = self.game.gases[id]['DangerousLevel']
-          gasDangerFactor = self.game.gases[id]['DangerFactor']
-          if (self.game.gases[id]['DangerFactor'] > 0):
-            if (percentage > gasDangerLevel):
-              dangerAtmFactor = max(gasDangerFactor, dangerAtmFactor)
+        bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d ORDER BY AtmosGasAmount Desc;'''%(self.game.gameID, body['ID'])).fetchall()
+        dangerAtmFactor = 0 
+        for bodyGas in bodyGases:
+          id = bodyGas[0]
+          if (self.game.gases[id]['Name'] != 'Oxygen'):
+            percentage = bodyGas[1]
+            atm = bodyGas[2]
+            gasDangerLevel = self.game.gases[id]['DangerousLevel']
+            gasDangerFactor = self.game.gases[id]['DangerFactor']
+            if (self.game.gases[id]['DangerFactor'] > 0):
+              if (percentage > gasDangerLevel):
+                dangerAtmFactor = max(gasDangerFactor, dangerAtmFactor)
 
-          remedy = 'remove gas below limit' if (percentage > gasDangerLevel) and (gasDangerLevel > 0) else ''
-          self.DrawColorCodedColonyCosts(self.game.gases[id]['Name'], percentage, value_text = str(Utils.GetFormattedNumber3(atm,2))+' / '+str(Utils.GetFormattedNumber3(percentage,1))+'%', limit_text='Maximum', limit_value=gasDangerLevel if gasDangerLevel != 0 else '-', cc_factor=gasDangerFactor, anchor=anchor, threshold = gasDangerLevel if gasDangerLevel != 0 else 9999, remedy = remedy)
+            remedy = 'remove gas below limit' if (percentage > gasDangerLevel) and (gasDangerLevel > 0) else ''
+            self.DrawColorCodedColonyCosts(self.game.gases[id]['Name'], percentage, value_text = str(Utils.GetFormattedNumber3(atm,2))+' / '+str(Utils.GetFormattedNumber3(percentage,1))+'%', limit_text='Maximum', limit_value=gasDangerLevel if gasDangerLevel != 0 else '-', cc_factor=gasDangerFactor, anchor=anchor, threshold = gasDangerLevel if gasDangerLevel != 0 else 9999, remedy = remedy)
+
 
   def ExitScreen(self):
     self.table.scrollbar.clickable.enabled = False
+    self.selectedBodyName = None
 
 
   def SortTableGUI(self, id, parent = None, mousepos = None):
@@ -537,6 +544,7 @@ class TerraformingScreen(Screen):
           thisElement.enabled = True
         self.reDraw = True
         self.reDraw_GUI = True
+        
 
         for otherID in self.GUI_Elements:
           if (otherID != id):
@@ -544,6 +552,7 @@ class TerraformingScreen(Screen):
             if (otherElement.radioButton):
               if (otherElement.radioGroup == thisGroup):
                 otherElement.enabled = False
+        self.UpdateTable()
 
 
   def ToggleGUI_Element_ByName(self, name):
@@ -557,6 +566,7 @@ class TerraformingScreen(Screen):
       self.hideAsteroids = not self.hideAsteroids
     elif (name == 'Comets'):
       self.hideComets = not self.hideComets
+    self.UpdateTable()
     
 
   def GetDrawConditions(self, body, colony):
@@ -626,6 +636,23 @@ class TerraformingScreen(Screen):
     self.lineNr -= 1
     Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(cc_factor,2)), self.tab5, color2 = _color2, anchor = (anchor[0]+self.tab4,anchor[1]), text3 = remedy, tab_dist2 = self.tab6)
     
+
+  def ResetBodies(self):
+    self.bodies = {}
+    self.bodies[self.game.currentSystem] = self.game.systemBodies
+
+    systems = {}
+    for colonyID in self.game.colonies:
+      colony = self.game.colonies[colonyID]
+      if colony['SystemID'] not in systems:
+        systems[colony['SystemID']] = []
+      systems[colony['SystemID']].append(colonyID)
+
+    for systemID in systems:
+      if (systemID not in self.bodies):
+        self.bodies[systemID] = Bodies.GetSystemBodies(self.game, systemID)
+
+
 #Change to Greenhouse Gas and Dust Mechanics
 
 #The new mechanics for the effect of greenhouses gases and dust on temperature are calculated using the following formulae:

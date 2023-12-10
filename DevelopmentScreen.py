@@ -210,20 +210,22 @@ class DevelopmentScreen(Screen):
         if (row >= self.table.max_rows):
           break
       sortedRowIndex += 1
-    for timestamp in self.game.statisticsWealth:
+    for timestampW in self.game.statisticsWealth:
+      pass
+    for timestampM in self.game.statisticsStockpile['Duranium']:
       pass
     printed_row = ['', 'Empire Stockpile',
-                    '' if self.game.statisticsWealth[timestamp] == 0  else f"{int(self.game.statisticsWealth[timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Duranium'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Duranium'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Neutronium'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Neutronium'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Corbomite'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Corbomite'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Tritanium'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Tritanium'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Boronide'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Boronide'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Mercassium'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Mercassium'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Vendarite'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Vendarite'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Uridium'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Uridium'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Corundium'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Corundium'][timestamp]):,}",
-                    '' if self.game.statisticsStockpile['Gallicite'][timestamp] == 0  else f"{int(self.game.statisticsStockpile['Gallicite'][timestamp]):,}",
+                    '' if self.game.statisticsWealth[timestampW] == 0  else f"{int(self.game.statisticsWealth[timestampW]):,}",
+                    '' if self.game.statisticsStockpile['Duranium'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Duranium'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Neutronium'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Neutronium'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Corbomite'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Corbomite'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Tritanium'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Tritanium'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Boronide'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Boronide'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Mercassium'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Mercassium'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Vendarite'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Vendarite'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Uridium'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Uridium'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Corundium'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Corundium'][timestampM]):,}",
+                    '' if self.game.statisticsStockpile['Gallicite'][timestampM] == 0  else f"{int(self.game.statisticsStockpile['Gallicite'][timestampM]):,}",
                     '', '']
     self.table.AddRow(row, printed_row)
     self.table.scrollbar.Update(total_range = len(sortedIDs), current_position = -self.table.scroll_position)

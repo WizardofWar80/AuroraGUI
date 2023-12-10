@@ -10,7 +10,7 @@ gameInstance = None
 
 designations = {'Systems':{}, 'Fleets':{}}
 
-system_designations = ['None', 'Empty', 'Home', 'Mining', 'Fuel Harvesting', 'Population Centre', 'Military', 'Capital', 'Sector Command', 'Research']
+system_designations = ['None', 'Empty', 'Home', 'Mining', 'Fuel Harvesting', 'Population Centre', 'Military', 'Capital', 'Sector Command', 'Research', 'Enemy']
 fleet_designations = ['None', 'Defense', 'Mining', 'Fuel Harvesting', 'Terraforming', 'Exploration', 'Transport', 'Intelligence', 'Attack', 'Supply', 'Science',  'Salvaging', 'Rescue', 'Troop Transport']
 
 

@@ -34,6 +34,7 @@ import os
 class Game():
   def __init__(self, eventsclass, images_file_list, size = (1800,1000), name = 'AuroraGUI'):
     self.Debug = False
+    self.initComplete = False
     Bodies.SetGameInstance(self)
     Fleets.SetGameInstance(self)
     InfoWindow.SetGameInstance(self)
@@ -159,6 +160,8 @@ class Game():
     self.developmentScreen  = DevelopmentScreen.DevelopmentScreen(self, eventsclass, 'Development')
     self.systemTableScreen  = SystemTableScreen.SystemTableScreen(self, eventsclass, 'Systems')
 
+    self.terraformingScreen.ResetBodies()
+
     self.playList = []
     self.currentSong = 0
     self.music = True
@@ -166,6 +169,7 @@ class Game():
     self.LoadMP3Playlist('D:\\MP3\\Musik\\Stellaris OST\\')
     self.LoadImages(images_file_list)
     self.InitGUI()
+    self.initComplete = True
     
 
   def InitGUI(self):
@@ -630,6 +634,7 @@ class Game():
     elif (self.currentScreen == 'Terraform'):
       if (self.lastScreen != self.currentScreen):
         self.terraformingScreen.ResetGUI()
+        self.terraformingScreen.UpdateTable()
         #self.terraformingScreen.UpdateData()
       reblit |= self.terraformingScreen.Draw()
     elif (self.currentScreen == 'Develop'):
@@ -708,6 +713,8 @@ class Game():
     self.terraformingSpeed = self.db.execute('''SELECT TerraformingSpeed from FCT_Game WHERE GameID = %d;'''%(self.gameID)).fetchone()[0]/100
     self.terraformingRate = self.db.execute('''SELECT TerraformingRate from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
     self.systemFlags = self.GetSystemFlags()
+    if (self.initComplete):
+      self.terraformingScreen.ResetBodies()
 
 
   def GetNewLocalData(self, currentSystem):

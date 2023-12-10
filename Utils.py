@@ -131,10 +131,15 @@ def Sqr(x):
   return x*x
 
 def Round(n, decimals=0):
-  expoN = n * 10 ** decimals
-  if abs(expoN) - abs(math.floor(expoN)) < 0.5:
-    return math.floor(expoN) / 10 ** decimals
-  return math.ceil(expoN) / 10 ** decimals
+  if n is None:
+    return n
+  if (n < float('inf')):
+    expoN = n * 10 ** decimals
+    if abs(expoN) - abs(math.floor(expoN)) < 0.5:
+      return math.floor(expoN) / 10 ** decimals
+    return math.ceil(expoN) / 10 ** decimals
+  else:
+    return n
 
 def DrawTextAt(window, text, x, y, fonttype, fg):
   if (x > 0 and y > 0 and x < window.get_rect()[2] and y < window.get_rect()[3]):

@@ -103,7 +103,7 @@ class Cell():
       elif (f['Operation'] == 'Between'):
         if (self.value is not None) and (self.value is not ''):
           if (self.type is not 'string' ):
-            if (self.value > f['threshold_low']) and (self.value < f['threshold_high']):
+            if (self.value >= f['threshold_low']) and (self.value <= f['threshold_high']):
               self.text_color=f['text_color']
               self.Render()
             else:

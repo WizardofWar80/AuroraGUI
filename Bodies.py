@@ -3,7 +3,7 @@ import pygame
 import math
 import random
 import Fleets
-
+import Bodies
 gameInstance = None
 
 def SetGameInstance(game):
@@ -496,8 +496,8 @@ def GetSystemBodies(game, currentSystem):
         colonized = True
       if (game.colonies[body[0]]['Installations']):
         industrialized = True
-    if (sum_minerals > 0):
-      resources = True
+      if (sum_minerals > 0):
+        resources = True
       terraforming = colony['Terraforming']
 
     numHarvesters = 0
@@ -519,11 +519,14 @@ def GetSystemBodies(game, currentSystem):
     popCapacity, colonyCost, ccDetails = GetPopulationCapacityAndColonyCost(game, systemBodies[body[0]])
     systemBodies[body[0]]['ColonyCost'] = colonyCost
     systemBodies[body[0]]['Population Capacity'] = popCapacity
-    systemBodies[body[0]]['Colonizable'] = True if colonyCost < 10000 else False
+    if (colonyCost):
+      systemBodies[body[0]]['Colonizable'] = True if colonyCost < 10000 else False
+    else:
+      systemBodies[body[0]]['Colonizable'] = False
     systemBodies[body[0]]['ColonyCostDetails'] = ccDetails
 
-    if (save_new_images_generated):
-      game.SaveBodyImages()
+  if (save_new_images_generated):
+    game.SaveBodyImages()
 
   return systemBodies
 
@@ -599,4 +602,10 @@ def GetBodyFromName(game, name):
     body = game.systemBodies[bodyID]
     if (body['Name'] == name):
       return body
+  for id in game.starSystems:
+    systemBodies = Bodies.GetSystemBodies(game, id)
+    for bodyID in systemBodies:
+      body = systemBodies[bodyID]
+      if (body['Name'] == name):
+        return body
   return None

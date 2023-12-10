@@ -422,9 +422,10 @@ def GetCargo(game, fleet):
 def GetIDsOfFleetsInOrbit(game, systemID, bodyID, type = 'Body'):
   fleetIDs = []
   fleetsInOrbit = False
-  for fleetID in game.fleets[systemID]:
-    fleet = game.fleets[systemID][fleetID]
-    if (fleet['Orbit']['Body'] == bodyID and fleet['Orbit']['Distance'] == 0):
-      fleetIDs.append(fleetID)
+  if systemID in game.fleets:
+    for fleetID in game.fleets[systemID]:
+      fleet = game.fleets[systemID][fleetID]
+      if (fleet['Orbit']['Body'] == bodyID and fleet['Orbit']['Distance'] == 0):
+        fleetIDs.append(fleetID)
   
   return fleetIDs

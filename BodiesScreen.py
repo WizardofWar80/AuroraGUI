@@ -412,7 +412,7 @@ class BodiesScreen(Screen):
       return True
     elif (body['Resources']):
       return True
-    elif (self.showLowCCBodies and body['ColonyCost'] < self.highColonyCostThreshold):
+    elif (body['ColonyCost'] and self.showLowCCBodies and body['ColonyCost'] < self.highColonyCostThreshold):
       return True
     else:
       if (body['Class'] == 'Asteroid'):
