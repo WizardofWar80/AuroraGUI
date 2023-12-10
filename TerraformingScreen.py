@@ -482,6 +482,8 @@ class TerraformingScreen(Screen):
     if (self.selectedBodyName) and (self.selectedRow > -1):
       body = Bodies.GetBodyFromName(self.game, self.selectedBodyName)
       if (body):
+        bodyGases = self.GetBodyGases(body)
+
         Utils.DrawLineOfText(self, self.surface, self.selectedBodyName, 0, anchor = anchor)
         #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
         cc = Utils.GetFormattedNumber3(body['ColonyCost'],1)
@@ -490,7 +492,21 @@ class TerraformingScreen(Screen):
         remedy = 'remove gases below limit' if (body['AtmosPressure'] > self.maxAtm) else ''
         self.DrawColorCodedColonyCosts('Atmospheric Pressure', body['AtmosPressure'], limit_text='Max pressure', limit_value=self.maxAtm, cc_factor=body['ColonyCostDetails']['Atmospheric Pressure Factor'], anchor=anchor, threshold_below = self.maxAtm, remedy = remedy)
 
-        remedy = 'Add Aestusium to increase GH Factor' if (body['Temperature'] < self.minTemp) else 'Add Frigusium to increase Anti GH Factor' if (body['Temperature'] > self.maxTemp) else ''
+        if (body['Temperature'] < self.minTemp):
+          targetAtm, maxAtm, minTemp = self.GetTargetAtmAestusium(body, bodyGases)
+          if (maxAtm):
+            remedy = 'Add Aestusium to %3.2f atm to increase GH Factor and temperature (will not reach target Temp)'%(targetAtm)
+          else:
+            remedy = 'Add Aestusium to %3.2f atm to increase GH Factor and temperature'%(targetAtm)
+        elif (body['Temperature'] > self.maxTemp):
+          targetAtm, maxAtm, maxTemp = self.GetTargetAtmFrigusium(body, bodyGases)
+          if (maxAtm):
+            remedy = 'Add Frigusium to %3.2f atm to increase Anti GH Factor and lower temperature (will not reach target Temp)'%(targetAtm)
+          else:
+            remedy = 'Add Frigusium to %3.2f atm to increase Anti GH Factor lower temperature'%(targetAtm)
+        else:
+          remedy = ''
+        
         self.DrawColorCodedColonyCosts('Temperature', body['Temperature'], limit_text='Temp Range', limit_value='%3.1f to %3.1f'%(self.minTemp, self.maxTemp), cc_factor=body['ColonyCostDetails']['Temp Factor'], anchor=anchor, threshold_below = self.minTemp, threshold = self.maxTemp, remedy = remedy)
 
         remedy = 'Add H2O' if (body['Hydrosphere'] < 20) else ''
@@ -508,13 +524,12 @@ class TerraformingScreen(Screen):
           remedy = 'Add other (non toxic) gases' if (gasLevel > 30) else ''
         self.DrawColorCodedColonyCosts('Oxygen Safe Level', gasLevel, limit_text='Maximum', limit_value=str(self.safeLevel)+'%', cc_factor=body['ColonyCostDetails']['Breath Factor'], anchor=anchor, threshold_below = 30, remedy = remedy)
 
-        bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d ORDER BY AtmosGasAmount Desc;'''%(self.game.gameID, body['ID'])).fetchall()
         dangerAtmFactor = 0 
-        for bodyGas in bodyGases:
-          id = bodyGas[0]
-          if (self.game.gases[id]['Name'] != 'Oxygen'):
-            percentage = bodyGas[1]
-            atm = bodyGas[2]
+        for id in bodyGases:
+          gas = bodyGases[id]
+          if (gas['Name'] != 'Oxygen'):
+            percentage = gas['Percentage']
+            atm = gas['Atmospheric Pressure']
             gasDangerLevel = self.game.gases[id]['DangerousLevel']
             gasDangerFactor = self.game.gases[id]['DangerFactor']
             if (self.game.gases[id]['DangerFactor'] > 0):
@@ -651,6 +666,72 @@ class TerraformingScreen(Screen):
     for systemID in systems:
       if (systemID not in self.bodies):
         self.bodies[systemID] = Bodies.GetSystemBodies(self.game, systemID)
+
+
+  def CalcGreenHouseFactor(self, body, bodyGases):
+    aesID = self.game.gasIDs['Aestusium']['ID']
+
+    if (aesID in bodyGases):
+      gHF = 1 + body['AtmosPressure'] * 1/10 + bodyGases[aesID]
+    else:
+      gHF = 1 + body['AtmosPressure'] * 1/10
+    
+    return gHF
+    
+
+  def CalcAntiGreenHouseFactor(self, body, bodyGases):
+    frigID = self.game.gasIDs['Frigusium']['ID']
+    if (frigID in bodyGases):
+      aGHF = 1 + body['DustLevel'] * 1/20000 + bodyGases[frigID]
+    else:
+      aGHF = 1 + body['DustLevel'] * 1/20000
+    
+    return aGHF
+
+
+  def GetTargetAtmAestusium(self, body, bodyGases):
+    aGHF = self.CalcAntiGreenHouseFactor(body, bodyGases)
+    targetTemp = self.minTemp+273
+    baseTemp = body['BaseTemp']+273
+    nominator = targetTemp * aGHF
+    denominator = baseTemp * body['Albedo']
+    targetAtm = (nominator / denominator) - 1 - (0.1 * body['AtmosPressure'])
+
+    gHF = 1 + body['AtmosPressure'] * 1/10 + targetAtm
+    #this calculation below is somehow wrong
+    maxAtm = maxTemp = None
+    if (gHF > 3):
+      nominator = targetTemp * 3
+      maxAtm = (nominator / denominator) - 1 - (0.1 * body['AtmosPressure'])
+      gHF = self.CalcGreenHouseFactor(body, bodyGases)
+      maxTemp = baseTemp * 3 * body['Albedo'] / aGHF - 273
+    return targetAtm, maxAtm, maxTemp
+
+
+  def GetTargetAtmFrigusium(self, body, bodyGases):
+    gHF = self.CalcGreenHouseFactor(body, bodyGases)
+    targetTemp = self.maxTemp+273
+    baseTemp = body['BaseTemp']+273
+    nominator = baseTemp * body['Albedo'] * gHF
+    targetAtm = (nominator / targetTemp) - 1 - (body['DustLevel'] * 1/20000)
+    maxAtm = minTemp = None
+    aGHF = 1 + body['DustLevel'] * 1/20000 + targetAtm
+    #this calculation below is somehow wrong
+    if (aGHF > 3):
+      nominator = baseTemp * body['Albedo'] * 3
+      maxAtm = (nominator / targetTemp) - 1 - (body['DustLevel'] * 1/20000)
+      minTemp = baseTemp * gHF * body['Albedo'] / 3 - 273
+
+    return targetAtm, maxAtm, minTemp
+
+
+  def GetBodyGases(self, body):
+    bodyGasTable = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d ORDER BY AtmosGasAmount Desc;'''%(self.game.gameID, body['ID'])).fetchall()
+    bodyGases = {}
+    for bodyGas in bodyGasTable:
+      bodyGases[bodyGas[0]] = {'Name': self.game.gases[bodyGas[0]]['Name'], 'Atmospheric Pressure': bodyGas[1], 'Percentage':bodyGas[2]}
+
+    return bodyGases
 
 
 #Change to Greenhouse Gas and Dust Mechanics

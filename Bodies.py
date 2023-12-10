@@ -393,7 +393,7 @@ def GetPopulationCapacityAndColonyCost(game, body):
 def GetSystemBodies(game, currentSystem):
   systemBodies = {}
   save_new_images_generated = False
-  body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, SurfaceTemp, Year, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity, AGHFactor, Albedo, TectonicActivity, RuinID, RuinRaceID, RadiationLevel, DustLevel, AbandonedFactories, DominantTerrain, GroundMineralSurvey from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
+  body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, BaseTemp, Year, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity, AGHFactor, Albedo, TectonicActivity, RuinID, RuinRaceID, RadiationLevel, DustLevel, AbandonedFactories, DominantTerrain, GroundMineralSurvey from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
   
       # Mass
       # Orbit
@@ -442,7 +442,7 @@ def GetSystemBodies(game, currentSystem):
     atm = body[15]
     hydro = body[16]
     mass = body[17]
-    surfaceTemp = body[18]
+    baseTemp = body[18]-273
     hoursPerYear = body[19]
     hoursPerDay = body[20]
     tidalLock = body[21]
@@ -509,7 +509,7 @@ def GetSystemBodies(game, currentSystem):
     
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 
                            'Bearing':body[7], 'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity,
-                           'Temperature':temp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Albedo':albedo, 'Density':density, 
+                           'Temperature':temp, 'BaseTemp':baseTemp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Albedo':albedo, 'Density':density, 
                            'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Distance2Center':dist2Center, 
                            'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'AGHFactor':aGHFactor, 'Image':image,
                            'Colonized':colonized,'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 

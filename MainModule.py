@@ -139,7 +139,7 @@ class Game():
       self.LoadStatistics()
       self.colonies = None
       self.stellarTypes = Bodies.GetStellarTypes(self)  
-      self.gases = self.InitGases()
+      self.gases, self.gasIDs = self.InitGases()
       self.civilianMiningNames = self.InitCivMinNames()
       Designations.Init(self)
       self.LoadTerraformingHistory()
@@ -530,10 +530,12 @@ class Game():
 
   def InitGases(self):
     gases = {}
+    gasIDs = {}
     results = self.db.execute('''SELECT GasID, Name, Dangerous, DangerousLevel, Symbol from DIM_Gases;''').fetchall()
     for result in results:
       gases[result[0]] = {'Name':result[1], 'Symbol': result[4], 'DangerFactor':result[2], 'DangerousLevel':result[3]/1000000*100}
-    return gases
+      gasIDs[result[1]] = {'ID':result[0]}
+    return gases, gasIDs
 
 
   def Draw(self):
