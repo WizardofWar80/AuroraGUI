@@ -2,7 +2,7 @@ import Utils
 import pygame
 import math
 import Systems
-
+import Bodies
 
 def InitStockpile():
   stockpile = {'Fuel':0,'Supplies':0}
@@ -26,13 +26,16 @@ def GetColonies(game):
     purchaseCivilianMinerals=colony[8]
     pop = colony[24]
     fuel = colony[13]
+    colonyCost = colony[17]
     supplies = colony[18]
+    
     total_population += pop
-    colonies[systemBodyID] = {'Name':colonyName,'Pop':Utils.Round(pop,2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colony[17], 'Stockpile':{'Fuel':int(round(fuel)),'Supplies':int(round(supplies))}}
+    colonies[systemBodyID] = {'Name':colonyName,'Pop':Utils.Round(pop,2), 'SystemID':colony[29],'System':system_name, 'ColonyCost':colonyCost, 'Stockpile':{'Fuel':int(round(fuel)),'Supplies':int(round(supplies))}}
+    colonies[systemBodyID]['Unrest'] = colony[33]
+
     total_stockpile['Fuel'] += fuel
     total_stockpile['Supplies'] += supplies
     stockpile_sum = int(Utils.Round(colony[13]) + Utils.Round(colony[18]))
-    
     for mineralID in Utils.MineralNames:
       mineral = Utils.MineralNames[mineralID]
       amount = int(Utils.Round(colony[34+mineralID-1],0))
@@ -50,6 +53,8 @@ def GetColonies(game):
     colonies[systemBodyID]['Terraforming'] = terraforming
     colonies[systemBodyID]['Installations'] = {}
     industries_table = [list(x) for x in game.db.execute('''SELECT PlanetaryInstallationID, Amount from FCT_PopulationInstallations WHERE GameID = %d AND PopID = %d;'''%(game.gameID,colony[0]))]
+    infrastructure = 0
+    lg_infrastructure = 0
     for installation in industries_table:
       id = installation[0]
       amount = installation[1]
@@ -57,14 +62,21 @@ def GetColonies(game):
       if (id in game.installations):
         name = game.installations[id]['Name']
       colonies[systemBodyID]['Installations'][id] = {'Name':name, 'Amount':amount}
+      if name == 'Low Gravity Infrastructure':
+        lg_infrastructure = amount
+      elif name == 'Infrastructure':
+        infrastructure = amount
+
+    colonies[systemBodyID]['LG Infrastructure'] = lg_infrastructure
+    colonies[systemBodyID]['Infrastructure'] = infrastructure
 
     colonies[systemBodyID]['Civilian'] = CheckCivilianColony(game, colonyName, purchaseCivilianMinerals)
-
-    game.statisticsPopulation[str(int(game.gameTime))] = total_population
-    for name in total_stockpile:
-      if name not in game.statisticsStockpile:
-        game.statisticsStockpile[name] = {}
-      game.statisticsStockpile[name][str(int(game.gameTime))] = total_stockpile[name]
+    
+  game.statisticsPopulation[str(int(game.gameTime))] = total_population
+  for name in total_stockpile:
+    if name not in game.statisticsStockpile:
+      game.statisticsStockpile[name] = {}
+    game.statisticsStockpile[name][str(int(game.gameTime))] = total_stockpile[name]
 
   return colonies
 

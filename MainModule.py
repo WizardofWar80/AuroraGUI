@@ -124,9 +124,6 @@ class Game():
       self.gameTimestampStart = mktime(datetime(year=self.startYear, month=1, day=1).timetuple())
       print(name,': ID', self.gameID)
       self.myRaceID = self.db.execute('''SELECT RaceID from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
-      self.myRaceStationPicFilename = self.db.execute('''SELECT SpaceStationPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
-      self.myRaceHullPicFilename = self.db.execute('''SELECT HullPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
-      self.myRaceFlagPicFilename = self.db.execute('''SELECT FlagPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
       self.gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
       self.gameTick = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
       (self.deltaTime, self.gameTick) = self.db.execute('''SELECT Length, IncrementID from FCT_Increments WHERE GameID = %d ORDER BY GameTime Desc;'''%(self.gameID)).fetchall()[0]
@@ -162,6 +159,7 @@ class Game():
     self.systemTableScreen  = SystemTableScreen.SystemTableScreen(self, eventsclass, 'Systems')
 
     self.terraformingScreen.ResetBodies()
+    self.coloniesScreen.ResetBodies()
 
     self.playList = []
     self.currentSong = 0
@@ -605,7 +603,7 @@ class Game():
     elif (self.currentScreen == 'Colonies'):
       if (self.lastScreen != self.currentScreen) or self.newData:
         self.coloniesScreen.ResetGUI()
-        #self.coloniesScreen.UpdateData()
+        self.coloniesScreen.RefreshData()
       reblit |= self.coloniesScreen.Draw()
     elif (self.currentScreen == 'Systems'):
       if (self.lastScreen != self.currentScreen) or self.newData:
@@ -721,6 +719,7 @@ class Game():
     self.systemFlags = self.GetSystemFlags()
     if (self.initComplete):
       self.terraformingScreen.ResetBodies()
+      self.coloniesScreen.ResetBodies()
       self.SetRedrawFlag(self.currentScreen)
 
 
@@ -844,7 +843,14 @@ class Game():
   def GetMySpecies(self):
     self.myRaceSpecies = self.db.execute('''SELECT SpeciesID from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
     self.myRacePicFilename = self.db.execute('''SELECT RacePic from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
+    self.myRaceStationPicFilename = self.db.execute('''SELECT SpaceStationPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
+    self.myRaceHullPicFilename = self.db.execute('''SELECT HullPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
+    self.myRaceFlagPicFilename = self.db.execute('''SELECT FlagPic from FCT_Race WHERE GameID = %d AND NPR = 0;'''%(self.gameID)).fetchone()[0]
 
+    gravity = self.db.execute('''SELECT Gravity from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
+    gravDev  = self.db.execute('''SELECT GravDev from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
+    self.myRaceMinGrav = gravity - gravDev
+    self.myRaceMaxGrav = gravity + gravDev
 
   def FollowEvent(self, parameters, parent, mousepos):
     # parents: ['Ship', 'Body', 'Fleet','Missile', 'Contact','Research', 'Xenos', 'System']

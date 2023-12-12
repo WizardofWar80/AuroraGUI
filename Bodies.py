@@ -382,7 +382,7 @@ def GetPopulationCapacityAndColonyCost(game, body):
     # todo: Add population desnsity multiplier from race
 
     popCapacity = popCapacity*hydroMultiPlier*tidalMultiPlier
-    popCapacity = Utils.Round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1) if popCapacity < 10 else int(round(popCapacity,0))
+    popCapacity = Utils.Round(popCapacity,3) if popCapacity < 0.1 else round(popCapacity,1)# if popCapacity < 10 else int(round(popCapacity,0))
     if (popCapacity < 0.05):
       popCapacity = 0.05
 
@@ -452,6 +452,7 @@ def GetSystemBodies(game, currentSystem):
     gHFactor = body[24]
     density = body[25]
     gravity = body[26]
+    lg = True if (gravity < game.myRaceMinGrav) else False
     aGHFactor = body[27]
     albedo = body[28]
     tectonicActivity = body[29]
@@ -505,7 +506,7 @@ def GetSystemBodies(game, currentSystem):
     fleetIDs = Fleets.GetIDsOfFleetsInOrbit(gameInstance, currentSystem, body[0], type = 'Body')
     for fleetID in fleetIDs:
       numHarvesters += gameInstance.fleets[currentSystem][fleetID]['Harvesters']
-          
+        
     bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
     
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 
@@ -514,7 +515,7 @@ def GetSystemBodies(game, currentSystem):
                            'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Distance2Center':dist2Center, 
                            'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'AGHFactor':aGHFactor, 'Image':image,
                            'Colonized':colonized,'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 
-                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming, 'Tectonic activity':tectonicActivity, 'RuinID':ruinID, 'RuinRaceID':ruinRaceID, 'RadiationLevel':radiationLevel, 'DustLevel':dustLevel, 'Abandoned Factories':abandonedFactories, 'Dominant Terrain':dominantTerrain, 'GroundMineralSurvey':groundMineralSurvey, 'Large Deposits':True if sum_minerals > 100000 else False, 'Harvesters':numHarvesters}
+                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming, 'Tectonic activity':tectonicActivity, 'RuinID':ruinID, 'RuinRaceID':ruinRaceID, 'RadiationLevel':radiationLevel, 'DustLevel':dustLevel, 'Abandoned Factories':abandonedFactories, 'Dominant Terrain':dominantTerrain, 'GroundMineralSurvey':groundMineralSurvey, 'Large Deposits':True if sum_minerals > 100000 else False, 'Harvesters':numHarvesters, 'LG':lg}
     systemBodies[body[0]]['Deposits'] = deposits
 
     popCapacity, colonyCost, ccDetails = GetPopulationCapacityAndColonyCost(game, systemBodies[body[0]])

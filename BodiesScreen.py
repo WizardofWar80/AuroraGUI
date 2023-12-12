@@ -328,7 +328,7 @@ class BodiesScreen(Screen):
                 ,body['Status']
                 ,Utils.Round(body['ColonyCost'],1)
                 ,f"{Utils.Round(pop,2):,}" if pop > 0 else ''
-                ,f"{Utils.Round(body['Population Capacity'],2):,}"
+                ,f"{Utils.GetFormattedNumber4(body['Population Capacity'],2):,}"
                 ,body['Colonizable']
                 ]
         index = len(data)

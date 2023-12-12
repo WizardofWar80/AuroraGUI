@@ -669,7 +669,7 @@ def GetFormattedNumber3(number, significantDigits, maxDigits = -1):
   return number
 
 
-def GetFormattedNumber4(number):
+def GetFormattedNumber4(number, digits = 1):
   if type(number) is float:
     str_num = '%.7f'%number #str(number)
     decimal_index = str_num.find('.')
@@ -678,7 +678,7 @@ def GetFormattedNumber4(number):
       if (decimal_index > 1):
         number = int(Round(number, 0))
       else:
-        number = Round(number, 1)
+        number = Round(number, digits)
   return number
 
 
