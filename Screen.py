@@ -36,6 +36,9 @@ class Screen():
 
   def ResetGUI(self):
     self.GUI_Elements = {}
+
+  def RefreshData(self):
+    pass
     
 
   def Draw(self):

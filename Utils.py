@@ -119,6 +119,14 @@ SafeGasLevels = { 'Hydrogen':{'Safe Level': 0.05, 'CC':2}
                  ,'Iodine' :{'Safe Level': 0.0001, 'CC':2}
                  }
 
+GH_Gases = {'Methane'
+            ,'Carbon Dioxide'
+            ,'Nitrogen Dioxide'
+            ,'Sulphur Dioxide'
+            ,'Aestusium'}
+
+AGH_Gases = {'Frigusium'}
+
 star_suffixes = ['A', 'B', 'C', 'D']
 
 FILLED = 0
@@ -642,7 +650,7 @@ def GetFormattedNumber2(number):
       return Round(number,2)
 
 
-def GetFormattedNumber3(number, significantDigits):
+def GetFormattedNumber3(number, significantDigits, maxDigits = -1):
   if number is None:
     return None
   str_num = '%.7f'%number #str(number)
@@ -650,7 +658,10 @@ def GetFormattedNumber3(number, significantDigits):
   digit = 0
   if (decimal_index > -1):
     for char_index in range(decimal_index+1, len(str_num)):
-      if (str_num[char_index] != '0'):
+      if (maxDigits > -1) and (digit >= maxDigits):
+        roundedNumber = Round(number, digit)
+        return roundedNumber
+      elif (str_num[char_index] != '0'):
         firstSignificanDigit = char_index
         roundedNumber = Round(number, digit+significantDigits)
         return roundedNumber

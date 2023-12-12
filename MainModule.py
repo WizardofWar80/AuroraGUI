@@ -93,6 +93,7 @@ class Game():
     self.statisticsWealth = {}
     self.options = {}
     self.terraformingHistory = {}
+    self.newData = False
 
     ## Options
     self.bg_color = Utils.BLACK
@@ -586,65 +587,67 @@ class Game():
       self.Events.ClearClickables()
       if (self.lastScreen == 'Bodies'):
         self.bodiesScreen.ExitScreen()
+      elif (self.lastScreen == 'Terraform'):
+        self.terraformingScreen.ExitScreen()
     if (self.currentScreen == 'System'):
       if (self.lastScreen != self.currentScreen):
         self.systemScreen.InitGUI()
       reblit |= self.systemScreen.Draw()
     elif (self.currentScreen == 'Bodies'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.bodiesScreen.ResetGUI()
       reblit |= self.bodiesScreen.Draw()
     elif (self.currentScreen == 'Economy'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.economyScreen.ResetGUI()
         self.economyScreen.UpdateEconomyData()
       reblit |= self.economyScreen.Draw()
     elif (self.currentScreen == 'Colonies'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.coloniesScreen.ResetGUI()
         #self.coloniesScreen.UpdateData()
       reblit |= self.coloniesScreen.Draw()
     elif (self.currentScreen == 'Systems'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.systemTableScreen.ResetGUI()
       reblit |= self.systemTableScreen.Draw()
     elif (self.currentScreen == 'Colony'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.colonyDetailsScreen.ResetGUI()
         #self.colonyDetailsScreen.UpdateData()
       reblit |= self.colonyDetailsScreen.Draw()
     elif (self.currentScreen == 'Xenos'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.xenosScreen.ResetGUI()
         #self.xenosScreen.UpdateData()
       reblit |= self.xenosScreen.Draw()
     elif (self.currentScreen == 'Survey'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.surveyScreen.ResetGUI()
         #self.surveyScreen.UpdateData()
       reblit |= self.surveyScreen.Draw()
     elif (self.currentScreen == 'Research'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.researchScreen.ResetGUI()
         #self.researchScreen.UpdateData()
       reblit |= self.researchScreen.Draw()
     elif (self.currentScreen == 'Galaxy'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.galaxyScreen.ResetGUI()
         #self.galaxyScreen.UpdateData()
       reblit |= self.galaxyScreen.Draw()
     elif (self.currentScreen == 'Terraform'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.terraformingScreen.ResetGUI()
-        self.terraformingScreen.UpdateTable()
+        self.terraformingScreen.RefreshData()
         #self.terraformingScreen.UpdateData()
       reblit |= self.terraformingScreen.Draw()
     elif (self.currentScreen == 'Develop'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.developmentScreen.ResetGUI()
       reblit |= self.developmentScreen.Draw()
     elif (self.currentScreen == 'Events'):
-      if (self.lastScreen != self.currentScreen):
+      if (self.lastScreen != self.currentScreen) or self.newData:
         self.eventsScreen.ResetGUI()
         #self.terraformingScreen.UpdateData()
       reblit |= self.eventsScreen.Draw()
@@ -653,6 +656,7 @@ class Game():
       reblit = True
       print('Draw screen %s'%self.currentScreen)
     self.lastScreen = self.currentScreen
+    self.newData = False
     return reblit
 
 
@@ -691,12 +695,12 @@ class Game():
     if (gameTime != self.gameTime) or (file_time > self.db_last_timestamp):
       self.lastGameTime = self.gameTime
       self.GetNewData()
-      self.SetRedrawFlag(self.currentScreen)
       date_time = datetime.fromtimestamp(self.gameTime+self.gameTimestampStart)
       print('New game data! %s'%date_time.strftime("%b %d %Y"))
       self.SaveGameLog()
       self.SaveTerraformingHistory()
       self.db_last_timestamp = file_time
+      self.newData = True
 
 
   def GetNewData(self):
@@ -717,6 +721,7 @@ class Game():
     self.systemFlags = self.GetSystemFlags()
     if (self.initComplete):
       self.terraformingScreen.ResetBodies()
+      self.SetRedrawFlag(self.currentScreen)
 
 
   def GetNewLocalData(self, currentSystem):

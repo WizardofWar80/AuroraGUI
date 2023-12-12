@@ -2324,19 +2324,37 @@
   "12233": {
     "1096856": {
       "bodytype": "Comets",
-      "index": 2
+      "index": 0
     }
   },
   "12232": {
     "1096798": {
       "bodytype": "Planets_h",
-      "index": 16
+      "index": 0
     }
   },
   "12234": {
     "1096862": {
       "bodytype": "Planets_a",
-      "index": 4
+      "index": 24
+    }
+  },
+  "12235": {
+    "1096863": {
+      "bodytype": "Comets",
+      "index": 1
+    }
+  },
+  "12236": {
+    "1096868": {
+      "bodytype": "Comets",
+      "index": 2
+    }
+  },
+  "12237": {
+    "1096871": {
+      "bodytype": "Comets",
+      "index": 0
     }
   }
 }

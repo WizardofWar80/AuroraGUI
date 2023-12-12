@@ -226,6 +226,9 @@ class TerraformingScreen(Screen):
     self.GUI_Elements[idGUI].SetImages(self.game.images_GUI, 'no_asteroid_enabled', 'no_asteroid_disabled')
 
 
+  def RefreshData(self):
+    self.UpdateTable()
+
   def UpdateDevelopmentData(self):
     if (self.GUI_Elements == {}):
       self.InitGUI()
@@ -268,6 +271,7 @@ class TerraformingScreen(Screen):
           radiusBody = body['RadiusBody']
           colonyName = colony['Name']
           au = body['Distance2Center']
+          bodyGases = self.GetBodyGases(body)
           tf = colony['Terraforming']['Active']
           state = gas = target = ''
           tf_string = ''
@@ -297,20 +301,16 @@ class TerraformingScreen(Screen):
           if (colonyCost > -1):
             #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
             unsortedIDs.append([au, bodyName, systemName, colonyCost, tf_string])
-            bodyGases = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d;'''%(self.game.gameID, colonyID)).fetchall()
             for gasID in self.game.gases:
               if (gasID > 0):
                 percentage = 0
                 atm = 0
 
-                for bodyGas in bodyGases:
-                  id = bodyGas[0]
-                  if (id == gasID):
-                    percentage = bodyGas[1]
-                    atm = bodyGas[2]
-                    break
+                if gasID in bodyGases:
+                  percentage = bodyGases[gasID]['Percentage']
+                  atm = bodyGases[gasID]['Atmospheric Pressure']
 
-                if (tfGasID == id) and tf and tfRate > 0:
+                if (tfGasID == gasID) and tf and tfRate > 0:
                   delta = target - atm
                   if delta < 0 and state == 'Remove':
                     tfETA = -delta / tfRate
@@ -371,16 +371,16 @@ class TerraformingScreen(Screen):
                        ]
         for i in range(len(printed_row),len(row_sorted)):
           if (header[i] == 'GHF' or header[i] == 'AGHF'):
-            printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
+            printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2, 3))
           elif (header[i] == breathGasSymbol):
-            printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2))
+            printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],2,3))
           elif (header[i] == 'ETA'):
             printed_row.append(Utils.GetFormattedNumber4(row_sorted[i]))
           else:
             if (row_sorted[i] == 0):
               printed_row.append(None)
             else:
-              printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],1))
+              printed_row.append(Utils.GetFormattedNumber3(row_sorted[i],1,2))
 
         self.table.AddRow(row, printed_row)
         row += 1
@@ -509,7 +509,10 @@ class TerraformingScreen(Screen):
         
         self.DrawColorCodedColonyCosts('Temperature', body['Temperature'], limit_text='Temp Range', limit_value='%3.1f to %3.1f'%(self.minTemp, self.maxTemp), cc_factor=body['ColonyCostDetails']['Temp Factor'], anchor=anchor, threshold_below = self.minTemp, threshold = self.maxTemp, remedy = remedy)
 
-        remedy = 'Add H2O' if (body['Hydrosphere'] < 20) else ''
+        #Each 1% of Hydro Extent requires 0.025 atm of water vapour. This means that creating 20% Hydro Extent would require 0.5 
+        remedy = ''
+        if (body['Hydrosphere'] < 20):
+          remedy = 'Add Water Vapor up to 0.5 atm'
         self.DrawColorCodedColonyCosts('Hydrosphere', body['Hydrosphere'], limit_text='Minimum', limit_value='20%', cc_factor=body['ColonyCostDetails']['Water Factor'], anchor=anchor, threshold_min = 20, remedy = remedy)
 
         gasAtm = self.table.cells[self.selectedRow][self.breathableGasAtmCol].value
@@ -621,6 +624,7 @@ class TerraformingScreen(Screen):
           self.selectedBodyName = value
           self.selectedRow = row
 
+
   #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
   def DrawColorCodedColonyCosts(self, category_name, value, limit_text, limit_value, cc_factor, anchor, value_text = None, threshold_below = None, threshold = None, threshold_min = None, remedy = ''):
     if (value == None):
@@ -634,22 +638,21 @@ class TerraformingScreen(Screen):
         elif value > threshold:
           _color = Utils.RED
 
-        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor, color2 = _color)
+        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2,3)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor, color2 = _color)
       else:
-        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.LIGHT_GREEN if value < threshold_below else Utils.RED)
+        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2,3)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.LIGHT_GREEN if value < threshold_below else Utils.RED)
     else:
       if (threshold is not None):
-        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.RED if value > threshold else Utils.LIGHT_GREEN)
+        Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2,3)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.RED if value > threshold else Utils.LIGHT_GREEN)
       else:
         if (threshold_min is not None):
-
-          Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.LIGHT_BLUE if value < threshold_min else Utils.LIGHT_GREEN)
+          Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2,3)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor,color2 = Utils.LIGHT_BLUE if value < threshold_min else Utils.LIGHT_GREEN)
         else:
           _color = Utils.WHITE
         
-          Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor, color2 = _color)
+          Utils.DrawTextWithTabs(self, self.surface, category_name+':', 0, value_text if value_text is not None else str(Utils.GetFormattedNumber3(value,2,3)), self.tab1, text3=limit_text+':', tab_dist2 = self.tab2, text4 = str(limit_value), tab_dist3 = self.tab3, anchor = anchor, color2 = _color)
     self.lineNr -= 1
-    Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(cc_factor,2)), self.tab5, color2 = _color2, anchor = (anchor[0]+self.tab4,anchor[1]), text3 = remedy, tab_dist2 = self.tab6)
+    Utils.DrawTextWithTabs(self, self.surface, 'CC Factor:', 0, str(Utils.GetFormattedNumber3(cc_factor,2,2)), self.tab5, color2 = _color2, anchor = (anchor[0]+self.tab4,anchor[1]), text3 = remedy, tab_dist2 = self.tab6)
     
 
   def ResetBodies(self):
@@ -668,15 +671,20 @@ class TerraformingScreen(Screen):
         self.bodies[systemID] = Bodies.GetSystemBodies(self.game, systemID)
 
 
-  def CalcGreenHouseFactor(self, body, bodyGases):
-    aesID = self.game.gasIDs['Aestusium']['ID']
+  def GreenHouseGasPressure(self, bodyGases):
+    atm = 0
+    for gasName in Utils.GH_Gases:
+      id = self.game.gasIDs[gasName]['ID']
+      if id in bodyGases:
+        atm += bodyGases[id]['Atmospheric Pressure']
+    return atm
 
-    if (aesID in bodyGases):
-      gHF = 1 + body['AtmosPressure'] * 1/10 + bodyGases[aesID]
-    else:
-      gHF = 1 + body['AtmosPressure'] * 1/10
+
+  def CalcGreenHouseFactor(self, body, bodyGases):
+    gasPressGH = self.GreenHouseGasPressure(bodyGases)
+    gHF = 1 + body['AtmosPressure'] * 1/10 + gasPressGH
     
-    return gHF
+    return min(gHF,3)
     
 
   def CalcAntiGreenHouseFactor(self, body, bodyGases):
@@ -686,7 +694,7 @@ class TerraformingScreen(Screen):
     else:
       aGHF = 1 + body['DustLevel'] * 1/20000
     
-    return aGHF
+    return min(aGHF,3)
 
 
   def GetTargetAtmAestusium(self, body, bodyGases):
@@ -700,11 +708,11 @@ class TerraformingScreen(Screen):
     gHF = 1 + body['AtmosPressure'] * 1/10 + targetAtm
     #this calculation below is somehow wrong
     maxAtm = maxTemp = None
-    if (gHF > 3):
-      nominator = targetTemp * 3
-      maxAtm = (nominator / denominator) - 1 - (0.1 * body['AtmosPressure'])
-      gHF = self.CalcGreenHouseFactor(body, bodyGases)
-      maxTemp = baseTemp * 3 * body['Albedo'] / aGHF - 273
+    #if (gHF > 3):
+    #  nominator = targetTemp * 3
+    #  maxAtm = (nominator / denominator) - 1 - (0.1 * body['AtmosPressure'])
+    #  gHF = self.CalcGreenHouseFactor(body, bodyGases)
+    #  maxTemp = baseTemp * 3 * body['Albedo'] / aGHF - 273
     return targetAtm, maxAtm, maxTemp
 
 
@@ -729,7 +737,7 @@ class TerraformingScreen(Screen):
     bodyGasTable = self.game.db.execute('''SELECT AtmosGasID, AtmosGasAmount, GasAtm from FCT_AtmosphericGas WHERE GameID = %d AND SystemBodyID = %d ORDER BY AtmosGasAmount Desc;'''%(self.game.gameID, body['ID'])).fetchall()
     bodyGases = {}
     for bodyGas in bodyGasTable:
-      bodyGases[bodyGas[0]] = {'Name': self.game.gases[bodyGas[0]]['Name'], 'Atmospheric Pressure': bodyGas[1], 'Percentage':bodyGas[2]}
+      bodyGases[bodyGas[0]] = {'Name': self.game.gases[bodyGas[0]]['Name'], 'Atmospheric Pressure': bodyGas[2], 'Percentage':bodyGas[1]}
 
     return bodyGases
 

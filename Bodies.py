@@ -277,7 +277,7 @@ def GetDrawConditions(context, thing2Draw, body):
 def GetTidalMultiplier(body):
   t = 1
 
-  if (body['Tidal locked'] == True and body['Class'] == 'Planet'):
+  if (body['Tidal locked'] == True):# and body['Class'] == 'Planet'):
     t = .2
 
   return t
@@ -327,10 +327,11 @@ def CalculateColonyCost(game, body):
       
 
   # Hydrosphere Extent: If less than twenty percent of a body is covered with water (less than 20% Hydro Extent), the colony cost factor for hydro extent is (20 - Hydro Extent) / 10, which is a range from zero to 2.00.
+
   if (body['Hydrosphere'] >= 20):
     waterFactor = 0
   else:
-    waterFactor = 2
+    waterFactor = (20 - body['Hydrosphere']) / 10
 
   # Atmospheric Pressure: If the atmospheric pressure is above species tolerance, the colony cost factor for pressure is equal to pressure / species max pressure; with a minimum of 2.00. For example, if a species has a pressure tolerance of 4 atm and the pressure is 10 atm, the colony cost factor would be 2.50. If the pressure was 6 atm, the colony cost factor would be 2.00, as that is the minimum.
   atmFactor = max(2,body['AtmosPressure']/maxAtm) if (body['AtmosPressure'] > maxAtm) else 0
