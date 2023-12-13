@@ -5,7 +5,7 @@
   },
   "SystemScreen": {
     "show_Planets": true,
-    "show_Asteroids": false,
+    "show_Asteroids": true,
     "show_Comets": true,
     "show_DwarfPlanets": true,
     "show_FleetTraces": true,

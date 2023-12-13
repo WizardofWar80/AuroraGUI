@@ -98,7 +98,7 @@ class ColoniesScreen(Screen):
     #header = ['AU', 'Name', 'System', 'Pop/Sup', 'Cost', 'Terraforming', 'Workers', 'Unemployed', 'Mines (M/A)', 'MassDrv', 'Fuel Ml', 'Refuel Station', 'Supplies', 'Cargo Station', 'Spaceport', 'Unrest']
     for i in range(1,table.num_cols):
       table.AddFormat(i, {'Operation':'Align', 'value':'center'} )
-      if i in [5,11,13,14]:
+      if i in [6,12,14,15]:
         table.AddFormat(i, {'Operation':'Below', 'threshold':True, 'text_color':Utils.WHITE, 'else_color':color_green} )
       if i == 4:
         table.AddFormat(i, {'Operation':'Above', 'threshold':3, 'text_color':Utils.RED, 'else_color':color_green} )
@@ -280,6 +280,7 @@ class ColoniesScreen(Screen):
           cargo_station = False
           spaceport = False
           unrest = colony['Unrest']
+          surveyPotential = body['GroundMineralSurvey']
 
           if (self.game.terraformerID in colony['Installations']):
             numTerraformers = colony['Installations'][self.game.terraformerID]['Amount']
@@ -319,7 +320,7 @@ class ColoniesScreen(Screen):
 
             #unsortedIDs.append([colonyName, systemName, colonyCost, tf, state, gas, target])
             #header = ['AU', 'Name', 'System', 'Pop/Sup', 'Cost', 'Terraforming', 'Workers', 'Unemployed', 'Mines (M/A)', 'MassDrv', 'Fuel', 'Refuel Station', 'Supplies', 'Cargo Station', 'Spaceport']
-            unsortedIDs.append([au, bodyName, systemName, pop, colonyCost, tf, workers, unemployed, mines, mass_drivers, 
+            unsortedIDs.append([au, bodyName, surveyPotential, systemName, pop, colonyCost, tf, workers, unemployed, mines, mass_drivers, 
                                 colony['Stockpile']['Fuel'], refuel_station, colony['Stockpile']['Supplies'], cargo_station, spaceport, unrest, supportedPop])
             index+=1
 
@@ -327,7 +328,7 @@ class ColoniesScreen(Screen):
     sortedIDs = sorted(unsortedIDs, key=itemgetter(id), reverse=rev)
     
     row = 0
-    header = ['AU', 'Name', 'System', 'Pop/Sup', 'Cost', 'Terraforming', 'Workers', 'Unemployed', 'Mines (M/A)', 'MassDrv', 'Fuel Ml', 'Refuel Station', 'Supplies', 'Cargo Station', 'Spaceport', 'Unrest']
+    header = ['AU', 'Name', 'GSPot', 'System', 'Pop/Sup', 'Cost', 'Terraforming', 'Workers', 'Unemployed', 'Mines (M/A)', 'MassDrv', 'Fuel Ml', 'Refuel Station', 'Supplies', 'Cargo Station', 'Spaceport', 'Unrest']
 
     self.table.AddRow(row, header, [True]*len(header))
 
@@ -341,20 +342,21 @@ class ColoniesScreen(Screen):
         
         printed_row = [int(Utils.Round(row_sorted[0],0)) if (row_sorted[0]>= 10) else Utils.Round(row_sorted[0],1),# AU
                        row_sorted[1], # Name
-                       row_sorted[2], # System
-                       str(Utils.GetFormattedNumber3(row_sorted[3],1, 2))+' / '+str(Utils.GetFormattedNumber3(row_sorted[16],1, 2)), # Pop/Supp
-                       row_sorted[4], # Cost
-                       row_sorted[5],  # Terraforming
-                       Utils.GetFormattedNumber3(row_sorted[6],1, 2),  # Workers
-                       row_sorted[7],  # Unemployed
-                       Utils.GetFormattedNumber3(row_sorted[8],1, 1),  # Mines
-                       Utils.GetFormattedNumber3(row_sorted[9],1, 1),  # MassDrv
-                       Utils.GetFormattedNumber3(row_sorted[10]/1000000,1, 1),  # Fuel
-                       row_sorted[11],  # Refuel Station
-                       int(Utils.Round(row_sorted[12])),  # Supplies
-                       row_sorted[13],  # Cargo Station
-                       row_sorted[14],  # Spaceport
-                       int(Utils.Round(row_sorted[15]*100))  # Unrest
+                       row_sorted[2] if row_sorted[2] > 0 else '', # Ground Survey Potential
+                       row_sorted[3], # System
+                       str(Utils.GetFormattedNumber3(row_sorted[4],1, 2))+' / '+str(Utils.GetFormattedNumber3(row_sorted[17],1, 2)), # Pop/Supp
+                       row_sorted[5], # Cost
+                       row_sorted[6],  # Terraforming
+                       Utils.GetFormattedNumber3(row_sorted[7],1, 2),  # Workers
+                       row_sorted[8],  # Unemployed
+                       Utils.GetFormattedNumber3(row_sorted[9],1, 1),  # Mines
+                       Utils.GetFormattedNumber3(row_sorted[10],1, 1),  # MassDrv
+                       Utils.GetFormattedNumber3(row_sorted[11]/1000000,1, 1),  # Fuel
+                       row_sorted[12],  # Refuel Station
+                       int(Utils.Round(row_sorted[13])),  # Supplies
+                       row_sorted[14],  # Cargo Station
+                       row_sorted[15],  # Spaceport
+                       int(Utils.Round(row_sorted[16]*100))  # Unrest
                        ]
         #for i in range(len(printed_row),len(row_sorted)):
         #  if (header[i] == 'GHF' or header[i] == 'AGHF'):
