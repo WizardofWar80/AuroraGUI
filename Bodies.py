@@ -136,7 +136,7 @@ def DrawBodies(context):
 
       if (body['TrojanAsteroid']):
         screen_parent_pos = context.WorldPos2ScreenPos((0,0))
-        dist2OrbitCentre_on_screen = context.systemScale * game.systemBodies[body['ParentID']]['DistanceToOrbitCentre']
+        #dist2OrbitCentre_on_screen = context.systemScale * game.systemBodies[body['ParentID']]['DistanceToOrbitCentre']
 
         #dist2OrbitCentre_on_screen = context.systemScale * body['DistanceToOrbitCentre']
         planetEllipseAngle = Utils.GetPlanetEllipseAngle(Utils.MulTuples(game.systemBodies[body['ParentID']]['Pos'],(Utils.AU_INV*context.systemScale)), 
@@ -482,7 +482,7 @@ def GetSystemBodies(game, currentSystem):
     trojanAsteroid = body[37]
     distanceToOrbitCentre = body[38] if body[38] else orbit
 
-    dist2Center = distanceToOrbitCentre #math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
+    dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
     
     if (bodyClass == 'Moon'):
       orbit = orbit * Utils.AU_INV
@@ -529,7 +529,7 @@ def GetSystemBodies(game, currentSystem):
         
     bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
     
-    systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'DistanceToOrbitCentre':dist2Center, 'ParentID':body[5], 'RadiusBody':body[6], 
+    systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'DistanceToCenter':dist2Center, 'ParentID':body[5], 'RadiusBody':body[6], 
                            'Bearing':body[7], 'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity,
                            'Temperature':temp, 'BaseTemp':baseTemp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Albedo':albedo, 'Density':density, 
                            'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity,

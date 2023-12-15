@@ -176,6 +176,13 @@ class ColoniesScreen(Screen):
     self.GUI_table_ID = idGUI
     idGUI += 1
 
+    x = self.GUI_Bottom_Anchor[0] - 275
+    y = self.GUI_Bottom_Anchor[1] - 100
+    bb = (x,y,32,32)
+    gui_cl = self.game.MakeClickable('Hide empty columns', bb, self.ToggleHideCells)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Hide empty columns', bb, gui_cl, 'Button', enabled = self.table.hideEmptyColumns)
+    idGUI += 1
+
     #x = self.GUI_Bottom_Anchor[0] - 275
     #y = self.GUI_Bottom_Anchor[1] + 3
     #bb = (x,y,250,25)
@@ -236,8 +243,18 @@ class ColoniesScreen(Screen):
 
   def UpdateGUI(self):
     for i in range(len(self.table.cells[0])):
-      self.GUI_Elements[i].rect = self.table.cells[0][i].rect
-      self.GUI_Elements[i].clickable.rect = self.table.cells[0][i].rect
+      if (self.table.cells[0][i]):
+        self.GUI_Elements[i].rect = self.table.cells[0][i].rect
+        if (self.table.hideEmptyColumns and self.table.dataColumns[i] == False):
+          if (self.GUI_Elements[i].clickable):
+            self.GUI_Elements[i].clickable.enabled = False
+            self.GUI_Elements[i].clickable.rect = None
+          self.GUI_Elements[i].visible = False
+        else:
+          self.GUI_Elements[i].visible = True
+          if (self.GUI_Elements[i].clickable):
+            self.GUI_Elements[i].clickable.enabled = True
+            self.GUI_Elements[i].clickable.rect = self.table.cells[0][i].rect
     self.GUI_Elements[self.GUI_table_ID].rect = self.table.rect
 
 
@@ -268,7 +285,7 @@ class ColoniesScreen(Screen):
           bodyName = body['Name']
           radiusBody = body['RadiusBody']
           colonyName = colony['Name']
-          au = body['DistanceToOrbitCentre']
+          au = body['DistanceToCenter']
           tf = colony['Terraforming']['Active']
           pop = colony['Pop']
           workers = 0
@@ -729,3 +746,8 @@ class ColoniesScreen(Screen):
       bodyGases[bodyGas[0]] = {'Name': self.game.gases[bodyGas[0]]['Name'], 'Atmospheric Pressure': bodyGas[2], 'Percentage':bodyGas[1]}
 
     return bodyGases
+
+            
+  def ToggleHideCells(self, void = None, void2 = None, void3 = None):
+    self.table.ToggleHideCells()
+    self.reDraw = True

@@ -154,6 +154,8 @@ class Table():
     self.in_cell_pad_x = 4
     self.in_cell_pad_y = 3
     self.max_cell_sizes = []
+    self.hideEmptyColumns = True
+    self.dataColumns = []
     self.maxScroll = min(0,self.max_rows-self.num_rows)
     #self.colFormats = [[],[],[],[],[],
     #                   [],[],[],[],[],
@@ -163,7 +165,12 @@ class Table():
     self.colFormats = []
     for i in range(self.num_cols):
       self.colFormats.append([])
+      self.dataColumns.append(False)
     self.scrollbar = None
+
+
+  def ToggleHideCells(self):
+    self.hideEmptyColumns = not self.hideEmptyColumns
 
 
   def Scrollbar(self):
@@ -258,6 +265,8 @@ class Table():
         else:
           for f in self.colFormats[c]:
             self.cells[index][c].Format(f)
+          if (self.cells[index][c].value != '' and self.cells[index][c].value != None):
+            self.dataColumns[c] = True
         current_lat_pos += col_width
 
     self.UpdateMaxCellWidths(cell_text_sizes)
@@ -276,12 +285,17 @@ class Table():
     offset = 0
     if (self.num_rows > 0):
       for col in range(self.num_cols):
+        shrink = False
         if (col < len(self.cells[0])):
+          if (self.hideEmptyColumns and self.dataColumns[col] == False):
+            self.cells[0][col].col_width=0
+            self.max_cell_sizes[col]=0
+            shrink = True
           col_width = self.cells[0][col].width
           delta = self.max_cell_sizes[col] - col_width
-          if (delta < 0):
+          if (delta < 0) and (not shrink):
             delta = 0
-          if (delta > 0) or (offset > 0):
+          if (delta > 0) or (offset > 0) or (shrink):
             self.FormatColumn(col, column_width=col_width+delta, latPos = offset+self.anchor[0])
           offset+=col_width+delta
 
@@ -356,16 +370,19 @@ class Table():
     # draw the grid:
     rowIndex = 0
     for row in self.cells:
+      colIndex = 0
       for cell in row:
-        pygame.draw.rect(self.context.surface, cell.border_color, cell.rect, 1)
+        if (self.hideEmptyColumns == False or self.dataColumns[colIndex]):
+          pygame.draw.rect(self.context.surface, cell.border_color, cell.rect, 1)
 
-        if (cell.value is not None):
-          textPos = Utils.AddTuples(cell.screenpos, (self.in_cell_pad_x, self.in_cell_pad_y))
-          if (cell.align == 'right'):
-            textPos = (cell.screenpos[0] + cell.width - cell.text_size[0] - self.in_cell_pad_x, textPos[1])
-          elif (cell.align == 'center'):
-            textPos = (cell.screenpos[0] + cell.width/2 - cell.text_size[0]/2 , textPos[1])
-          self.BlitRenderToSurface(cell, textPos)
+          if (cell.value is not None):
+            textPos = Utils.AddTuples(cell.screenpos, (self.in_cell_pad_x, self.in_cell_pad_y))
+            if (cell.align == 'right'):
+              textPos = (cell.screenpos[0] + cell.width - cell.text_size[0] - self.in_cell_pad_x, textPos[1])
+            elif (cell.align == 'center'):
+              textPos = (cell.screenpos[0] + cell.width/2 - cell.text_size[0]/2 , textPos[1])
+            self.BlitRenderToSurface(cell, textPos)
+        colIndex += 1
       table_width = cell.rect[0]+cell.rect[2]
       table_height = cell.rect[1]+cell.rect[3]
       self.rect = pygame.Rect(self.anchor[0], self.anchor[1], table_width, table_height)
@@ -402,9 +419,12 @@ class Table():
   
         
   def Clear(self):
+    colIndex = 0
     for row in self.cells:
       for cell in row:
         cell.value = None
+        self.dataColumns[colIndex] = False
+
 
 
   def GetLocationInsideTable(self, mouse_pos):
