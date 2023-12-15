@@ -292,7 +292,7 @@ class BodiesScreen(Screen):
           pop = colony['Pop']
         body = self.game.systemBodies[bodyID]
         bodyStatus = body['Status'] + str(body['GroundMineralSurvey']) if body['GroundMineralSurvey'] > 0 else ''
-        unsortedIDs.append([bodyID, body['Distance2Center'], body['Name'], body['Type'], bodyStatus, body['ColonyCost'], pop, body['Population Capacity'], body['Colonizable']])
+        unsortedIDs.append([bodyID, body['DistanceToOrbitCentre'], body['Name'], body['Type'], bodyStatus, body['ColonyCost'], pop, body['Population Capacity'], body['Colonizable']])
         for id in Utils.MineralNames:
           unsortedIDs[-1].append(body['Deposits'][Utils.MineralNames[id]]['Amount'])
         unsortedIDs[-1].append(body['Terraforming']['Active'])
@@ -324,7 +324,7 @@ class BodiesScreen(Screen):
           pop = colony['Pop']
         bodyStatus = body['Status'] + (' GSPot '+str(body['GroundMineralSurvey']) if body['GroundMineralSurvey'] > 0 else '')
         row_format = [False, True if body['Colonized'] else False, False, False, False,False,False,]
-        data = [ int(Utils.Round(body['Distance2Center'],0)) if (body['Distance2Center']>= 10) else round(body['Distance2Center'],1)
+        data = [ int(Utils.Round(body['DistanceToOrbitCentre'],0)) if (body['DistanceToOrbitCentre']>= 10) else round(body['DistanceToOrbitCentre'],1)
                 ,body['Name'] 
                 ,body['Type'] 
                 ,bodyStatus

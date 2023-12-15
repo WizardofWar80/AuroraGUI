@@ -134,6 +134,7 @@ class Game():
       #self.currentSystem = 8499 # Lalande
       #self.currentSystem = 8500
       #self.currentSystem = 8496 # EE (with Black Hole)
+      self.currentSystem = 12240 # EE (with Black Hole)
       self.LoadStatistics()
       self.colonies = None
       self.stellarTypes = Bodies.GetStellarTypes(self)  
@@ -1176,7 +1177,7 @@ class Game():
                   if self.colonies[bodyID]['Installations'][id]['Amount'] > 0:
                     flags[systemID]['Mining']+=1
                     break
-        if (body['Artifacts']):
+        if (body['Artifacts'] or body['RuinID']):
           flags[systemID]['Artifacts']+=1
 
       

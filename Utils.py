@@ -336,6 +336,8 @@ def MyDrawEllipse(surface, color, x_c,y_c, a, b, beta=0, startAngle = 0, N = 60)
   for i in range(N):
     angle =  i/N*2*math.pi+startAngle
     x,y = GetEllipseXY(x_c, y_c, a, b, angle, beta, cos_beta, sin_beta)
+    #if (i == 0):
+    # pygame.draw.rect(surface, (255,0,0),((x,y),(2,2)),0)
     points.append((x,y))
     points_on_screen.append(surf_rect.collidepoint((x,y)))
     if (points_on_screen[-1]):
@@ -540,6 +542,84 @@ def DrawArc(surface, color, center, r, angle_start, angle_end, width):
       break
   pygame.draw.lines(surface,color, False, points, width)
   
+
+def GetEllipticalOrbitPosition(pos, orbit, E, E_angle, trojanAngle, planetEllipseAngle):
+  a = orbit
+  b = a * math.sqrt(1-E*E)
+  c = E * a
+  x_offset = c * math.cos(angle1*DEGREES_TO_RADIANS)
+  y_offset = c * math.sin(angle1*DEGREES_TO_RADIANS)
+  offsetPos = AddTuples(pos, (x_offset,y_offset))
+  #MyDrawEllipse(offsetPos[0],offsetPos[1], a, b,angle1,angle2, N)
+  #             (x_c,y_c, a, b, beta=0, startAngle = 0, N = 60):
+  beta = E_angle*DEGREES_TO_RADIANS
+
+  cos_beta = math.cos(beta)
+  sin_beta = math.sin(beta)
+  x = y = 0
+  x,y = GetEllipseXY(offsetPos[0], offsetPos[1], a, b, (planetEllipseAngle-90+trojanAngle)*DEGREES_TO_RADIANS, beta, cos_beta, sin_beta)
+
+  #x = dist2Radius * math.cos((beta+angle)-90*DEGREES_TO_RADIANS)+offsetPos[0]
+  #y = dist2Radius * math.sin((beta+angle)-90*DEGREES_TO_RADIANS)+offsetPos[1]
+
+  return (x,y)
+
+
+def GetAngle(x1,y1, x2=0, y2=0):
+    denominator = (x2-x1)
+    nominator = (y2-y1)
+    if (denominator != 0):
+        slope = nominator/denominator
+        return math.atan(slope)
+    else:
+        if (nominator > 0):
+            return 90*DEGREES_TO_RADIANS
+        else:
+            return -90*DEGREES_TO_RADIANS
+
+
+def GetAngleBetweenDeg(x1,y1, x2, y2, cx, cy):
+    a1 = GetAngle(x1,y1, cx, cy)
+    a2 = GetAngle(x2,y2, cx, cy)
+    #print(a1*RADIANS_TO_DEGREES,a2*RADIANS_TO_DEGREES)
+    return (a2-a1)*RADIANS_TO_DEGREES
+
+
+def GetPlanetEllipseAngle(pos, orbit, E, E_angle):
+  a = orbit
+  b = a * math.sqrt(1-E*E)
+  c = E * a
+  x_offset = c * math.cos(E_angle*DEGREES_TO_RADIANS)
+  y_offset = c * math.sin(E_angle*DEGREES_TO_RADIANS)
+  offsetPos = AddTuples(pos, (x_offset,y_offset))
+  #MyDrawEllipse(offsetPos[0],offsetPos[1], a, b,angle1,angle2, N)
+  #             (x_c,y_c, a, b, beta=0, startAngle = 0, N = 60):
+  beta = E_angle*DEGREES_TO_RADIANS
+
+  cos_beta = math.cos(beta)
+  sin_beta = math.sin(beta)
+  x = y = 0
+  x,y = GetEllipseXY(x_offset, y_offset, a, b, (-90)*DEGREES_TO_RADIANS, beta, cos_beta, sin_beta)
+
+  return GetAngleBetweenDeg(pos[0], pos[1], x,-y, x_offset, -y_offset)
+
+
+def GetTrojanPosition(planetEllipseAngle, orbit, E, E_Angle, trojanAngle):
+  if (E > 0):
+    a = orbit
+    b = a * math.sqrt(1-E*E)
+    c = E * a
+
+    x_c = c * math.cos(E_Angle*DEGREES_TO_RADIANS)
+    y_c = c * math.sin(E_Angle*DEGREES_TO_RADIANS)
+
+    _beta = E_Angle*DEGREES_TO_RADIANS
+
+    cos_beta = math.cos(_beta)
+    sin_beta = math.sin(_beta)
+        
+  return GetEllipseXY(x_c, y_c, a, b, (planetEllipseAngle-90+trojanAngle)*DEGREES_TO_RADIANS, _beta, cos_beta, sin_beta)
+    
 
 def DrawEllipticalOrbit(surface, color, pos, orbit, E, angle1, angle2, min_orbit):
   # draw orbit

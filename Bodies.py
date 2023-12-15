@@ -47,7 +47,7 @@ def DrawStars(context):
     star = system['Stars'][starID]
     screen_star_pos = context.WorldPos2ScreenPos(star['Pos'])
     star_name = star['Name'] + ' ' + star['Suffix']
-    star['Visible orbit'] = 0
+    #star['Visible orbit'] = 0
     # draw star
       
     # draw orbit
@@ -70,7 +70,7 @@ def DrawStars(context):
     star_color = game.stellarTypes[star['StellarTypeID']]['RGB']
     if (radius < context.minPixelSize_Star):
       radius = context.minPixelSize_Star
-    star['Visible orbit'] = radius
+    #star['Visible orbit'] = radius
     if (star['Image'] is not None):
       if (screen_star_pos[0]-radius < context.width and screen_star_pos[0]+radius > 0 and 
           screen_star_pos[1]-radius < context.height and screen_star_pos[1]+radius > 0 ):
@@ -106,7 +106,7 @@ def DrawBodies(context):
 
   for bodyID in game.systemBodies:
     body = game.systemBodies[bodyID]
-    body['Visible orbit'] = 0
+    #body['Visible orbit'] = 0
     #screen_parent_size = 0
     body_draw_cond, draw_color_body, body_min_size, body_min_dist = GetDrawConditions(context, 'Body', body)
     if (body_draw_cond):
@@ -114,10 +114,12 @@ def DrawBodies(context):
       radius_on_screen = Utils.AU_INV * context.systemScale * body['RadiusBody']
       if (radius_on_screen < body_min_size):
         radius_on_screen = body_min_size
-      body['Visible orbit'] = radius_on_screen
+      #body['Visible orbit'] = radius_on_screen
       orbit_draw_cond, draw_color_orbit, void, min_orbit = GetDrawConditions(context, 'Orbit', body)
       orbitOnScreen = body['Orbit']*context.systemScale
       parentID = body['ParentID']
+      if (body['TrojanAsteroid']):
+        parentID = game.systemBodies[body['ParentID']]['ParentID']
 
       if parentID in system['Stars']:
         screen_parent_pos = context.WorldPos2ScreenPos(system['Stars'][parentID]['Pos'])
@@ -130,9 +132,20 @@ def DrawBodies(context):
         #screen_parent_size = 1
 
       if (orbit_draw_cond) and (orbitOnScreen > min_orbit) and (orbitOnScreen > body_min_dist):
-        E = body['Eccentricity']
-        
-        Utils.DrawEllipticalOrbit(context.surface, draw_color_orbit, screen_parent_pos, orbitOnScreen, E, body['EccentricityAngle'],body['Bearing'], min_orbit)
+        Utils.DrawEllipticalOrbit(context.surface, draw_color_orbit, screen_parent_pos, orbitOnScreen, body['Eccentricity'], body['EccentricityAngle'],body['Bearing'], min_orbit)
+
+      if (body['TrojanAsteroid']):
+        screen_parent_pos = context.WorldPos2ScreenPos((0,0))
+        dist2OrbitCentre_on_screen = context.systemScale * game.systemBodies[body['ParentID']]['DistanceToOrbitCentre']
+
+        #dist2OrbitCentre_on_screen = context.systemScale * body['DistanceToOrbitCentre']
+        planetEllipseAngle = Utils.GetPlanetEllipseAngle(Utils.MulTuples(game.systemBodies[body['ParentID']]['Pos'],(Utils.AU_INV*context.systemScale)), 
+                                                         game.systemBodies[body['ParentID']]['Orbit']*context.systemScale, 
+                                                         game.systemBodies[body['ParentID']]['Eccentricity'], 
+                                                         body['EccentricityAngle'])
+
+        body_pos = Utils.GetTrojanPosition(planetEllipseAngle, body['Orbit']*context.systemScale, body['Eccentricity'], body['EccentricityAngle'], body['TrojanAsteroid'])
+        screen_body_pos = Utils.AddTuples(context.screenCenter ,body_pos)
         
       # check if we want to draw the object
       ################
@@ -394,7 +407,7 @@ def GetPopulationCapacityAndColonyCost(game, body):
 def GetSystemBodies(game, currentSystem):
   systemBodies = {}
   save_new_images_generated = False
-  body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, BaseTemp, Year, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity, AGHFactor, Albedo, TectonicActivity, RuinID, RuinRaceID, RadiationLevel, DustLevel, AbandonedFactories, DominantTerrain, GroundMineralSurvey from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
+  body_table = [list(x) for x in game.db.execute('''SELECT SystemBodyID, Name, PlanetNumber, OrbitNumber, OrbitalDistance, ParentBodyID, Radius, Bearing, Xcor, Ycor, Eccentricity, EccentricityDirection, BodyClass, BodyTypeID, SurfaceTemp, AtmosPress, HydroExt, Mass, BaseTemp, Year, DayValue, TidalLock, MagneticField, EscapeVelocity, GHFactor, Density, Gravity, AGHFactor, Albedo, TectonicActivity, RuinID, RuinRaceID, RadiationLevel, DustLevel, AbandonedFactories, DominantTerrain, GroundMineralSurvey, TrojanAsteroid, DistanceToOrbitCentre, DistanceToParent from FCT_SystemBody WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,currentSystem))]
   
       # Mass
       # Orbit
@@ -457,14 +470,19 @@ def GetSystemBodies(game, currentSystem):
     albedo = body[28]
     tectonicActivity = body[29]
     ruinID = body[30]
-    ruinRaceID = body[31]
+    ruinRaceID = -1
+    if (ruinID and ruinID != ''):
+      ruinRaceID = GetRuinRaceID(body[31])
+
     radiationLevel = body[32]
     dustLevel = body[33]
     abandonedFactories = body[34]
     dominantTerrain = body[35]
     groundMineralSurvey = body[36]
+    trojanAsteroid = body[37]
+    distanceToOrbitCentre = body[38] if body[38] else orbit
 
-    dist2Center = math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
+    dist2Center = distanceToOrbitCentre #math.sqrt(body[8]*body[8]+body[9]*body[9])*Utils.AU_INV
     
     if (bodyClass == 'Moon'):
       orbit = orbit * Utils.AU_INV
@@ -501,6 +519,8 @@ def GetSystemBodies(game, currentSystem):
       if (sum_minerals > 0):
         resources = True
       terraforming = colony['Terraforming']
+    if (sum_minerals > 0):
+      resources = True
 
     numHarvesters = 0
     fleetIDs = Fleets.GetIDsOfFleetsInOrbit(gameInstance, currentSystem, body[0], type = 'Body')
@@ -509,13 +529,13 @@ def GetSystemBodies(game, currentSystem):
         
     bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
     
-    systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'ParentID':body[5], 'RadiusBody':body[6], 
+    systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'DistanceToOrbitCentre':dist2Center, 'ParentID':body[5], 'RadiusBody':body[6], 
                            'Bearing':body[7], 'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity,
                            'Temperature':temp, 'BaseTemp':baseTemp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Albedo':albedo, 'Density':density, 
-                           'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity, 'Distance2Center':dist2Center, 
+                           'MagneticField':magneticField, 'EscapeVelocity':escapeVelocity,
                            'HoursPerYear': hoursPerYear, 'HoursPerDay': hoursPerDay, 'GHFactor':gHFactor, 'AGHFactor':aGHFactor, 'Image':image,
                            'Colonized':colonized,'Resources':resources, 'Industrialized':industrialized, 'Xenos':xenos, 'Enemies':enemies, 
-                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming, 'Tectonic activity':tectonicActivity, 'RuinID':ruinID, 'RuinRaceID':ruinRaceID, 'RadiationLevel':radiationLevel, 'DustLevel':dustLevel, 'Abandoned Factories':abandonedFactories, 'Dominant Terrain':dominantTerrain, 'GroundMineralSurvey':groundMineralSurvey, 'Large Deposits':True if sum_minerals > 100000 else False, 'Harvesters':numHarvesters, 'LG':lg}
+                           'Unsurveyed':unsurveyed, 'Artifacts':artifacts, 'Visible orbit': 0, 'Status':bodyStatus, 'Terraforming':terraforming, 'Tectonic activity':tectonicActivity, 'RuinID':ruinID, 'RuinRaceID':ruinRaceID, 'RadiationLevel':radiationLevel, 'DustLevel':dustLevel, 'Abandoned Factories':abandonedFactories, 'Dominant Terrain':dominantTerrain, 'GroundMineralSurvey':groundMineralSurvey, 'Large Deposits':True if sum_minerals > 100000 else False, 'Harvesters':numHarvesters, 'LG':lg, 'TrojanAsteroid':trojanAsteroid}
     systemBodies[body[0]]['Deposits'] = deposits
 
     popCapacity, colonyCost, ccDetails = GetPopulationCapacityAndColonyCost(game, systemBodies[body[0]])
@@ -611,3 +631,12 @@ def GetBodyFromName(game, name):
       if (body['Name'] == name):
         return body
   return None
+
+
+def GetRuinRaceID(raceID):
+  id = None
+  if raceID:
+    if raceID != '':
+      id = gameInstance.db.execute('''SELECT RaceID from FCT_KnownRuinRace WHERE GameID = %d AND RuinRaceID = %d;'''%(gameInstance.gameID, raceID)).fetchone()
+
+  return id

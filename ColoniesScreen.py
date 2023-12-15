@@ -268,7 +268,7 @@ class ColoniesScreen(Screen):
           bodyName = body['Name']
           radiusBody = body['RadiusBody']
           colonyName = colony['Name']
-          au = body['Distance2Center']
+          au = body['DistanceToOrbitCentre']
           tf = colony['Terraforming']['Active']
           pop = colony['Pop']
           workers = 0

@@ -229,12 +229,6 @@ class TerraformingScreen(Screen):
   def RefreshData(self):
     self.UpdateTable()
 
-  def UpdateDevelopmentData(self):
-    if (self.GUI_Elements == {}):
-      self.InitGUI()
-    else:
-      self.UpdateGUI()
-
 
   def UpdateGUI(self):
     for i in range(len(self.table.cells[0])):
@@ -270,7 +264,7 @@ class TerraformingScreen(Screen):
           bodyName = body['Name']
           radiusBody = body['RadiusBody']
           colonyName = colony['Name']
-          au = body['Distance2Center']
+          au = body['DistanceToOrbitCentre']
           bodyGases = self.GetBodyGases(body)
           tf = colony['Terraforming']['Active']
           state = gas = target = ''
@@ -351,7 +345,7 @@ class TerraformingScreen(Screen):
     header.append('GHF')
     header.append('AGHF')
     header.append('# TFs')
-    header.append('TF rate/a')
+    header.append('TFR/a')
     header.append('ETA')
 
     self.table.AddRow(row, header, [True]*len(header))
