@@ -88,7 +88,7 @@ def DrawStars(context):
         pygame.draw.circle(context.surface,Utils.RED,screen_star_pos,radius,5)
     bb = (screen_star_pos[0]-radius,screen_star_pos[1]-radius,2*radius,2*radius)
     if (game.CheckClickableNotBehindGUI(bb)):
-      game.MakeClickable(star_name, bb, left_click_call_back = Select, par=starID)
+      game.MakeClickable(star_name, bb, left_click_call_back = Select, par=starID, volatile = True)
 
     # Label Star
     ################
@@ -176,7 +176,7 @@ def DrawBodies(context):
         # Make object clickable
         bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
         if (game.CheckClickableNotBehindGUI(bb)):
-          game.MakeClickable(body['Name'], bb, left_click_call_back = Select, par=bodyID)
+          game.MakeClickable(body['Name'], bb, left_click_call_back = Select, par=bodyID, volatile = True)
 
         # Check if we want to draw the label
         draw_cond, draw_color_label, void, min_dist = GetDrawConditions(context, 'Label', body)

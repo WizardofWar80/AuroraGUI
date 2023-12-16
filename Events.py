@@ -76,21 +76,22 @@ class Events:
         
 
 
-  def ClearClickables(self, parent = None, exclude = None):
+  def ClearClickables(self, volatile_only = False, parent = None, exclude = None):
     listOfElementsToDelete = []
-    if(parent):
-      listOfElementsToDelete = []
+    if (volatile_only):
+      for clickable in self.clickables:
+        if (clickable.volatile):
+          listOfElementsToDelete.append(clickable)
+    elif(parent):
       for clickable in self.clickables:
         if (clickable.parent == parent):
           listOfElementsToDelete.append(clickable)
     elif (exclude):
-      listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent != exclude):
           if (clickable.parent != 'Global GUI') and (not clickable.persistent):
             listOfElementsToDelete.append(clickable)
     else:
-      listOfElementsToDelete = []
       for clickable in self.clickables:
         if (clickable.parent != 'Global GUI') and (not clickable.persistent):
           listOfElementsToDelete.append(clickable)

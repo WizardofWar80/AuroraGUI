@@ -61,7 +61,7 @@ def DrawSystemFleets(context):
           pygame.draw.line(context.surface, col, prev_pos, pos,1)
         bb = Utils.DrawTriangle(context.surface,pos ,col, fleet['Heading'])
         if (game.CheckClickableNotBehindGUI(bb)):
-          game.MakeClickable(fleet['Name'], bb, left_click_call_back = Select_Fleet, par=fleetID)
+          game.MakeClickable(fleet['Name'], bb, left_click_call_back = Select_Fleet, par=fleetID, volatile = True)
         if (game.highlighted_fleet_ID == fleetID):
           pygame.draw.rect(context.surface, col,(bb[0]-2,bb[1]-2,bb[2]+4,bb[3]+4),2)
         #pygame.draw.circle(game.surface,col,(pos_x,pos_y),5,Utils.FILLED)
@@ -99,7 +99,7 @@ def DrawSystemFleets(context):
               context.surface.blit(game.images_GUI['station'],image_offset)
               Utils.DrawText2Surface(context.surface,fleet['Name'],(image_offset[0]+size[0],image_offset[1]+10),12,col)
               if (game.CheckClickableNotBehindGUI((image_offset, size))):
-                game.MakeClickable(fleet['Name'], (image_offset, size), left_click_call_back = Select_Fleet, par=fleetID)
+                game.MakeClickable(fleet['Name'], (image_offset, size), left_click_call_back = Select_Fleet, par=fleetID, volatile = True)
             #size = game.myRaceStationPic.get_size()
             #if (size[0]>size[1]):
             #  ratio = size[1]/size[0]
@@ -243,11 +243,11 @@ def DrawFleetInfoWindow(context):
                  or (context.showStations and fleet['Station'])):
               if (fleet['Ships'] != []):
                 expRect = Utils.DrawExpander(context.window_fleet_info, (label_pos[0],label_pos[1]+3), 15, color)
-                game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.systemScreen.ExpandFleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
+                game.MakeClickable(fleet['Name'], expRect, left_click_call_back = game.systemScreen.ExpandFleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor, volatile = True)
                 label_pos = (expRect[0]+expRect[2]+5,label_pos[1])
               label_pos, label_size = Utils.DrawText2Surface(context.window_fleet_info,fleet['Name']+ ' - ',label_pos,15,color)
               if (label_pos):
-                game.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = Select_Fleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor)
+                game.MakeClickable(fleet['Name'], (label_pos[0],label_pos[1], label_size[0],label_size[1]), left_click_call_back = Select_Fleet, par=fleetID, parent = context.window_fleet_info_identifier, anchor=context.window_fleet_info_anchor, volatile = True)
               drawFuel = True
               drawSupplies = True
             

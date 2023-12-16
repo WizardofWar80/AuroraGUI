@@ -1,6 +1,6 @@
 
 class Clickable():
-  def __init__(self, gameClass, name, rect, parameter=None, color_mask=None, LeftClickCallBack = None, RightClickCallBack = None, DoubleClickCallBack = None, parent = None, enabled = True, persistent = False):
+  def __init__(self, gameClass, name, rect, parameter=None, color_mask=None, LeftClickCallBack = None, RightClickCallBack = None, DoubleClickCallBack = None, parent = None, enabled = True, persistent = False, group = None, volatile = False):
     self.name = name
     self.rect = rect
     self.parameter = parameter
@@ -10,6 +10,8 @@ class Clickable():
     self.leftClicked = False
     self.rightClicked = False
     self.hover = False
+    self.volatile = volatile
+    self.group = group
     self.doubleClicked = False
     self.toBeProcessed = False
     self.persistent = persistent

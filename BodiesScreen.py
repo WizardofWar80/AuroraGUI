@@ -96,8 +96,9 @@ class BodiesScreen(Screen):
     x = self.GUI_Bottom_Anchor[0] - 275
     y = self.GUI_Bottom_Anchor[1] - 100
     bb = (x,y,32,32)
-    gui_cl = self.game.MakeClickable('Hide empty columns', bb, self.ToggleHideCells)
-    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Hide empty columns', bb, gui_cl, 'Button', enabled = self.table.hideEmptyColumns)
+    gui_cl = self.game.MakeClickable('Hide empty columns', bb, self.ToggleHideCells, par=idGUI)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Hide empty columns', bb, gui_cl, 'Button', enabled = self.table.hideEmptyColumns, showLabel = True, labelPos = GUI.GUI_LABEL_POS_RIGHT)
+    self.GUI_Elements[idGUI].SetImages(self.game.images_GUI, 'checkbox_enabled', 'checkbox_disabled')
     idGUI += 1
 
     x = self.GUI_Bottom_Anchor[0] - 275
@@ -509,6 +510,7 @@ class BodiesScreen(Screen):
               break
 
         
-  def ToggleHideCells(self, void = None, void2 = None, void3 = None):
+  def ToggleHideCells(self, par, void = None, void2 = None):
     self.table.ToggleHideCells()
+    self.ToggleGUI(par)
     self.reDraw = True

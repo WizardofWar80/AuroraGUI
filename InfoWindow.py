@@ -65,7 +65,7 @@ def Draw(context):
       if ('Deposits' in body):
         # Mineral Deposits info
         expRect = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
-        game.MakeClickable(context.info_category_deposits, expRect, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_deposits, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+        game.MakeClickable(context.info_category_deposits, expRect, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_deposits, parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
         DrawLineOfText(context.window_info, context.info_category_deposits, _indentLevel+1, unscrollable = True)
 
         if (context.info_cat_deposits_expanded):
@@ -78,7 +78,7 @@ def Draw(context):
 
       # Physical body info
       expRect = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
-      game.MakeClickable(context.info_category_physical, expRect, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_physical, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+      game.MakeClickable(context.info_category_physical, expRect, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_physical, parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
       DrawLineOfText(context.window_info, context.info_category_physical, _indentLevel+1, unscrollable = True)
 
       if (context.info_cat_phys_expanded):
@@ -107,7 +107,7 @@ def Draw(context):
         colony = game.colonies[game.highlighted_body_ID]
 
         expRect1 = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
-        game.MakeClickable(context.info_category_economical, expRect1, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_economical, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+        game.MakeClickable(context.info_category_economical, expRect1, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_economical, parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
         DrawLineOfText(context.window_info, context.info_category_economical, _indentLevel+1, unscrollable = True)
         if (context.info_cat_eco_expanded):
           DrawTextWithTabs(context.window_info, 'Population:', _indentLevel+1, str(colony['Pop']), 130, context.window_info_scoll_pos)
@@ -134,7 +134,7 @@ def Draw(context):
           if (colony['Stockpile']['Sum'] > 0 or colony['Stockpile']['Sum of Minerals'] > 0):
             cursorPos = (cursorPos[0]+indentWidth, cursorPos[1])
             expRect2 = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
-            game.MakeClickable(context.info_category_stockpile, expRect2, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_stockpile, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+            game.MakeClickable(context.info_category_stockpile, expRect2, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_stockpile, parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
             DrawLineOfText(context.window_info, 'Stockpile', _indentLevel+2, unscrollable = True)
             if (context.info_cat_stock_expanded):
               if (colony['Stockpile']['Sum'] > 0):
@@ -158,7 +158,7 @@ def Draw(context):
           if (found_Installations):
             cursorPos = (cursorPos[0]+indentWidth, cursorPos[1])
             expRect2 = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
-            game.MakeClickable(context.info_category_installations, expRect2, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_installations, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+            game.MakeClickable(context.info_category_installations, expRect2, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_installations, parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
             DrawLineOfText(context.window_info, context.info_category_installations, _indentLevel+2, unscrollable = True)
             if (context.info_cat_inst_expanded):
               for InstallationID in colony['Installations']:
@@ -174,7 +174,7 @@ def Draw(context):
         #if (not context.info_cat_eco_expanded):
         cursorPos = (cursorPos[0], cursorPos[1])
         expRect = Utils.DrawExpander(context.window_info, (cursorPos[0],cursorPos[1]+3), textSize, textColor)
-        game.MakeClickable(context.info_category_orbit, expRect, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_orbit, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+        game.MakeClickable(context.info_category_orbit, expRect, left_click_call_back = context.ExpandBodyInfo, par=context.info_category_orbit, parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
         DrawLineOfText(context.window_info, context.info_category_orbit, _indentLevel+1, unscrollable = True)
         pygame.draw.line(context.window_info, Utils.WHITE, (cursorPos[0],cursorPos[1]-2),(cursorPos[0]+200,cursorPos[1]-2),1)
         if (context.info_cat_orbit_expanded):
@@ -246,7 +246,7 @@ def DrawFleet(context, fleet, indentLevel = 0):
   if (lineNr >= unscrollableLineNr):
     if (fleet['Ships'] != []):
       expRect = Utils.DrawExpander(context.window_info, (cursorPos[0]+indentWidth,cursorPos[1]+3), 15, textColor)
-      game.MakeClickable(fleet['Name'], expRect, left_click_call_back = context.ExpandFleet, par=fleet['ID'], parent = context.window_info_identifier, anchor=context.window_info_anchor)
+      game.MakeClickable(fleet['Name'], expRect, left_click_call_back = context.ExpandFleet, par=fleet['ID'], parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
     else:
       expRect = pygame.draw.rect(context.window_info, textColor, (cursorPos[0]+indentWidth+1,cursorPos[1]+3+1, textSize-2, textSize-2), 1)
     label_size = DrawLineOfText(context.window_info, fleet['Name']+ ' - ', indentLevel+2)
@@ -291,7 +291,7 @@ def DrawFleet(context, fleet, indentLevel = 0):
           shipClasses[ship['ClassName']]['Num'] += 1
       for shipClass in shipClasses:
         expRect = Utils.DrawExpander(context.window_info, (cursorPos[0]+indentWidth,cursorPos[1]+3), 15, textColor)
-        game.MakeClickable(shipClass, expRect, left_click_call_back = context.ExpandShipClasses, par=shipClass, parent = context.window_info_identifier, anchor=context.window_info_anchor)
+        game.MakeClickable(shipClass, expRect, left_click_call_back = context.ExpandShipClasses, par=shipClass, parent = context.window_info_identifier, anchor=context.window_info_anchor, volatile = True)
         DrawLineOfText(context.window_info, '%dx %s'%(shipClasses[ship['ClassName']]['Num'],shipClass), indentLevel+2)
         #if (ship['Military']):
         #  DrawLineOfText(context.window_info, 'AFR: %d%%'%(int(Utils.Round(ship['AFR']*100,0))), indentLevel+3)

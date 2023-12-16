@@ -174,12 +174,24 @@ class SystemScreen(Screen):
     self.GUI_expanded_fleets = []
     self.GUI_expanded_fleets2 = []
     self.GUI_expanded_fleets3 = []
+    self.GUI_ID_dropdown_systems = 0
     #self.InitGUI()
 
       
   def InitGUI(self):
     idGUI = 1
     x = self.GUI_Bottom_Anchor[0]
+    y = self.GUI_Bottom_Anchor[1]
+    size = [250,25]
+    bb = (x,y,size[0],size[1])
+    gui_cl = self.game.MakeClickable('Systems Dropdown', bb, self.OpenSystemDropdown, parent='Systems Dropdown')
+    systemNames = Systems.GetKnownSystemNames(self.game)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'System', bb, gui_cl, 'Dropdown', content = systemNames, dropUp = True, showLabel = True)
+    self.GUI_ID_dropdown_systems = idGUI
+    self.GUI_Elements[idGUI].dropdownSelection = Systems.GetIndexOfCurrentSystem(self.game)
+    
+    idGUI += 1
+    x = self.GUI_Bottom_Anchor[0]+size[0]+5
     y = self.GUI_Bottom_Anchor[1]
     size = 32
     bb = (x,y,size,size)
@@ -449,7 +461,7 @@ class SystemScreen(Screen):
     # clear screen
     if (self.reDraw):
       if (self.Events):
-        self.Events.ClearClickables(exclude = self.GUI_identifier)
+        self.Events.ClearClickables(volatile_only = True)
       self.reDraw_FleetInfoWindow = True
       self.reDraw_InfoWindow = True
       self.reDraw_MapWindow = True
@@ -645,6 +657,41 @@ class SystemScreen(Screen):
     self.screenCenter = Utils.SubTuples(self.game.screenCenter, scaled_position)
     #self.systemScale = 10
 
+
+  def OpenSystemDropdown(self, parameter, parent, mousepos):
+    self.GUI_Elements[self.GUI_ID_dropdown_systems].open = not self.GUI_Elements[self.GUI_ID_dropdown_systems].open
+    if (self.GUI_Elements[self.GUI_ID_dropdown_systems].open):
+      self.game.MakeClickable('open dropdown', self.GUI_Elements[self.GUI_ID_dropdown_systems].extendedBB, self.GetDropdownSelection, par=mousepos, parent='Systems Dropdown')
+    else:
+      self.game.Events.RemoveClickable('open dropdown', parent='Systems Dropdown')
+      self.GUI_Elements[self.GUI_ID_dropdown_systems].scroll_position = 0
+    self.reDraw = True
+
+
+  def GetDropdownSelection(self, mouse_pos, parent, mousepos):
+    lineNr = 0
+    id = None
+    if (parent == 'Systems Dropdown'):
+      id = self.GUI_ID_dropdown_systems
+    if id is not None:
+      for i in range(len(self.GUI_Elements[id].content)):
+        if (self.GUI_Elements[id].scroll_position+i >= 0):
+          height = self.GUI_Elements[id].rect[3]
+          anchor = (self.GUI_Elements[id].extendedBB[0],self.GUI_Elements[id].extendedBB[1])
+          y = lineNr*height
+          lineNr+=1
+          if (mousepos[1]-anchor[1] > y) and (mousepos[1]-anchor[1] < y + height):
+            self.GUI_Elements[id].dropdownSelection = i
+            self.GUI_Elements[id].open  = False
+            if (parent == 'Systems Dropdown'):
+              id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[id].content[i])
+              if (id is not None):
+                self.game.currentSystem = id
+                self.game.GetNewLocalData(id)
+              self.reDraw = True
+              break
+
+     
   #def ToggleGUI(self, id, parent = None):
   #  if (id in self.GUI_Elements):
   #    self.reDraw = True

@@ -801,7 +801,7 @@ class Game():
       self.myRaceFlagPic = pygame.image.load(self.aurora_folder+'Flags\\'+self.myRaceFlagPicFilename)
 
 
-  def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True, persistent = False):
+  def MakeClickable(self, name, bounding_box, left_click_call_back=None, right_click_call_back=None, double_click_call_back=None, par=None, color=None, parent = None, anchor = None, enabled = True, persistent = False, volatile = False):
     if (len(bounding_box) == 2):
       if (len(bounding_box[0]) == 2 and len(bounding_box[1]) == 2):
         bounding_box = (bounding_box[0][0],bounding_box[0][1],bounding_box[1][0],bounding_box[1][1])
@@ -816,7 +816,8 @@ class Game():
                      DoubleClickCallBack=double_click_call_back,
                      parent = parent,
                      enabled = enabled,
-                     persistent = persistent)
+                     persistent = persistent,
+                     volatile = volatile)
       if (self.Events):
         self.Events.Bind(cl)
       return cl
