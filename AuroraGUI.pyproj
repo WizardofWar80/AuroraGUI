@@ -53,6 +53,12 @@
     <Compile Include="Fleets.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FleetScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TableScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="GalaxyScreen.py">
       <SubType>Code</SubType>
     </Compile>

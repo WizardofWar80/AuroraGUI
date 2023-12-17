@@ -6,6 +6,7 @@ import math
 import random
 import Clickable
 import Screen
+import TableScreen
 import GUI
 import Bodies
 import InfoWindow
@@ -29,6 +30,7 @@ import EventsScreen
 import Designations
 import DevelopmentScreen
 import SystemTableScreen
+import FleetScreen
 import os
 
 class Game():
@@ -158,6 +160,7 @@ class Game():
     self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass, 'Events')
     self.developmentScreen  = DevelopmentScreen.DevelopmentScreen(self, eventsclass, 'Development')
     self.systemTableScreen  = SystemTableScreen.SystemTableScreen(self, eventsclass, 'Systems')
+    self.fleetScreen        = FleetScreen.FleetScreen(self, eventsclass, 'Fleets')
 
     self.terraformingScreen.ResetBodies()
     self.coloniesScreen.ResetBodies()
@@ -206,6 +209,13 @@ class Game():
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Economy'
+    gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[0]+5
+    bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
+    name = 'Fleets'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
@@ -639,8 +649,12 @@ class Game():
       if (self.lastScreen != self.currentScreen) or self.newData:
         self.terraformingScreen.ResetGUI()
         self.terraformingScreen.RefreshData()
-        #self.terraformingScreen.UpdateData()
       reblit |= self.terraformingScreen.Draw()
+    elif (self.currentScreen == 'Fleets'):
+      if (self.lastScreen != self.currentScreen) or self.newData:
+        self.fleetScreen.ResetGUI()
+        self.fleetScreen.RefreshData()
+      reblit |= self.fleetScreen.Draw()
     elif (self.currentScreen == 'Develop'):
       if (self.lastScreen != self.currentScreen) or self.newData:
         self.developmentScreen.ResetGUI()
@@ -686,6 +700,8 @@ class Game():
       self.galaxyScreen.reDraw = True
     elif (screen_name == 'Events'):
       self.eventsScreen.reDraw = True
+    elif (screen_name == 'Fleets'):
+      self.fleetScreen.reDraw = True
 
 
   def CheckForNewDBData(self):
@@ -853,6 +869,7 @@ class Game():
     gravDev  = self.db.execute('''SELECT GravDev from FCT_Species WHERE GameID = %d AND SpecialNPRID = 0;'''%(self.gameID)).fetchone()[0]
     self.myRaceMinGrav = gravity - gravDev
     self.myRaceMaxGrav = gravity + gravDev
+
 
   def FollowEvent(self, parameters, parent, mousepos):
     # parents: ['Ship', 'Body', 'Fleet','Missile', 'Contact','Research', 'Xenos', 'System']

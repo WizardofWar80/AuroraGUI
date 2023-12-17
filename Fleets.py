@@ -204,6 +204,9 @@ def GetFleets(game):
     fleets[systemID][fleetId]['Terraformers'] = fleetTerraformers
     fleets[systemID][fleetId]['Tanker'] = fleetTerraformers
     fleets[systemID][fleetId]['Refueling Hub'] = fleetTerraformers
+    parentCommandID = item[4]
+    admin = [list(x) for x in game.db.execute('''SELECT AdminCommandName from FCT_NavalAdminCommand WHERE NavalAdminCommandID = %d;'''%(parentCommandID))][0][0]
+    fleets[systemID][fleetId]['Admin'] = admin
 
   game.statisticsShips[str(int(game.gameTime))] = total_num_ships
   game.statisticsStations[str(int(game.gameTime))] = total_num_stations
