@@ -281,7 +281,6 @@ class TableScreen(Screen):
     if (self.selectedItem) and (self.selectedRow > -1):
       Utils.DrawLineOfText(self, self.surface, self.selectedItem, 0, anchor = anchor)
       
-        
 
   def ExitScreen(self):
     self.table.scrollbar.clickable.enabled = False
@@ -319,7 +318,7 @@ class TableScreen(Screen):
     self.UpdateTable()
     
 
-  def GetDrawConditions(self, body, colony):
+  def GetDrawConditions(self, item1, item2 = None):
     ret_value = True
     
     return ret_value
