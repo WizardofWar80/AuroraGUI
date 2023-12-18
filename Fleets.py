@@ -171,6 +171,20 @@ def GetFleets(game):
       enginePower = shipClass[22]
       numTerraformers = shipClass[68]
       numHarvesters = shipClass[31]
+      tanker = shipClass[28]
+      miners = shipClass[43]
+      refuellingRate = shipClass[59]
+      refuellingHub = shipClass[60]
+      ordnanceTransferHub=shipClass[77]
+      ordnanceTransferRate=shipClass[78]
+      PPV = shipClass[54]
+      jGConstructionTime = shipClass[33]
+      jumpDistance = shipClass[34]
+      mainFunction = shipClass[47]
+      salvageRate = shipClass[62]
+      tractor = shipClass[66]
+      supplyShip = shipClass[67]
+
       deploymentTime = (game.gameTime-ship[23])/3600/24/365.25*12
       maintenanceLife = (game.gameTime-ship[22])/3600/24/365.25
       components = GetShipComponents(game, shipClassID)
@@ -202,8 +216,21 @@ def GetFleets(game):
     fleets[systemID][fleetId]['Station'] = fleetIsStation
     fleets[systemID][fleetId]['Harvesters'] = fleetHarvesters
     fleets[systemID][fleetId]['Terraformers'] = fleetTerraformers
-    fleets[systemID][fleetId]['Tanker'] = fleetTerraformers
-    fleets[systemID][fleetId]['Refueling Hub'] = fleetTerraformers
+    fleets[systemID][fleetId]['Tanker'] = tanker
+    fleets[systemID][fleetId]['Refueling Hub'] = refuellingHub
+    fleets[systemID][fleetId]['Orbital Miners'] = miners
+    fleets[systemID][fleetId]['Ordnance Hub'] = ordnanceTransferHub
+    fleets[systemID][fleetId]['PPV'] = PPV
+    fleets[systemID][fleetId]['Salvage Rate'] = salvageRate
+    fleets[systemID][fleetId]['JG Construction Time'] = jGConstructionTime
+    fleets[systemID][fleetId]['Refueling Rate'] = refuellingRate
+    fleets[systemID][fleetId]['Ordnance Transfer Rate'] = ordnanceTransferRate
+    fleets[systemID][fleetId]['Function'] = mainFunction
+    fleets[systemID][fleetId]['Supply Ship'] = supplyShip
+    fleets[systemID][fleetId]['Tug'] = tractor
+
+    #jumpDistance
+
     parentCommandID = item[4]
     admin = [list(x) for x in game.db.execute('''SELECT AdminCommandName from FCT_NavalAdminCommand WHERE NavalAdminCommandID = %d;'''%(parentCommandID))][0][0]
     fleets[systemID][fleetId]['Admin'] = admin

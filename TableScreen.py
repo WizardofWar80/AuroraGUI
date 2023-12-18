@@ -39,9 +39,8 @@ class TableScreen(Screen):
 
     self.GUI_Button_Size = (100,30)
     self.GUI_Elements = {}
-    self.GUI_identifier = 'Table'
     self.images_GUI = {}
-    self.table = Table.Table(self, 1, 5, anchor = (20,60), max_rows=15, col_widths = [10,10,10,10,10])
+    self.table = Table.Table(self, 1, 35, anchor = (20,60), max_rows=15, col_widths = [10,10,10,10,10])
     self.table.hideEmptyColumns = False
 
     self.GUI_Table_Header_Anchor = self.table.anchor
@@ -54,6 +53,7 @@ class TableScreen(Screen):
     self.GUI_ID_dropdown_designations = 2
     self.selectedItem = None
     self.selectedRow = -1
+    self.selectedCol = -1
 
     self.Option1 = False
 
@@ -74,7 +74,7 @@ class TableScreen(Screen):
     self.tab4 = self.tab3+80
     self.tab5 = 80
     self.tab6 = 120
-    self.bodies = {}
+    self.items = {}
 
 
   def FormatTable(self, table):
@@ -328,11 +328,12 @@ class TableScreen(Screen):
     selectedRow = -1
     row, col, value = self.table.GetLocationInsideTable(mouse_pos)
     if (row is not None) and (col is not None):
-      if row > 0 and col == 1:
+      if row > 0:
         if (self.selectedItem != value):
           self.reDraw = True
           self.selectedItem = value
           self.selectedRow = row
+          self.selectedCol = col
 
 
   def DrawColorCodedColonyCosts(self, category_name, value, limit_text, limit_value, cc_factor, anchor, value_text = None, threshold_below = None, threshold = None, threshold_min = None, remedy = ''):
