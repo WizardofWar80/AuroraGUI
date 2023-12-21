@@ -39,7 +39,7 @@ class FleetScreen(TableScreen):
     self.GUI_Button_Size = (100,30)
     self.GUI_Elements = {}
     self.images_GUI = {}
-    self.table = Table.Table(self, 1, 7, anchor = (20,60), max_rows=15, col_widths = [10,10,10,10,10])
+    self.table = Table.Table(self, 1, 8, anchor = (20,60), max_rows=15, col_widths = [10,10,10,10,10])
     self.table.hideEmptyColumns = False
 
     self.GUI_Table_Header_Anchor = self.table.anchor
@@ -52,6 +52,7 @@ class FleetScreen(TableScreen):
     self.selectedItem = None
     self.selectedRow = -1
     self.selectedCol = -1
+    self.selectedFleet = None
 
     self.FormatTable(self.table)
     self.table.Scrollbar()
@@ -78,10 +79,11 @@ class FleetScreen(TableScreen):
     self.colIndexSystemID = 0
     self.colIndexFleetID = 0
 
+
   def InitGUI(self):
     self.table.scrollbar.clickable.enabled = True
     idGUI = 0
-    reverse_order_columns = []
+    reverse_order_columns = [3,4,5,6]
     col_index = 0
     for cell in self.table.cells[0]:
       gui_cl = self.game.MakeClickable(cell.value, cell.rect, self.SortTableGUI, par=idGUI, parent=self.GUI_Table_identifier)
@@ -179,7 +181,9 @@ class FleetScreen(TableScreen):
             fleetType += 'Tug'
           numShips = len(fleet['Ships'])
           order = self.GetCondensedMoveOrders(fleet)
-          unsortedIDs.append([fleet['Name'], fleet['System_Name'], fleet['Admin'], fleet['Station'], fleetType, numShips, order])
+          moving = 'True' if fleet['Speed'] > 1 else ''
+          station = 'True' if fleet['Station'] else ''
+          unsortedIDs.append([fleet['Name'], fleet['System_Name'], fleet['Admin'], station, moving, fleetType, numShips, order])
           
           self.colIndexSystemID = len(unsortedIDs[-1])
           self.colIndexFleetID = self.colIndexSystemID + 1
@@ -192,7 +196,7 @@ class FleetScreen(TableScreen):
     sortedIDs = sorted(unsortedIDs, key=itemgetter(id), reverse=rev)
     
     row = 0
-    header = ['Name', 'System', 'Admin', 'Station', 'Fleet Type', '# Ships', 'Orders']
+    header = ['Name', 'System', 'Admin', 'Station', 'Moving', 'Fleet Type', '# Ships', 'Orders']
     
     self.table.AddRow(row, header, [True]*len(header))
 
@@ -240,6 +244,7 @@ class FleetScreen(TableScreen):
     table.AddFormat(3, {'Operation':'Align', 'value':'center'} )
     table.AddFormat(4, {'Operation':'Align', 'value':'center'} )
     table.AddFormat(5, {'Operation':'Align', 'value':'center'} )
+    table.AddFormat(6, {'Operation':'Align', 'value':'center'} )
 
 
   def GetDrawConditions(self, fleet):
@@ -261,6 +266,25 @@ class FleetScreen(TableScreen):
         show = False
     return show
 
+
+  def GetItemFromInsideTable(self, par, parent, mouse_pos):
+    selectedRow = -1
+    row, col, value = self.table.GetLocationInsideTable(mouse_pos)
+    if (row is not None) and (col is not None):
+      if row > 0:
+        if (self.selectedItem != value):
+          self.reDraw = True
+          self.selectedItem = value
+          self.selectedRow = row
+          self.selectedCol = col
+          self.selectedFleet = None
+          if (self.selectedItem) and (self.selectedRow > -1):
+            if (self.selectedRow in self.fleets):
+              selectedFleetArray = self.fleets[self.selectedRow]
+              systemID = selectedFleetArray[self.colIndexSystemID]
+              fleetID = selectedFleetArray[self.colIndexFleetID]
+              self.selectedFleet = self.game.fleets[systemID][fleetID]
+
   
   def DrawSelectedItem(self):
     anchor = (self.table.rect[0], self.table.rect[1]+self.table.row_height*self.table.max_rows+30)
@@ -268,17 +292,25 @@ class FleetScreen(TableScreen):
     self.lineNr = 0
     self.unscrollableLineNr = 0
 
-    if (self.selectedItem) and (self.selectedRow > -1):
-      if (self.selectedRow in self.fleets):
-        selectedFleetArray = self.fleets[self.selectedRow]
-        systemID = selectedFleetArray[self.colIndexSystemID]
-        fleetID = selectedFleetArray[self.colIndexFleetID]
-        fleet = self.game.fleets[systemID][fleetID]
-        Utils.DrawLineOfText(self, self.surface, fleet['Name'], 0, anchor = anchor)
-        orderText = self.GetCondensedMoveOrders(fleet)
-        Utils.DrawLineOfText(self, self.surface, orderText, 0, anchor = anchor)
-        for ship in fleet['Ships']:
-          Utils.DrawLineOfText(self, self.surface, ship['Name'], 0, anchor = anchor)
+    if (self.selectedFleet):
+      fleet = self.selectedFleet
+      Utils.DrawLineOfText(self, self.surface, fleet['Name'], 0, anchor = anchor)
+      orderText = self.GetCondensedMoveOrders(fleet)
+      if (orderText != ''):
+        Utils.DrawLineOfText(self, self.surface, 'Orders:', 0, anchor = anchor)
+        Utils.DrawLineOfText(self, self.surface, orderText, 1, anchor = anchor)
+      cargo = Fleets.GetCargo(self.game, fleet)
+      if cargo or fleet['Tanker'] > 0:
+        Utils.DrawLineOfText(self, self.surface, 'Cargo:', 0, anchor = anchor)
+      for cargoID in cargo:
+        Utils.DrawLineOfText(self, self.surface, cargo[cargoID]['Name'] + ': '+str(cargo[cargoID]['Amount']),1, anchor = anchor)
+      if (fleet['Tanker'] > 0):
+        Utils.DrawLineOfText(self, self.surface, f"Fuel: {int(fleet['Fuel']):,} liters",1, anchor = anchor)
+      
+      if fleet['Ships']:
+        Utils.DrawLineOfText(self, self.surface, 'Ships:', 0, anchor = anchor)
+      for ship in fleet['Ships']:
+        Utils.DrawLineOfText(self, self.surface, ship['Name'], 1, anchor = anchor)
 
 
   def GetCondensedMoveOrders(self, fleet):
@@ -321,4 +353,8 @@ class FleetScreen(TableScreen):
             if orderDescr.find('Fuel') > -1:
               item = 'Fuel'
             orderText = 'Transport %s %s%s to %s'%(item, ('from 'if sourceLocation !='' else ''), sourceLocation, destinationLocation)
+      if (orderText == ''):
+        if (len(orders_table) > 0):
+          orderText = orders_table[-1][18]
+
     return orderText
