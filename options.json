@@ -42,7 +42,7 @@
     "highlightArtifactsBodies": true
   },
   "TerraformingScreen": {
-    "hideNoTerraformingActive": false,
+    "hideNoTerraformingActive": true,
     "hideCivilian": true,
     "hideHighCCBodies": false,
     "hideComets": true,

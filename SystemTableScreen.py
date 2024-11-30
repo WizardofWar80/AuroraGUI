@@ -9,6 +9,7 @@ import Utils
 import Colonies
 import Bodies
 import Fleets
+import Systems
 
 class SystemTableScreen(Screen):
   def __init__(self, game, events, name):
@@ -129,13 +130,13 @@ class SystemTableScreen(Screen):
         idGUI += 1
         col_index += 1
 
-    gui_cl = self.game.MakeClickable('Complete Systems Table', self.table.rect, parent='Complete Systems Table')
+    gui_cl = self.game.MakeClickable('Complete Systems Table', self.table.rect, double_click_call_back = self.GetSystemFromInsideTable, parent='Complete Systems Table')
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, self.GUI_Table_identifier, self.table.rect, gui_cl, 'Button')
     self.GUI_table_ID = idGUI
     idGUI += 1
 
-    x = self.GUI_Bottom_Anchor[0] - 275
-    y = self.GUI_Bottom_Anchor[1] - 100
+    x = self.GUI_Bottom_Anchor[0] + 6 * (32 + 5)
+    y = self.GUI_Bottom_Anchor[1]# - 100
     bb = (x,y,32,32)
     gui_cl = self.game.MakeClickable('Hide empty columns', bb, self.ToggleHideCells, par=idGUI)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Hide empty columns', bb, gui_cl, 'Button', enabled = self.table.hideEmptyColumns, showLabel = True, labelPos = GUI.GUI_LABEL_POS_RIGHT)
@@ -364,3 +365,14 @@ class SystemTableScreen(Screen):
     self.table.ToggleHideCells()
     self.ToggleGUI(par)
     self.reDraw = True
+    
+
+  def GetSystemFromInsideTable(self, par, parent, mouse_pos):
+    row, col, value = self.table.GetLocationInsideTable(mouse_pos)
+    if (row is not None) and (col is not None):
+      if row > 0 and col == 1:
+        if (value is not None):
+          systemID = Systems.GetSystemIDByName(self.game, value)
+          if (systemID is not None):
+            self.game.FollowEvent([value, systemID, 0, 0, 'SystemID', systemID], 'System', mouse_pos)
+

@@ -96,7 +96,7 @@ class FleetScreen(TableScreen):
     self.GUI_table_ID = idGUI
     idGUI += 1
 
-    x = self.GUI_Bottom_Anchor[0] - 275
+    x = self.GUI_Bottom_Anchor[0] + 6 * (32 + 5)
     y = self.GUI_Bottom_Anchor[1]
     bb = (x,y,32,32)
     gui_cl = self.game.MakeClickable('Hide empty columns', bb, self.ToggleHideCells, par=idGUI)

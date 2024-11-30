@@ -77,7 +77,7 @@ class ColonyDetailsScreen(Screen):
       body = self.game.systemBodies[self.bodyID]
     if (self.bodyID in self.game.colonies):
       colony = self.game.colonies[self.bodyID]
-    if (body is None) or (colony is None):
+    if (body is None):# or (colony is None):
       return False
     
     scale = (200,200)
@@ -116,16 +116,17 @@ class ColonyDetailsScreen(Screen):
     t1 = 100
     t2 = 180
     t3 = 230
-
-    self.DrawTextWithTabs(self.surface, 'Resource', 0, 'Deposit', t1, 0, text3 = '(Acc)', tab_dist2 = t2, tab_dist3 = t3, text4 = 'Stockpile', anchor = self.anchor)
-    stock = f"{colony['Stockpile']['Fuel']:,}"
-    if (stock == '0'):
-      stock = '-'
-    self.DrawTextWithTabs(self.surface, 'Fuel', 0, '-', t1, 0, text3 = '', tab_dist2 = t2, tab_dist3 = t3, text4 = stock, anchor = self.anchor)
-    stock = f"{colony['Stockpile']['Supplies']:,}"
-    if (stock == '0'):
-      stock = '-'
-    self.DrawTextWithTabs(self.surface, 'Supplies', 0, '-', t1, 0, text3 = '', tab_dist2 = t2, tab_dist3 = t3, text4 = stock, anchor = self.anchor)
+    if (colony):
+      self.DrawTextWithTabs(self.surface, 'Resource', 0, 'Deposit', t1, 0, text3 = '(Acc)', tab_dist2 = t2, tab_dist3 = t3, text4 = 'Stockpile', anchor = self.anchor)
+    
+      stock = f"{colony['Stockpile']['Fuel']:,}"
+      if (stock == '0'):
+        stock = '-'
+      self.DrawTextWithTabs(self.surface, 'Fuel', 0, '-', t1, 0, text3 = '', tab_dist2 = t2, tab_dist3 = t3, text4 = stock, anchor = self.anchor)
+      stock = f"{colony['Stockpile']['Supplies']:,}"
+      if (stock == '0'):
+        stock = '-'
+      self.DrawTextWithTabs(self.surface, 'Supplies', 0, '-', t1, 0, text3 = '', tab_dist2 = t2, tab_dist3 = t3, text4 = stock, anchor = self.anchor)
 
     for i in Utils.MineralNames:
       mineral = Utils.MineralNames[i]
@@ -133,14 +134,16 @@ class ColonyDetailsScreen(Screen):
       acc = 0
       stock = 0
       if ('Deposits' in body):
-        stock = colony['Stockpile']['Fuel']
+        if (colony):
+          stock = colony['Stockpile']['Fuel']
         if mineral in body['Deposits']:
           deposit = f"{int(Utils.Round(body['Deposits'][mineral]['Amount'],0)):,}"
           acc = '(%1.1f)'%Utils.Round(body['Deposits'][mineral]['Accessibility'],1)
           if (deposit == '0'):
             deposit = '-'
             acc = ''
-          stock = f"{colony['Stockpile'][mineral]:,}"
+          if (colony):
+            stock = f"{colony['Stockpile'][mineral]:,}"
           if (stock == '0'):
             stock = '-'
       self.DrawTextWithTabs(self.surface, mineral, 0, deposit, t1, 0, text3 = acc, tab_dist2 = t2, tab_dist3 = t3, text4 = stock, anchor = self.anchor)

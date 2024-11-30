@@ -172,8 +172,8 @@ class TerraformingScreen(Screen):
     self.GUI_table_ID = idGUI
     idGUI += 1
 
-    x = self.GUI_Bottom_Anchor[0] - 275
-    y = self.GUI_Bottom_Anchor[1] - 100
+    x = self.GUI_Bottom_Anchor[0] + 6 * (32 + 5)
+    y = self.GUI_Bottom_Anchor[1]
     bb = (x,y,32,32)
     gui_cl = self.game.MakeClickable('Hide empty columns', bb, self.ToggleHideCells, par=idGUI)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Hide empty columns', bb, gui_cl, 'Button', enabled = self.table.hideEmptyColumns, showLabel = True, labelPos = GUI.GUI_LABEL_POS_RIGHT)
