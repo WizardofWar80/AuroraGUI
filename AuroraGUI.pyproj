@@ -56,6 +56,7 @@
     <Compile Include="FleetScreen.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tab.py" />
     <Compile Include="TableScreen.py">
       <SubType>Code</SubType>
     </Compile>
@@ -109,6 +110,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils.py" />
+    <Compile Include="CommandsScreen.py" />
     <Compile Include="XenosScreen.py">
       <SubType>Code</SubType>
     </Compile>

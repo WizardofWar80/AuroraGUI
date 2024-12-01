@@ -3,24 +3,36 @@
   "WorkspaceRootPath": "D:\\Git\\AuroraGUI\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\FleetScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:FleetScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\Bodies.py||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:Bodies.py||{8B382828-6202-11D1-8870-0000F87579D2}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\Events.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:Events.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\MainModule.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:MainModule.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\Clickable.py||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:Clickable.py||{8B382828-6202-11D1-8870-0000F87579D2}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\ColoniesScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:ColoniesScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\Systems.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:Systems.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\SystemScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:SystemScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\BodiesScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:BodiesScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\Bodies.py||{8B382828-6202-11D1-8870-0000F87579D2}|",
-      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:Bodies.py||{8B382828-6202-11D1-8870-0000F87579D2}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\SystemTableScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:SystemTableScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\TerraformingScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
@@ -31,12 +43,12 @@
       "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:AuroraGUI.py||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\SystemScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:SystemScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\Colonies.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:Colonies.py||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\MainModule.py||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:MainModule.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|D:\\Git\\AuroraGUI\\SystemTableScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{69C93280-9BD8-487E-88EB-E864806156A0}|AuroraGUI.pyproj|solutionrelative:SystemTableScreen.py||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -46,123 +58,162 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "FleetScreen.py",
-              "DocumentMoniker": "D:\\Git\\AuroraGUI\\FleetScreen.py",
-              "RelativeDocumentMoniker": "FleetScreen.py",
-              "ToolTip": "D:\\Git\\AuroraGUI\\FleetScreen.py",
-              "RelativeToolTip": "FleetScreen.py",
-              "ViewState": "AQIAAFgBAAAAAAAAAAAAAAAAAAAAAAAA",
+              "DocumentIndex": 1,
+              "Title": "Events.py",
+              "DocumentMoniker": "D:\\Git\\AuroraGUI\\Events.py",
+              "RelativeDocumentMoniker": "Events.py",
+              "ToolTip": "D:\\Git\\AuroraGUI\\Events.py",
+              "RelativeToolTip": "Events.py",
+              "ViewState": "AQIAAP8AAAAAAAAAAAAowE4BAAAAAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
-              "WhenOpened": "2024-11-30T18:48:50.159Z",
+              "WhenOpened": "2024-11-30T21:48:07.027Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
+              "Title": "Clickable.py",
+              "DocumentMoniker": "D:\\Git\\AuroraGUI\\Clickable.py",
+              "RelativeDocumentMoniker": "Clickable.py",
+              "ToolTip": "D:\\Git\\AuroraGUI\\Clickable.py",
+              "RelativeToolTip": "Clickable.py",
+              "ViewState": "AQIAAAUAAAAAAAAAAAAAABYAAAAAAAAA",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
+              "WhenOpened": "2024-11-30T21:40:20.725Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Systems.py",
+              "DocumentMoniker": "D:\\Git\\AuroraGUI\\Systems.py",
+              "RelativeDocumentMoniker": "Systems.py",
+              "ToolTip": "D:\\Git\\AuroraGUI\\Systems.py",
+              "RelativeToolTip": "Systems.py",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABAAAAARAAAA",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
+              "WhenOpened": "2024-11-30T20:49:33.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Bodies.py",
+              "DocumentMoniker": "D:\\Git\\AuroraGUI\\Bodies.py",
+              "RelativeDocumentMoniker": "Bodies.py",
+              "ToolTip": "D:\\Git\\AuroraGUI\\Bodies.py",
+              "RelativeToolTip": "Bodies.py",
+              "ViewState": "AQIAAAsAAAAAAAAAAAAowBIAAAAtAAAA",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
+              "WhenOpened": "2024-11-30T20:33:53.719Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "ColoniesScreen.py",
               "DocumentMoniker": "D:\\Git\\AuroraGUI\\ColoniesScreen.py",
               "RelativeDocumentMoniker": "ColoniesScreen.py",
-              "ToolTip": "D:\\Git\\AuroraGUI\\ColoniesScreen.py*",
-              "RelativeToolTip": "ColoniesScreen.py*",
-              "ViewState": "AQIAAJwAAAAAAAAAAAAAALMAAAAhAAAA",
+              "ToolTip": "D:\\Git\\AuroraGUI\\ColoniesScreen.py",
+              "RelativeToolTip": "ColoniesScreen.py",
+              "ViewState": "AQIAAN4AAAAAAAAAAAAlwHQCAAAsAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
               "WhenOpened": "2024-11-30T18:48:35.003Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 7,
               "Title": "BodiesScreen.py",
               "DocumentMoniker": "D:\\Git\\AuroraGUI\\BodiesScreen.py",
               "RelativeDocumentMoniker": "BodiesScreen.py",
-              "ToolTip": "D:\\Git\\AuroraGUI\\BodiesScreen.py*",
-              "RelativeToolTip": "BodiesScreen.py*",
-              "ViewState": "AQIAAAwAAAAAAAAAAAAAAGAAAAAhAAAA",
+              "ToolTip": "D:\\Git\\AuroraGUI\\BodiesScreen.py",
+              "RelativeToolTip": "BodiesScreen.py",
+              "ViewState": "AQIAAEAAAAAAAAAAAAAMwFoAAAAeAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
               "WhenOpened": "2024-11-30T18:48:22.375Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "TerraformingScreen.py",
               "DocumentMoniker": "D:\\Git\\AuroraGUI\\TerraformingScreen.py",
               "RelativeDocumentMoniker": "TerraformingScreen.py",
               "ToolTip": "D:\\Git\\AuroraGUI\\TerraformingScreen.py",
               "RelativeToolTip": "TerraformingScreen.py",
-              "ViewState": "AQIAAKUAAAAAAAAAAAAlwK4AAAAwAAAA",
+              "ViewState": "AQIAAAoAAAAAAAAAAAAowKkAAACLAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
               "WhenOpened": "2024-11-30T18:45:32.164Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
               "Title": "SystemScreen.py",
               "DocumentMoniker": "D:\\Git\\AuroraGUI\\SystemScreen.py",
               "RelativeDocumentMoniker": "SystemScreen.py",
               "ToolTip": "D:\\Git\\AuroraGUI\\SystemScreen.py",
               "RelativeToolTip": "SystemScreen.py",
-              "ViewState": "AQIAAL8BAAAAAAAAAAAlwAQCAAALAAAA",
+              "ViewState": "AQIAACECAAAAAAAAAAAAAAICAAAXAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
               "WhenOpened": "2024-11-30T18:30:40.87Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 11,
               "Title": "SystemTableScreen.py",
               "DocumentMoniker": "D:\\Git\\AuroraGUI\\SystemTableScreen.py",
               "RelativeDocumentMoniker": "SystemTableScreen.py",
               "ToolTip": "D:\\Git\\AuroraGUI\\SystemTableScreen.py",
               "RelativeToolTip": "SystemTableScreen.py",
-              "ViewState": "AQIAAH8AAAAAAAAAAAASwIkAAAAwAAAA",
+              "ViewState": "AQIAACcBAAAAAAAAAAASwIkAAAAwAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
               "WhenOpened": "2024-11-30T18:27:13.299Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Bodies.py",
-              "DocumentMoniker": "D:\\Git\\AuroraGUI\\Bodies.py",
-              "RelativeDocumentMoniker": "Bodies.py",
-              "ToolTip": "D:\\Git\\AuroraGUI\\Bodies.py",
-              "RelativeToolTip": "Bodies.py",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAHECAAAAAAAA",
-              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
-              "WhenOpened": "2024-11-30T18:15:22.869Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 2,
               "Title": "MainModule.py",
               "DocumentMoniker": "D:\\Git\\AuroraGUI\\MainModule.py",
               "RelativeDocumentMoniker": "MainModule.py",
               "ToolTip": "D:\\Git\\AuroraGUI\\MainModule.py",
               "RelativeToolTip": "MainModule.py",
-              "ViewState": "AQIAAFMDAAAAAAAAAAASwIoDAAAlAAAA",
+              "ViewState": "AQIAADADAAAAAAAAAAAowEYDAAAAAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
               "WhenOpened": "2024-04-07T16:13:29.533Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "AuroraGUI.py",
               "DocumentMoniker": "D:\\Git\\AuroraGUI\\AuroraGUI.py",
               "RelativeDocumentMoniker": "AuroraGUI.py",
               "ToolTip": "D:\\Git\\AuroraGUI\\AuroraGUI.py",
               "RelativeToolTip": "AuroraGUI.py",
-              "ViewState": "AQIAAE8AAAAAAAAAAAASwGMAAAAAAAAA",
+              "ViewState": "AQIAAE8AAAAAAAAAAAASwFQAAAAAAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
               "WhenOpened": "2024-04-07T16:13:24.462Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Colonies.py",
+              "DocumentMoniker": "D:\\Git\\AuroraGUI\\Colonies.py",
+              "RelativeDocumentMoniker": "Colonies.py",
+              "ToolTip": "D:\\Git\\AuroraGUI\\Colonies.py",
+              "RelativeToolTip": "Colonies.py",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAMAAAAAAAAA",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHeSURBVDhPpVMxa1NRFP7ebZLSlgaltNpSVCySRUxL0NAh4FJpHWpxcZAUBEPG/AKHDsVBN5eGrCnoYKCDoDiUCKKBjtZBUZtJ2ojYJr40ue\u002B\u002B47k3VzD0hQr94OOed8853/k47z2cCETk2NAgk8mQDQMhhFjK5/Mb9vEotIDruoEsFovEzVvZbPaWLTcQ9uxCpVLp4l\u002Bk0\u002BlEPB5/wIPm7RVC9uxCMpm0UTdKpRKi0WiCQy3wUt8FCvw7VSNxbRapG4voDwucGgyjXC7bzH84ePt1HysbH/GhWoNstzA1OoSFhZuxQqFg8sfu4FutAd\u002BT8KSEYm7v7GJ0YnLClgYLaAcjU9N4Vx9Dda8OBz7OjwywSNsIXY39vEL7TxWpxv2eO3hWHUZ19xc8ti25UdvXzdpNWH0BDj8JiLOrPXfweOu9mRgRhOXUEPr7IiBfYeacB9HaBNRvQH4f6\u002BlgMERwGxJP7grEoq9shj9Uz\u002BVGpmIi4vXcwdzlcePgzLAuZPiSGw869Jg\u002Biw1Mvw50oLGcuoh71y8h1HwB1Js8UfFLnwScNnBhdYVLWsy1IwK5XM5GHaw9uu0LeSCMddZA32lz7zjOQxMcByK1SPU3O/Rjnai2fkjNz8/5L77TyQJ/AJc67LNf3QeWAAAAAElFTkSuQmCC",
+              "WhenOpened": "2024-11-30T19:58:15.524Z",
               "EditorCaption": ""
             }
           ]

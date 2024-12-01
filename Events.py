@@ -341,9 +341,10 @@ class Events:
              and (self.LeftMouseClickPosition[0] <  clickable.rect[0]+clickable.rect[2])
              and (self.LeftMouseClickPosition[1]  > clickable.rect[1])
              and (self.LeftMouseClickPosition[1] <  clickable.rect[1]+clickable.rect[3]) ):
-          clickable.parameter = self.LeftMouseClickPosition
+          #clickable.parameter = self.LeftMouseClickPosition
+          #clickable.mousepos = self.LeftMouseClickPosition
           clickable.DoubleClick()
-          clickable.mousepos = self.LeftMouseClickPosition
+          
           #print(clickable.name)
 
 

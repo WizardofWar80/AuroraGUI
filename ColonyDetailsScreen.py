@@ -3,6 +3,7 @@ import pygame
 import Utils
 import Events
 import GUI
+import Systems
 from Screen import Screen
 from operator import itemgetter
 
@@ -93,18 +94,41 @@ class ColonyDetailsScreen(Screen):
     else:
       name = body['Class']+' '+body['Name']+(' (Unsurveyed)' if body['Unsurveyed'] else '')
 
+    name += ' in ' + Systems.GetSystemName(self.game, self.systemID)
     self.DrawLineOfText(self.surface, name, 0, unscrollable = True, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Type:', 0, str(body['Type']), 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Radius:', 0, str(body['RadiusBody'])+' km', 130, anchor = self.anchor)
     if (body['ColonyCost']):
       self.DrawTextWithTabs(self.surface, 'Colony Cost:', 0, '%2.3f'%body['ColonyCost'], 130, anchor = self.anchor)
+    pop_text = '-'
+    tf_text = '-'
+    if (colony):
+      pop_text = f"{colony['Pop']:,} M"
+      tf_text = 'Yes' if colony['Terraforming']['State'] else '-'
+    self.DrawTextWithTabs(self.surface, 'Population:', 0, pop_text, 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Pop Capacity:', 0, f"{body['Population Capacity']:,} M", 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Gravity:', 0, '%s x Earth'%Utils.GetFormattedNumber(body['Gravity']), 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Mass:', 0, '%s x Earth'%Utils.GetFormattedNumber(body['Mass']), 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Orbit:', 0, '%s AU'%Utils.GetFormattedNumber(body['Orbit']), 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Year:', 0, Utils.GetTimeScale(body['HoursPerYear']), 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Day:', 0, Utils.GetTimeScale(body['HoursPerDay'])+(' - tidal locked' if body['Tidal locked'] else ''), 130, anchor = self.anchor)
-    self.DrawTextWithTabs(self.surface, 'Orbit:', 0, '%s AU'%Utils.GetFormattedNumber(body['Orbit']), 130, anchor = self.anchor)
+    parentBody_str = ''
+    parentID = body['ParentID']
+    if (parentID in self.game.systemBodies):
+      parentBody = self.game.systemBodies[parentID]
+      parentBody_str = parentBody['Class'] + ' ' + parentBody['Name']
+    else:
+      system = self.game.starSystems[self.game.currentSystem]
+      for starID in system['Stars']:
+        if (starID == parentID) or (len(system['Stars'])==1):
+          star = system['Stars'][starID]
+          parentBody_str = 'Star ' + star['Name'] + ' ' + star['Suffix']
+          
+    self.DrawTextWithTabs(self.surface, 'Orbiting:', 0, parentBody_str, 130, anchor = self.anchor)
+    self.DrawTextWithTabs(self.surface, 'Orbit Radius:', 0, '%s AU'%Utils.GetFormattedNumber(body['Orbit']), 130, anchor = self.anchor)
+    if (colony):
+      if (colony['Terraforming']['State']):
+        self.DrawTextWithTabs(self.surface, 'Terraforming Active:', 0, tf_text, 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Temperature:', 0, '%d C'%(int(body['Temperature'])), 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Atmosphere:', 0, ('%s atm'%Utils.GetFormattedNumber(body['AtmosPressure'])) if body['AtmosPressure'] > 0 else '-', 130, anchor = self.anchor)
     self.DrawTextWithTabs(self.surface, 'Hydrosphere:', 0, ('%s'%Utils.GetFormattedNumber(body['Hydrosphere'])) if body['AtmosPressure'] > 0 else '-', 130, anchor = self.anchor)

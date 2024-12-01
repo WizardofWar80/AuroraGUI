@@ -88,7 +88,7 @@ class BodiesScreen(Screen):
       idGUI += 1
       col_index += 1
 
-    gui_cl = self.game.MakeClickable('Complete Bodies Table', self.table.rect, double_click_call_back = self.GetBodyFromInsideTable, parent='Complete Bodies Table')
+    gui_cl = self.game.MakeClickable('Complete Bodies Table', self.table.rect, double_click_call_back = self.GoToColonyFromInsideTable, parent='Complete Bodies Table')
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, 'Bodies Table', self.table.rect, gui_cl, 'Button')
     self.GUI_table_ID = idGUI
     idGUI += 1
@@ -450,12 +450,12 @@ class BodiesScreen(Screen):
     return False
 
 
-  def GetBodyFromInsideTable(self, par, parent, mouse_pos):
+  def GoToColonyFromInsideTable(self, par, parent, mouse_pos):
     row, col, value = self.table.GetLocationInsideTable(mouse_pos)
     if (row is not None) and (col is not None):
       if row > 0 and col == 1:
         if (value is not None):
-          body = Bodies.GetBodyFromName(self.game, value)
+          body, systemID = Bodies.GetBodyFromName(self.game, value)
           #print(value)
           self.game.FollowEvent([value, self.game.currentSystem, 0, 0, 'BodyID', body['ID']], 'Body', mouse_pos)
 
@@ -488,26 +488,27 @@ class BodiesScreen(Screen):
     elif (parent == 'Designation Dropdown'):
       id = self.GUI_ID_dropdown_designations
     if id is not None:
-      for i in range(len(self.GUI_Elements[id].content)):
-        if (self.GUI_Elements[id].scroll_position+i >= 0):
-          height = self.GUI_Elements[id].rect[3]
-          anchor = (self.GUI_Elements[id].extendedBB[0],self.GUI_Elements[id].extendedBB[1])
-          y = lineNr*height
-          lineNr+=1
-          if (mousepos[1]-anchor[1] > y) and (mousepos[1]-anchor[1] < y + height):
-            self.GUI_Elements[id].dropdownSelection = i
-            self.GUI_Elements[id].open  = False
-            if (parent == 'Bodies Dropdown'):
-              id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[id].content[i])
-              if (id is not None):
-                self.game.currentSystem = id
-                self.game.GetNewLocalData(id)
-              self.reDraw = True
-              break
-            elif (parent == 'Designation Dropdown'):
-              Designations.Set(self.game.currentSystem, i)
-              self.reDraw = True
-              break
+      if (self.GUI_Elements[id].open):
+        for i in range(len(self.GUI_Elements[id].content)):
+          if (self.GUI_Elements[id].scroll_position+i >= 0):
+            height = self.GUI_Elements[id].rect[3]
+            anchor = (self.GUI_Elements[id].extendedBB[0],self.GUI_Elements[id].extendedBB[1])
+            y = lineNr*height
+            lineNr+=1
+            if (mousepos[1]-anchor[1] > y) and (mousepos[1]-anchor[1] < y + height):
+              self.GUI_Elements[id].dropdownSelection = i
+              self.GUI_Elements[id].open  = False
+              if (parent == 'Bodies Dropdown'):
+                id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[id].content[i])
+                if (id is not None):
+                  self.game.currentSystem = id
+                  self.game.GetNewLocalData(id)
+                self.reDraw = True
+                break
+              elif (parent == 'Designation Dropdown'):
+                Designations.Set(self.game.currentSystem, i)
+                self.reDraw = True
+                break
 
         
   def ToggleHideCells(self, par, void = None, void2 = None):

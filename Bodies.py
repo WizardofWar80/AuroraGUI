@@ -3,7 +3,6 @@ import pygame
 import math
 import random
 import Fleets
-import Bodies
 gameInstance = None
 
 def SetGameInstance(game):
@@ -11,19 +10,27 @@ def SetGameInstance(game):
   gameInstance = game
 
 
-def Select(id, parent, mousepos = None):
-  if (id in gameInstance.starSystems[gameInstance.currentSystem]['Stars']):
+def Select(bodyID, parent, mousepos = None):
+  if (bodyID in gameInstance.starSystems[gameInstance.currentSystem]['Stars']):
     #print(gameInstance.starSystems[gameInstance.currentSystem]['Stars'][id])
     gameInstance.highlighted_fleet_ID = -1
-    gameInstance.highlighted_body_ID=id
+    gameInstance.highlighted_body_ID=bodyID
     gameInstance.systemScreen.reDraw = True
-  elif (id in gameInstance.systemBodies):
+  elif (bodyID in gameInstance.systemBodies):
     #print(gameInstance.systemBodies[id])
     gameInstance.highlighted_fleet_ID = -1
-    gameInstance.highlighted_body_ID=id
+    gameInstance.highlighted_body_ID=bodyID
     gameInstance.systemScreen.reDraw = True
-    print(gameInstance.systemBodies[id]['Name'], gameInstance.systemBodies[id]['Pos'])
+    print(gameInstance.systemBodies[bodyID]['Name'], gameInstance.systemBodies[bodyID]['Pos'])
 
+
+def GoToColony(parameter, parent, mouse_pos = None):
+  bodyID = parameter
+  if (bodyID in gameInstance.systemBodies):
+    systemID = gameInstance.currentSystem
+    body = gameInstance.systemBodies[bodyID]
+    gameInstance.FollowEvent([body['Name'], gameInstance.currentSystem, 0, 0, 'BodyID', body['ID']], 'Body', mouse_pos)
+          
 
 def Draw(context):
   game = context.game
@@ -176,7 +183,7 @@ def DrawBodies(context):
         # Make object clickable
         bb = (screen_body_pos[0]-radius_on_screen,screen_body_pos[1]-radius_on_screen,2*radius_on_screen,2*radius_on_screen)
         if (game.CheckClickableNotBehindGUI(bb)):
-          game.MakeClickable(body['Name'], bb, left_click_call_back = Select, par=bodyID, volatile = True)
+          game.MakeClickable(body['Name'], bb, left_click_call_back = Select, double_click_call_back = GoToColony, par=bodyID, parent = 'Body', volatile = True)
 
         # Check if we want to draw the label
         draw_cond, draw_color_label, void, min_dist = GetDrawConditions(context, 'Label', body)
@@ -189,6 +196,7 @@ def DrawBodies(context):
             color = draw_color_label
           # draw the label
           Utils.DrawText2Surface(context.surface, body['Name'], labelPos, 14, color)
+        break
 
 
 def GetDrawConditions(context, thing2Draw, body):
@@ -623,13 +631,13 @@ def GetBodyFromName(game, name):
   for bodyID in game.systemBodies:
     body = game.systemBodies[bodyID]
     if (body['Name'] == name):
-      return body
-  for id in game.starSystems:
-    systemBodies = Bodies.GetSystemBodies(game, id)
+      return body, game.currentSystem
+  for systemID in game.starSystems:
+    systemBodies = GetSystemBodies(game, systemID)
     for bodyID in systemBodies:
       body = systemBodies[bodyID]
       if (body['Name'] == name):
-        return body
+        return body, systemID
   return None
 
 

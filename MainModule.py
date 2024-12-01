@@ -31,6 +31,7 @@ import Designations
 import DevelopmentScreen
 import SystemTableScreen
 import FleetScreen
+import CommandsScreen
 import os
 
 class Game():
@@ -157,6 +158,7 @@ class Game():
     self.terraformingScreen = TerraformingScreen.TerraformingScreen(self, eventsclass, 'Terraforming')
     self.galaxyScreen       = GalaxyScreen.GalaxyScreen(self, eventsclass, 'Galaxy')
     self.xenosScreen        = XenosScreen.XenosScreen(self, eventsclass, 'Xenos')
+    self.commandsScreen     = CommandsScreen.CommandsScreen(self, eventsclass, 'Command')
     self.eventsScreen       = EventsScreen.EventsScreen(self, eventsclass, 'Events')
     self.developmentScreen  = DevelopmentScreen.DevelopmentScreen(self, eventsclass, 'Development')
     self.systemTableScreen  = SystemTableScreen.SystemTableScreen(self, eventsclass, 'Systems')
@@ -265,6 +267,13 @@ class Game():
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
     name = 'Events'
+    gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
+    self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
+
+    idGUI += 1
+    x += self.GUI_Top_Button_Size[0]+5
+    bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
+    name = 'Command'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
@@ -630,6 +639,11 @@ class Game():
         self.xenosScreen.ResetGUI()
         #self.xenosScreen.UpdateData()
       reblit |= self.xenosScreen.Draw()
+    elif (self.currentScreen == 'Command'):
+      if (self.lastScreen != self.currentScreen) or self.newData:
+        self.commandsScreen.ResetGUI()
+        self.commandsScreen.UpdateCommandData()
+      reblit |= self.commandsScreen.Draw()
     elif (self.currentScreen == 'Survey'):
       if (self.lastScreen != self.currentScreen) or self.newData:
         self.surveyScreen.ResetGUI()
@@ -690,6 +704,8 @@ class Game():
       self.systemTableScreen.reDraw = True
     elif (screen_name == 'Xenos'):
       self.xenosScreen.reDraw = True
+    elif (screen_name == 'Command'):
+      self.commandsScreen.reDraw = True
     elif (screen_name == 'Research'):
       self.researchScreen.reDraw = True
     elif (screen_name == 'Terraform'):
@@ -880,7 +896,7 @@ class Game():
         self.currentSystem = SystemID
         self.GetNewLocalData(SystemID)
         #if (Xcor == Ycor):
-        #  body = Bodies.GetBodyFromName(self, name)
+        #  body,systemID = Bodies.GetBodyFromName(self, name)
         #  if (body):
         #    (Xcor,Ycor) = body['Pos']
         #self.systemScreen.ZoomTo((Xcor, Ycor), 409600)

@@ -167,7 +167,7 @@ class TerraformingScreen(Screen):
       idGUI += 1
       col_index += 1
 
-    gui_cl = self.game.MakeClickable('Complete Terraforming Table', self.table.rect, self.GetBodyFromInsideTable, parent='Complete Terraforming Table')
+    gui_cl = self.game.MakeClickable('Complete Terraforming Table', self.table.rect, self.SelectBodyFromInsideTable, double_click_call_back = self.GoToColonyFromInsideTable, parent='Complete Terraforming Table')
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, self.GUI_Table_identifier, self.table.rect, gui_cl, 'Button')
     self.GUI_table_ID = idGUI
     idGUI += 1
@@ -492,7 +492,7 @@ class TerraformingScreen(Screen):
     self.unscrollableLineNr = 0
 
     if (self.selectedBodyName) and (self.selectedRow > -1):
-      body = Bodies.GetBodyFromName(self.game, self.selectedBodyName)
+      body,systemID = Bodies.GetBodyFromName(self.game, self.selectedBodyName)
       if (body):
         bodyGases = self.GetBodyGases(body)
 
@@ -626,7 +626,7 @@ class TerraformingScreen(Screen):
     return ret_value
 
 
-  def GetBodyFromInsideTable(self, par, parent, mouse_pos):
+  def SelectBodyFromInsideTable(self, par, parent, mouse_pos):
     selectedRow = -1
     row, col, value = self.table.GetLocationInsideTable(mouse_pos)
     if (row is not None) and (col is not None):
@@ -636,6 +636,15 @@ class TerraformingScreen(Screen):
           self.selectedBodyName = value
           self.selectedRow = row
 
+  
+  def GoToColonyFromInsideTable(self, par, parent, mouse_pos):
+    row, col, value = self.table.GetLocationInsideTable(mouse_pos)
+    if (row is not None) and (col is not None):
+      if row > 0 and col == 1:
+        if (value is not None):
+          body, systemID = Bodies.GetBodyFromName(self.game, value)
+          self.game.FollowEvent([value, systemID, 0, 0, 'BodyID', body['ID']], 'Body', mouse_pos)
+          
 
   #DrawTextWithTabs(context, surface, text1, indentLevel, text2, tab_distance, window_info_scoll_pos = 0, offset = 0, anchor = (0,0), color1 = WHITE, color2 = WHITE, text3 = None, tab_dist2 = 0, tab_dist3 = 0, text4 = None, color3 = WHITE,color4 = WHITE):
   def DrawColorCodedColonyCosts(self, category_name, value, limit_text, limit_value, cc_factor, anchor, value_text = None, threshold_below = None, threshold = None, threshold_min = None, remedy = ''):

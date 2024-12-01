@@ -4,12 +4,12 @@
     "Volume": 0.1953125
   },
   "SystemScreen": {
-    "show_Planets": false,
+    "show_Planets": true,
     "show_Asteroids": true,
     "show_Comets": true,
-    "show_DwarfPlanets": false,
+    "show_DwarfPlanets": true,
     "show_FleetTraces": true,
-    "show_Moons": false,
+    "show_Moons": true,
     "showArtifactsBodies": true,
     "showColonizedBodies": true,
     "showCommercialFleets": true,

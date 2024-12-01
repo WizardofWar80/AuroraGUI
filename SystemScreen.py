@@ -674,22 +674,23 @@ class SystemScreen(Screen):
     if (parent == 'Systems Dropdown'):
       id = self.GUI_ID_dropdown_systems
     if id is not None:
-      for i in range(len(self.GUI_Elements[id].content)):
-        if (self.GUI_Elements[id].scroll_position+i >= 0):
-          height = self.GUI_Elements[id].rect[3]
-          anchor = (self.GUI_Elements[id].extendedBB[0],self.GUI_Elements[id].extendedBB[1])
-          y = lineNr*height
-          lineNr+=1
-          if (mousepos[1]-anchor[1] > y) and (mousepos[1]-anchor[1] < y + height):
-            self.GUI_Elements[id].dropdownSelection = i
-            self.GUI_Elements[id].open  = False
-            if (parent == 'Systems Dropdown'):
-              id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[id].content[i])
-              if (id is not None):
-                self.game.currentSystem = id
-                self.game.GetNewLocalData(id)
-              self.reDraw = True
-              break
+      if (self.GUI_Elements[id].open):
+        for i in range(len(self.GUI_Elements[id].content)):
+          if (self.GUI_Elements[id].scroll_position+i >= 0):
+            height = self.GUI_Elements[id].rect[3]
+            anchor = (self.GUI_Elements[id].extendedBB[0],self.GUI_Elements[id].extendedBB[1])
+            y = lineNr*height
+            lineNr+=1
+            if (mousepos[1]-anchor[1] > y) and (mousepos[1]-anchor[1] < y + height):
+              self.GUI_Elements[id].dropdownSelection = i
+              self.GUI_Elements[id].open  = False
+              if (parent == 'Systems Dropdown'):
+                id = Systems.GetSystemIDByName(self.game, self.GUI_Elements[id].content[i])
+                if (id is not None):
+                  self.game.currentSystem = id
+                  self.game.GetNewLocalData(id)
+                self.reDraw = True
+                break
 
      
   #def ToggleGUI(self, id, parent = None):
