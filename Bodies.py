@@ -196,7 +196,7 @@ def DrawBodies(context):
             color = draw_color_label
           # draw the label
           Utils.DrawText2Surface(context.surface, body['Name'], labelPos, 14, color)
-        break
+        #break #DEBUG only
 
 
 def GetDrawConditions(context, thing2Draw, body):

@@ -15,13 +15,16 @@ def GetHomeWorldID(game):
 
 
 def GetSystemName(game, systemID):
+  system_name = None
   system_number = game.db.execute('''SELECT SystemNumber from FCT_System WHERE GameID = %d AND systemId = %d;'''%(game.gameID,systemID)).fetchone()[0]
   if (system_number > -1):
-      system_name = game.db.execute('''SELECT ConstellationName from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0].strip()
+    result = game.db.execute('''SELECT ConstellationName from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
+    if (result is not None):
+      system_name = result.strip()
       if (not system_name):
         system_name = game.db.execute('''SELECT Name from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
   else:
-      system_name = 'Unknown'
+    system_name = 'Unknown'
   return system_name
 
 
@@ -34,64 +37,66 @@ def GetSystems(game):
     if (systemNumber != -1):
       known_system = game.db.execute('''SELECT * from DIM_KnownSystems WHERE KnownSystemID = %d;'''%systemNumber).fetchone()
       system = {}
-      system['Name'] = GetSystemName(game, systemID)
-      system['Stars'] = None
-      stars_table = game.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,systemID))
-      stars = {}
-      component2ID = {}
-      num_stars = 0
-      for x in stars_table:
-        num_stars += 1
-      # we moved the cursor so we have to run the query again
-      stars_table = game.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,systemID))
+      system_name = GetSystemName(game, systemID)
+      if (system_name):
+        system['Name'] = system_name
+        system['Stars'] = None
+        stars_table = game.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,systemID))
+        stars = {}
+        component2ID = {}
+        num_stars = 0
+        for x in stars_table:
+          num_stars += 1
+        # we moved the cursor so we have to run the query again
+        stars_table = game.db.execute('''SELECT * from FCT_Star WHERE GameID = %d AND SystemID = %d;'''%(game.gameID,systemID))
         
-      #8497 Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
-      star_index = 0
-      for star in stars_table:
-        ID = star[0]
-        stars[ID] = {}
-        stars[ID]['Name'] = system['Name']
-        if (num_stars > 1):
-          stars[ID]['Name'] += '-'+Utils.star_suffixes[star_index]
+        #8497 Alpha Centauri , knownsystem 1, component2ID 87, c2orbit 23
+        star_index = 0
+        for star in stars_table:
+          ID = star[0]
+          stars[ID] = {}
+          stars[ID]['Name'] = system['Name']
+          if (num_stars > 1):
+            stars[ID]['Name'] += '-'+Utils.star_suffixes[star_index]
 
-        stars[ID]['Component'] = star[8]
-        stars[ID]['StellarTypeID']=star[3]
-        stars[ID]['Radius']=game.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
-        stars[ID]['Mass'] = game.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
-        stars[ID]['Temp'] = game.stellarTypes[stars[ID]['StellarTypeID']]['Temperature']
-        stars[ID]['Luminosity'] = game.stellarTypes[stars[ID]['StellarTypeID']]['Luminosity']
-        stars[ID]['Black Hole']=False
-        spectralClass = game.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
-        spectralNumber = game.stellarTypes[stars[ID]['StellarTypeID']]['SpectralNumber']
-        sizeText = game.stellarTypes[stars[ID]['StellarTypeID']]['SizeText']
-        stars[ID]['Suffix'] = spectralClass + str(spectralNumber) +'-'+ sizeText
-        if (spectralClass == 'BH'):
-          # black holes should use Schwartzschildradius:
-          # r = M * 0.000004246 sunradii
-          m = game.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
-          stars[ID]['Radius'] = m * 0.000004246 * 6
-          stars[ID]['Black Hole']=True
-        component2ID[star[8]] = ID
-        stars[ID]['Parent'] = parentComponent = star[9]
-        if (stars[ID]['Parent'] == 0):
-          stars[ID]['ParentPos'] = (0,0)
-        else:
-          stars[ID]['ParentPos'] = stars[component2ID[parentComponent]]['Pos']
-        stars[ID]['Bearing'] = star[10]
-        stars[ID]['OrbitDistance'] = star[13]
-        stars[ID]['Eccentricity'] = star[15]
-        stars[ID]['EccentricityAngle'] = star[16]
-        stars[ID]['Pos'] = (star[6],star[7])
-        stars[ID]['Image'] = None
-        stars[ID]['Visible orbit'] = 0
-        if (len(game.images_Body) > 0):
-          if (spectralClass in game.images_Body['Stars']):
-            stars[ID]['Image'] = game.images_Body['Stars'][spectralClass]
-        star_index += 1
-        stars[ID]['BodyClass']=spectralClass
-        stars[ID]['BodyType']='Stellar'
-      system['Stars'] = stars
-      systems[systemID] = system
+          stars[ID]['Component'] = star[8]
+          stars[ID]['StellarTypeID']=star[3]
+          stars[ID]['Radius']=game.stellarTypes[stars[ID]['StellarTypeID']]['Radius']
+          stars[ID]['Mass'] = game.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
+          stars[ID]['Temp'] = game.stellarTypes[stars[ID]['StellarTypeID']]['Temperature']
+          stars[ID]['Luminosity'] = game.stellarTypes[stars[ID]['StellarTypeID']]['Luminosity']
+          stars[ID]['Black Hole']=False
+          spectralClass = game.stellarTypes[stars[ID]['StellarTypeID']]['SpectralClass']
+          spectralNumber = game.stellarTypes[stars[ID]['StellarTypeID']]['SpectralNumber']
+          sizeText = game.stellarTypes[stars[ID]['StellarTypeID']]['SizeText']
+          stars[ID]['Suffix'] = spectralClass + str(spectralNumber) +'-'+ sizeText
+          if (spectralClass == 'BH'):
+            # black holes should use Schwartzschildradius:
+            # r = M * 0.000004246 sunradii
+            m = game.stellarTypes[stars[ID]['StellarTypeID']]['Mass']
+            stars[ID]['Radius'] = m * 0.000004246 * 6
+            stars[ID]['Black Hole']=True
+          component2ID[star[8]] = ID
+          stars[ID]['Parent'] = parentComponent = star[9]
+          if (stars[ID]['Parent'] == 0):
+            stars[ID]['ParentPos'] = (0,0)
+          else:
+            stars[ID]['ParentPos'] = stars[component2ID[parentComponent]]['Pos']
+          stars[ID]['Bearing'] = star[10]
+          stars[ID]['OrbitDistance'] = star[13]
+          stars[ID]['Eccentricity'] = star[15]
+          stars[ID]['EccentricityAngle'] = star[16]
+          stars[ID]['Pos'] = (star[6],star[7])
+          stars[ID]['Image'] = None
+          stars[ID]['Visible orbit'] = 0
+          if (len(game.images_Body) > 0):
+            if (spectralClass in game.images_Body['Stars']):
+              stars[ID]['Image'] = game.images_Body['Stars'][spectralClass]
+          star_index += 1
+          stars[ID]['BodyClass']=spectralClass
+          stars[ID]['BodyType']='Stellar'
+        system['Stars'] = stars
+        systems[systemID] = system
   return systems
 
 

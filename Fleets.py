@@ -152,6 +152,20 @@ def GetFleets(game):
     fleetIsStation = False
     fleetHarvesters = 0
     fleetTerraformers = 0
+    tanker = 0
+    refuellingHub = 0
+    miners = 0
+    ordnanceTransferHub = 0
+    ordnanceTransferRate=0
+    PPV = 0
+    jGConstructionTime = 0
+    jumpDistance = 0
+    mainFunction = 0
+    salvageRate = 0
+    tractor = 0
+    supplyShip = 0
+    refuellingRate = 0
+
     for ship in ships_table:
       name = ship[3]
       fuel = ship[16]
