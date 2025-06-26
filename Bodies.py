@@ -513,6 +513,10 @@ def GetSystemBodies(game, currentSystem):
     result = game.db.execute('''SELECT SystemBodyID from FCT_SystemBodySurveys WHERE GameID = %d AND RaceID = %d AND SystemBodyID = %d;'''%(game.gameID, game.myRaceID, body[0])).fetchone()
     if (not result):
       unsurveyed = True
+      ruinID = -1
+      ruinRaceID = -1
+      abandonedFactories = 0
+      groundMineralSurvey = 0
 
     colonized = False
     industrialized = False
