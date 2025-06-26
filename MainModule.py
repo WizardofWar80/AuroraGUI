@@ -724,7 +724,8 @@ class Game():
     file_time = os.path.getmtime(self.db_filename)
     gameTime = self.db.execute('''SELECT GameTime from FCT_Game WHERE GameID = %d '''%(self.gameID)).fetchone()[0]
     if (gameTime != self.gameTime) or (file_time > self.db_last_timestamp):
-      self.lastGameTime = self.gameTime
+      if (gameTime != self.gameTime):
+        self.lastGameTime = self.gameTime
       self.GetNewData()
       date_time = datetime.fromtimestamp(self.gameTime+self.gameTimestampStart)
       print('New game data! %s'%date_time.strftime("%b %d %Y"))

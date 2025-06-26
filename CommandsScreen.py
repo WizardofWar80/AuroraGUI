@@ -163,7 +163,11 @@ class CommandsScreen(Screen):
           text = self.navyCommands[commandID]['Rank'] + ' ' + self.navyCommands[commandID]['Commander']
           labelsize = Utils.DrawLineOfText(self, self.surface,text, self.indentLevel, offset=labelsize[0], unscrollable = True,anchor=self.tab_pos)
         else:
-          minRank = self.ranks[self.navyCommands[commandID]['Min Rank ID']]['Rank']
+          mri = self.navyCommands[commandID]['Min Rank ID']
+          if (mri):
+            minRank = self.ranks[mri]['Rank']
+          else:
+            minRank = '-'
           text = 'No commander (%s)'%minRank
           labelsize = Utils.DrawLineOfText(self, self.surface,text, self.indentLevel, offset=labelsize[0], color = Utils.RED, unscrollable = True,anchor=self.tab_pos)
 

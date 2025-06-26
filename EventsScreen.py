@@ -33,7 +33,7 @@ class EventsScreen(Screen):
 
 
   def DrawGameEvents(self):
-    game_event_table = [list(x) for x in self.game.db.execute('''SELECT * from FCT_Gamelog WHERE Time >= %d 
+    game_event_table = [list(x) for x in self.game.db.execute('''SELECT * from FCT_Gamelog WHERE Time > %d 
    AND GameID = %d AND RaceID = %d;'''%(int(self.game.lastGameTime), self.game.gameID,self.game.myRaceID))]
     #IncrementID	GameID	RaceID	SMOnly	Time	EventType	MessageText SystemID	Xcor	Ycor	IDType	PopulationID
     lineNr = 0
@@ -335,6 +335,7 @@ class EventsScreen(Screen):
       if (self.CheckTokensInText(text, tokens)):
         results, links = self.SplitData(text, searchTokens = [' under the command of ', ' has discovered the new system of '])   
         links_to = ['Ship', 'System']
+        links[2] = False
       else:
         #195	GSC-01 Karl Schwarzschild  001 has discovered the new system of Epsilon Indi
         tokens = [' has discovered the new system of ']
@@ -364,6 +365,7 @@ class EventsScreen(Screen):
       #211	Boyle Mines Corporation on Halleys Comet has been expanded to 17  mining complexes
       results, links = self.SplitData(text, searchTokens = [' on ', ' has been expanded '])
       links_to = ['Body']
+      links[0] = False
       links[-1] = False
       pass
     elif (id == 212):
@@ -387,9 +389,23 @@ class EventsScreen(Screen):
       pass
     elif (id == 256):
       #256	Riana Prinsloo   Colony Administration 6    Production 10%    Mining 10%    Population Growth 15%    Terraforming 5%  
-      pass
+      results = ['New administrator: '+text]
+      links_to = []
+      links = [False]
     elif (id == 257):
       #257	Rocky Lackner   Research Admin 15    Research 10%     Biology / Genetics
+      results = ['New scientist: '+text]
+      links_to = []
+      links = [False]
+    elif (id == 280):
+      #280	The Mining bonus of LCDR Bret Crittendon has increased to 15%    Current Bonuses:  Crew Training 10%    Engineering 5%    Mining 15%     Current Assignment:  Unassigned
+      results, links = self.SplitData(text, searchTokens = ['Current Bonuses:','Current Assignment:'])
+      if (results[-1].find('Unassigned') > -1):
+        results = []
+        links = []
+      else:
+        links_to = []
+        links[0] = False
       pass
     elif (id == 284):
       #284	Due to changes in climate, the dominant terrain on Pi Ophiuchi II has changed from Barren to Ice Fields

@@ -146,10 +146,11 @@ def DrawBodies(context):
         #dist2OrbitCentre_on_screen = context.systemScale * game.systemBodies[body['ParentID']]['DistanceToOrbitCentre']
 
         #dist2OrbitCentre_on_screen = context.systemScale * body['DistanceToOrbitCentre']
-        planetEllipseAngle = Utils.GetPlanetEllipseAngle(Utils.MulTuples(game.systemBodies[body['ParentID']]['Pos'],(Utils.AU_INV*context.systemScale)), 
-                                                         game.systemBodies[body['ParentID']]['Orbit']*context.systemScale, 
-                                                         game.systemBodies[body['ParentID']]['Eccentricity'], 
-                                                         body['EccentricityAngle'])
+        #planetEllipseAngle = Utils.GetPlanetEllipseAngle(Utils.MulTuples(game.systemBodies[body['ParentID']]['Pos'],(Utils.AU_INV*context.systemScale)), 
+        #                                                 game.systemBodies[body['ParentID']]['Orbit']*context.systemScale, 
+        #                                                 game.systemBodies[body['ParentID']]['Eccentricity'], 
+        #                                                 game.systemBodies[body['ParentID']]['EccentricityAngle'])
+        planetEllipseAngle = game.systemBodies[body['ParentID']]['Bearing'] - 90
 
         body_pos = Utils.GetTrojanPosition(planetEllipseAngle, body['Orbit']*context.systemScale, body['Eccentricity'], body['EccentricityAngle'], body['TrojanAsteroid'])
         screen_body_pos = Utils.AddTuples(context.screenCenter ,body_pos)
@@ -298,7 +299,7 @@ def GetDrawConditions(context, thing2Draw, body):
 def GetTidalMultiplier(body):
   t = 1
 
-  if (body['Tidal locked'] == True):# and body['Class'] == 'Planet'):
+  if (body['Tidal locked'] == True) and (body['Class'] != 'Moon'):
     t = .2
 
   return t

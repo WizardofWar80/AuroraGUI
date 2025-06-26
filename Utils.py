@@ -618,7 +618,8 @@ def GetTrojanPosition(planetEllipseAngle, orbit, E, E_Angle, trojanAngle):
     cos_beta = math.cos(_beta)
     sin_beta = math.sin(_beta)
         
-  return GetEllipseXY(x_c, y_c, a, b, (planetEllipseAngle-90+trojanAngle)*DEGREES_TO_RADIANS, _beta, cos_beta, sin_beta)
+    return GetEllipseXY(x_c, y_c, a, b, (planetEllipseAngle+trojanAngle)*DEGREES_TO_RADIANS, _beta, cos_beta, sin_beta)
+  #return GetEllipseXY(x_c, y_c, a, b, (planetEllipseAngle-90+trojanAngle)*DEGREES_TO_RADIANS, _beta, cos_beta, sin_beta)
     
 
 def DrawEllipticalOrbit(surface, color, pos, orbit, E, angle1, angle2, min_orbit):

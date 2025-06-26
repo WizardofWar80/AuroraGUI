@@ -94,6 +94,8 @@ def Draw(context):
         DrawTextWithTabs(context.window_info, 'Year:', _indentLevel+1, Utils.GetTimeScale(body['HoursPerYear']), 130, context.window_info_scoll_pos)
         DrawTextWithTabs(context.window_info, 'Day:', _indentLevel+1, Utils.GetTimeScale(body['HoursPerDay'])+(' - tidal locked' if body['Tidal locked'] else ''), 130, context.window_info_scoll_pos)
         DrawTextWithTabs(context.window_info, 'Orbit:', _indentLevel+1, '%s AU'%Utils.GetFormattedNumber(body['Orbit']), 130, context.window_info_scoll_pos)
+        #DrawTextWithTabs(context.window_info, 'Bearing:', _indentLevel+1, '%s deg'%Utils.GetFormattedNumber(body['Bearing']), 130, context.window_info_scoll_pos)
+        #DrawTextWithTabs(context.window_info, 'EccAngle:', _indentLevel+1, '%s deg'%Utils.GetFormattedNumber(body['EccentricityAngle']), 130, context.window_info_scoll_pos)
         DrawTextWithTabs(context.window_info, 'Temperature:', _indentLevel+1, '%d C'%(int(body['Temperature'])), 130, context.window_info_scoll_pos)
         DrawTextWithTabs(context.window_info, 'Atmosphere:', _indentLevel+1, ('%s atm'%Utils.GetFormattedNumber(body['AtmosPressure'])) if body['AtmosPressure'] > 0 else '-', 130, context.window_info_scoll_pos)
         DrawTextWithTabs(context.window_info, 'Hydrosphere:', _indentLevel+1, ('%s'%Utils.GetFormattedNumber(body['Hydrosphere'])) if body['AtmosPressure'] > 0 else '-', 130, context.window_info_scoll_pos)

@@ -92,7 +92,7 @@ class Plot():
     for dataName in self.data:
       color = self.colors[colorIndex%len(self.colors)]
       data = self.data[dataName]['data']
-      if self.data[dataName]['Enabled']:
+      if self.data[dataName]['Enabled'] and len(data)>0:
         x_start = data[0][0]
         y_start = data[0][1]
         sorted_data = sorted(data, key=itemgetter(0), reverse=False)

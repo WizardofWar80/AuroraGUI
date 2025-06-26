@@ -21,8 +21,8 @@ def GetSystemName(game, systemID):
     result = game.db.execute('''SELECT ConstellationName from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
     if (result is not None):
       system_name = result.strip()
-      if (not system_name):
-        system_name = game.db.execute('''SELECT Name from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
+    if (not system_name):
+      system_name = game.db.execute('''SELECT Name from DIM_KnownSystems WHERE KnownSystemID = %d;'''%system_number).fetchone()[0]
   else:
     system_name = 'Unknown'
   return system_name
@@ -32,9 +32,12 @@ def GetSystems(game):
   systems = {}
 
   results = game.db.execute('''SELECT SystemID, SystemNumber from FCT_System WHERE GameID = %d;'''%(game.gameID)).fetchall()
-    
+  known_systems_tuples = game.db.execute('''SELECT SystemID from FCT_RaceSysSurvey WHERE GameID = %d AND RaceID = %d;'''%(game.gameID,game.myRaceID)).fetchall()
+  known_systems = []
+  for t in known_systems_tuples:
+    known_systems.append(t[0])
   for (systemID, systemNumber) in results:
-    if (systemNumber != -1):
+    if (systemNumber != -1) and (systemID in known_systems):
       known_system = game.db.execute('''SELECT * from DIM_KnownSystems WHERE KnownSystemID = %d;'''%systemNumber).fetchone()
       system = {}
       system_name = GetSystemName(game, systemID)
