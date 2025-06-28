@@ -1214,6 +1214,8 @@ class Game():
                     break
         if (body['Artifacts'] or body['RuinID'] > 0):
           flags[systemID]['Artifacts']+=1
+        if (body['GroundMineralSurvey'] > 0):
+          flags[systemID]['Ground Survey Potentials']+=1
 
       
     return flags
