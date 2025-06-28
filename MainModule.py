@@ -1212,7 +1212,7 @@ class Game():
                   if self.colonies[bodyID]['Installations'][id]['Amount'] > 0:
                     flags[systemID]['Mining']+=1
                     break
-        if (body['Artifacts'] or body['RuinID']):
+        if (body['Artifacts'] or body['RuinID'] > 0):
           flags[systemID]['Artifacts']+=1
 
       

@@ -503,6 +503,7 @@ class BodiesScreen(Screen):
                 if (id is not None):
                   self.game.currentSystem = id
                   self.game.GetNewLocalData(id)
+                  self.GUI_Elements[self.GUI_ID_dropdown_designations].dropdownSelection = Designations.GetIndexOfCurrentSystem()
                 self.reDraw = True
                 break
               elif (parent == 'Designation Dropdown'):

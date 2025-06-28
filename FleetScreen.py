@@ -189,6 +189,10 @@ class FleetScreen(TableScreen):
           self.colIndexFleetID = self.colIndexSystemID + 1
           unsortedIDs[-1].append(systemID)
           unsortedIDs[-1].append(fleetID)
+        if (self.selectedFleet):
+          if (self.selectedFleet['ID'] == fleetID):
+            self.selectedFleet = fleet
+
 
     index+=1
 
