@@ -41,6 +41,7 @@ def GetSystems(game):
       known_system = game.db.execute('''SELECT * from DIM_KnownSystems WHERE KnownSystemID = %d;'''%systemNumber).fetchone()
       system = {}
       system_name = GetSystemName(game, systemID)
+      system['ID'] = systemID
       if (system_name):
         system['Name'] = system_name
         system['Stars'] = None

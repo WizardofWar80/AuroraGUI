@@ -517,11 +517,14 @@ def GetSystemBodies(game, currentSystem):
       ruinRaceID = -1
       abandonedFactories = 0
       groundMineralSurvey = 0
+    else:
+      if (ruinRaceID == None):
+        abandonedFactories = 0
 
     colonized = False
     industrialized = False
     terraforming = {'Active':False}
-    deposits, sum_minerals = GetMineralDeposits(game, currentSystem, body[0], unsurveyed)
+    deposits, sum_minerals = GetMineralDeposits(game, currentSystem, body[0], unsurveyed, bodyType)
 
     if (body[0] in game.colonies):
       colony = game.colonies[body[0]]
@@ -541,7 +544,7 @@ def GetSystemBodies(game, currentSystem):
       numHarvesters += gameInstance.fleets[currentSystem][fleetID]['Harvesters']
         
     bodyStatus = 'C' if colonized else 'I' if industrialized else 'U' if unsurveyed else ''
-    
+
     systemBodies[body[0]]={'ID':body[0],'Name':body_name, 'Type':bodyType, 'Class':bodyClass, 'Orbit':orbit, 'DistanceToCenter':dist2Center, 'ParentID':body[5], 'RadiusBody':body[6], 
                            'Bearing':body[7], 'Eccentricity':body[10],'EccentricityAngle':body[11], 'Pos':(body[8], body[9]), 'Mass':mass, 'Gravity':gravity,
                            'Temperature':temp, 'BaseTemp':baseTemp, 'AtmosPressure':atm, 'Tidal locked':tidalLock, 'Hydrosphere':hydro, 'Albedo':albedo, 'Density':density, 
@@ -588,7 +591,7 @@ def GetStellarTypes(game):
   return stellarTypes
 
   
-def GetMineralDeposits(game, systemID, bodyID, unsurveyed):
+def GetMineralDeposits(game, systemID, bodyID, unsurveyed, bodyType):
   deposits = {}
   sum_deposits = 0
   # GameID	MaterialID	SystemID	SystemBodyID	Amount	Accessibility	HalfOriginalAmount	OriginalAcc
@@ -602,7 +605,8 @@ def GetMineralDeposits(game, systemID, bodyID, unsurveyed):
       if (deposit[1] in Utils.MineralNames):
         mineral = Utils.MineralNames[deposit[1]]
         deposits[mineral] = {'Amount':deposit[4], 'Accessibility':deposit[5]}
-        sum_deposits += deposit[4]
+        if (bodyType != 'Planet Gas Giant' and bodyType != 'Planet Super Jovian'):
+          sum_deposits += deposit[4]
 
   return deposits, sum_deposits
 

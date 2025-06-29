@@ -418,6 +418,17 @@ class Events:
                 if (scrollable_element.scroll_position > scrollable_element.maxScroll):
                   scrollable_element.scroll_position -= 1
               screen.reDraw = True
+    elif (game.currentScreen == 'Todo'):
+      screen = game.todoScreen
+      scrollable_element = screen.table
+      if (scrollable_element.rect.collidepoint(event.pos)):
+        if (event.button == 4):
+          if (scrollable_element.scroll_position < 0):
+            scrollable_element.scroll_position += 1
+        else:
+          if (scrollable_element.scroll_position > scrollable_element.maxScroll):
+            scrollable_element.scroll_position -= 1
+        screen.reDraw = True
     elif (game.currentScreen == 'Fleets'):
       screen = game.fleetScreen
       #dropdown_element = game.fleetScreen.GUI_Elements[game.fleetScreen.GUI_ID_dropdown]

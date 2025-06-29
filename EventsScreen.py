@@ -406,6 +406,8 @@ class EventsScreen(Screen):
       else:
         links_to = []
         links[0] = False
+        links[2] = False
+        links[4] = False
       pass
     elif (id == 284):
       #284	Due to changes in climate, the dominant terrain on Pi Ophiuchi II has changed from Barren to Ice Fields

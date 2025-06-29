@@ -32,6 +32,8 @@ import DevelopmentScreen
 import SystemTableScreen
 import FleetScreen
 import CommandsScreen
+import TodoList
+import TodoScreen
 import os
 
 class Game():
@@ -120,6 +122,7 @@ class Game():
     except Exception as e:
       print(e)
       self.logger.write('Error connecting to DB (%s): %s'%(self.db_filename, repr(e)))
+    self.todoList = TodoList.Todo(self)
 
     if (self.db):
       self.gameID, name, self.startYear = self.db.execute('''SELECT GameID, GameName, StartYear from FCT_Game''').fetchall()[-1]
@@ -163,6 +166,8 @@ class Game():
     self.developmentScreen  = DevelopmentScreen.DevelopmentScreen(self, eventsclass, 'Development')
     self.systemTableScreen  = SystemTableScreen.SystemTableScreen(self, eventsclass, 'Systems')
     self.fleetScreen        = FleetScreen.FleetScreen(self, eventsclass, 'Fleets')
+    self.todoScreen         = TodoScreen.TodoScreen(self, eventsclass, 'Todo')
+
 
     self.terraformingScreen.ResetBodies()
     self.coloniesScreen.ResetBodies()
@@ -224,7 +229,7 @@ class Game():
     idGUI += 1
     x += self.GUI_Top_Button_Size[0]+5
     bb = (x,y,self.GUI_Top_Button_Size[0],self.GUI_Top_Button_Size[1])
-    name = 'Research'
+    name = 'Todo'
     gui_cl = self.MakeClickable(name, bb, self.SwitchScreens, par=idGUI, parent=self.GUI_identifier)
     self.GUI_Elements[idGUI] = GUI.GUI(self, idGUI, name,bb, gui_cl, 'Button', textButton = True, enabled = True if self.currentScreen == name else False, radioButton = True, radioGroup = 0)
 
@@ -629,6 +634,10 @@ class Game():
       if (self.lastScreen != self.currentScreen) or self.newData:
         self.systemTableScreen.ResetGUI()
       reblit |= self.systemTableScreen.Draw()
+    elif (self.currentScreen == 'Todo'):
+      if (self.lastScreen != self.currentScreen) or self.newData:
+        self.todoScreen.ResetGUI()
+      reblit |= self.todoScreen.Draw()
     elif (self.currentScreen == 'Colony'):
       if (self.lastScreen != self.currentScreen) or self.newData:
         self.colonyDetailsScreen.ResetGUI()
@@ -702,6 +711,8 @@ class Game():
       self.coloniesScreen.reDraw = True
     elif (screen_name == 'Systems'):
       self.systemTableScreen.reDraw = True
+    elif (screen_name == 'Todo'):
+      self.todoScreen.reDraw = True
     elif (screen_name == 'Xenos'):
       self.xenosScreen.reDraw = True
     elif (screen_name == 'Command'):
@@ -1164,6 +1175,8 @@ class Game():
       for spID in surveyPoints:
         if (not surveyPoints[spID]['Surveyed']):
           numSPs += 1
+      if (numSPs):
+        self.todoList.CheckTodo('Gravsurvey', system=self.starSystems[systemID], other=numSPs)
       systemJPs = Systems.GetSystemJumpPoints(self, systemID)
       numGates = 0
       numUnexploredJPs = 0
@@ -1172,6 +1185,10 @@ class Game():
           numGates+=1
         if not systemJPs[jpID]['Explored']:
           numUnexploredJPs+=1
+          self.todoList.CheckTodo('Explore JP', system=self.starSystems[systemID], target=systemJPs[jpID]['Destination'])
+        elif systemJPs[jpID]['Gate'] == 0:
+          self.todoList.CheckTodo('Jumpgate', system=self.starSystems[systemID], target=systemJPs[jpID]['Destination'])
+
       if (str(systemID) not in Designations.designations['Systems']):
         Designations.Set(systemID,0)
 
@@ -1193,29 +1210,55 @@ class Game():
       index+=1
       #system = self.starSystems[systemID]
       bodies = Bodies.GetSystemBodies(self, systemID)
+      unsurveyed = 0
       for bodyID in bodies:
         body = bodies[bodyID]
+        if body['Status'] == 'U':
+          unsurveyed += 1
         if (body['Colonized']):
           flags[systemID]['Colonies']+=1
         if (body['ColonyCost'] == 0):
           flags[systemID]['Ideal Worlds']+=1
+        if (body['Colonized'] == False):
+          if (body['ColonyCost'] <= 3):
+            if (body['Population Capacity'] >= 100):
+              self.todoList.CheckTodo('Colonize', system=self.starSystems[systemID], body=body)
+            if (body['ColonyCost'] > 0):
+              if bodyID in self.colonies:
+                colony = self.colonies[bodyID]
+                if (colony['Pop'] > 0) and body['Population Capacity'] > 100:
+                  if (colony['Terraforming']['Active'] == False):
+                    self.todoList.CheckTodo('Terraform', system=self.starSystems[systemID], body=body)
         if ((body['Deposits']['Sorium']['Amount'] > 0) and (body['Type'] == 'Planet Gas Giant' or body['Type'] == 'Planet Super Jovian')):
           flags[systemID]['Sorium Gas Giants']+=1
           if (body['Harvesters']>0):
             flags[systemID]['Fuel harvesting']+=1
+          else:
+            self.todoList.CheckTodo('Harvest', system=self.starSystems[systemID], body=body)
         if (body['Large Deposits']):
           flags[systemID]['Large Deposits']+=1
+          mining = False
           if (body['Industrialized']):
             if(self.colonies[bodyID]['Installations']):
               for id in mineIDs:
                 if id in self.colonies[bodyID]['Installations']:
                   if self.colonies[bodyID]['Installations'][id]['Amount'] > 0:
                     flags[systemID]['Mining']+=1
+                    mining = True
                     break
+          if not mining:
+            self.todoList.CheckTodo('Industrialize', system=self.starSystems[systemID], body=body)
         if (body['Artifacts'] or body['RuinID'] > 0):
           flags[systemID]['Artifacts']+=1
+          if (body['RuinID'] > 0):
+            if (body['RuinRaceID'] == None):
+              self.todoList.CheckTodo('Archeology', system=self.starSystems[systemID], body=body)
+            elif (body['Abandoned Factories'] > 0):
+              self.todoList.CheckTodo('Excavate', system=self.starSystems[systemID], body=body, other=body['Abandoned Factories'])
         if (body['GroundMineralSurvey'] > 0):
           flags[systemID]['Ground Survey Potentials']+=1
-
+          self.todoList.CheckTodo('Groundsurvey', system=self.starSystems[systemID], body=body)
+      if (unsurveyed > 0):
+        self.todoList.CheckTodo('Geosurvey', system=self.starSystems[systemID], other=unsurveyed)
       
     return flags
